@@ -1,0 +1,159 @@
+# Menu dish extraction — lightweight POC
+
+Extract the food dishes printed on restaurant menu photos (`google_images.zip`: 19 phone photos,
+10 restaurants). Local, CPU only, no model training. The focus is the architecture, the model
+choices and how quality and cost are measured.
+
+## TL;DR
+
+- **OCR first, LLM only when needed.** A local OCR (RapidOCR) reads the text with positions; a
+  rule-based parser anchored on prices turns lines into dishes and scores its own **confidence**.
+  Only low-confidence pages are sent to a **text** LLM (Claude Haiku 5.5 by default) that
+  structures the OCR text; every LLM dish is **verified against the OCR** to drop hallucinations.
+- **Configurable, one model per run:** `--mode ocr | ocr+llm`, `--llm-policy fallback | always`,
+  `--llm-model <id>`.
+- **Every slow or paid stage is cached by content**, so re-running with another model reuses the
+  OCR and only pays for the LLM call; `--only-low-confidence` re-runs just the hard pages.
+- **Measured, not guessed:** a golden set with language aliases, a dev/test split by restaurant,
+  recall (recognition rate) as the main metric, precision as a control, cost and latency per image.
+
+## Architecture
+
+```
+image ──► preprocess ──► OCR (RapidOCR, CPU) ──► rule parser + confidence
+           EXIF, resize   lines + boxes,           price-anchored, layout-aware
+                          rotation/deskew                   │
+                          [cached]                          ├─ confidence ≥ threshold ─► dishes (rules)
+                                                            │
+                                                            └─ confidence < threshold (or policy=always)
+                                                                    │
+                                                    text LLM (Claude Haiku 5.5, structured JSON)
+                                                    [cached]        │
+                                                    grounding: every dish must appear in the OCR
+                                                                    │
+                                                                    └─► dishes (LLM)
+```
+
+| Component | When it runs | Cost | Why |
+|---|---|---|---|
+| Content cache | always | ~0 | Key = hash(input) + stage fingerprint (engine/model/prompt versions) |
+| Preprocess | always | ms | Photos are rotated and up to 5712 px |
+| OCR (RapidOCR: PP-OCR models on ONNX Runtime) | always | ~3–5 s/image CPU (rotated pages ~13 s) | Deterministic text + positions; same models as PaddleOCR, far lighter install |
+| Layout + rule parser | always | ms | Prices are the strongest cheap signal of "this line is a dish" |
+| Confidence | always | ms | Decides whether the paid LLM is needed |
+| Text LLM | low confidence only (`fallback`) or every page (`always`) | ≈ $0.001–0.002/page with Haiku | Understands layouts the rules cannot (size grids, prices under photos) |
+| Grounding check | after the LLM | ms | Turns the LLM into a verifiable step |
+
+Why not a vision LLM (VLM) on the image? It would be simple and accurate, but its output cannot
+be checked against anything, it is the least deterministic option and it costs more per page.
+OCR text gives the LLM exactly what it needs and gives us a ground truth to verify it against.
+
+## Usage
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+
+# Rules only (free, deterministic)
+.venv/bin/menu-poc run --mode ocr
+
+# Cascade: LLM only for low-confidence pages (needs ANTHROPIC_API_KEY)
+.venv/bin/menu-poc run --mode ocr+llm --llm-policy fallback --llm-model claude-haiku-5-5
+
+# Not good enough? Re-run only the hard pages with a stronger model; the OCR comes from the cache
+.venv/bin/menu-poc run --mode ocr+llm --llm-model claude-sonnet-5-5 \
+    --reuse-from runs/<previous run> --only-low-confidence
+
+# Evaluate / compare
+.venv/bin/menu-poc eval runs/<run>
+.venv/bin/menu-poc compare runs/<run a> runs/<run b> --out docs/results.md
+
+# Tests (the real-OCR test is marked slow)
+.venv/bin/pytest -q            # fast suite
+.venv/bin/pytest -q -m slow    # real OCR on one image
+```
+
+Defaults live in `config/default.yaml` (input path, threshold 0.6, model, policy); run commands
+from the project root. Each run writes `runs/<id>/config.yaml`, `results.jsonl`, `metrics.json`
+and `summary.md` (with a per-image error analysis). `--offline` uses only cached LLM answers.
+
+## Evaluation
+
+- **Golden set** (`data/golden/`, format in its README): one YAML per image with every legible
+  food dish and its **language aliases** (many menus print each dish in Catalan, Spanish and
+  English). Finding any alias counts as recognising the dish; extra translations are counted as
+  duplicates, not false positives. Beverages, toppings/extras and headers are excluded.
+- **Split by restaurant:** dev (10 images) is the only data used to tune rules, threshold and
+  prompt; test (9 images) is measured, never tuned on.
+- **Matching:** names normalised (case, accents, numbering, prices, leaders) and fuzzy-matched
+  (rapidfuzz, threshold 85) with an optimal one-to-one assignment.
+- **Metrics:** recall = recognition rate (main), precision (control: headers, phones or
+  descriptions must not count as dishes), share of pages escalated to the LLM, cost and latency per
+  image. Cost and latency are those of producing the result even when served from the cache, so
+  runs are comparable.
+- **Honesty notes:** the golden labels were drafted by an AI model looking at the photos and still
+  need human review (same model family as the evaluated LLM → possible bias). Four restaurants
+  have duplicate photos (identical or half-resolution), so those menus weigh double.
+
+## Results
+
+| run | recall dev | recall test | recall all | precision | % pages to LLM | cost / image | time / image |
+|---|---|---|---|---|---|---|---|
+| Rules only, baseline | 72.6% | 70.1% | 71.9% | 72.4% | 0% | $0 | 4.8 s |
+| Rules only, after error analysis on dev | 79.4% | 70.1% | 76.8% | 79.5% | 0% | $0 | 4.8 s |
+| Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | 42% (8/19) | ≈ $0.001 | |
+
+The rule tuning improved dev and left test unchanged — the expected sign of not overfitting, and a
+reminder that heuristics stop scaling: the remaining errors (shared size grids, prices under
+photos, multi-column boards, cut-off names) are exactly what the LLM step is for. With the tuned
+confidence, the pages the rules got badly wrong (recall < 60%) all fall below the threshold.
+
+## The three questions
+
+**Which technique?** A cascade: local OCR + price-anchored rules for every page, a text LLM only
+for pages where the rules report low confidence, and a grounding check of the LLM output against
+the OCR. OCR alone reads text well but cannot understand layout; an LLM on the OCR text adds that
+understanding cheaply (text-only, small model, structured output) while staying verifiable. Claude
+Haiku 5.5 is the default because the task is simple extraction; the model is a run parameter, and
+a stronger one (Sonnet 5.5) can re-process only the hard pages from the cached OCR.
+
+**How to evaluate?** A human-reviewed golden set with aliases, a dev/test split, recall as the
+recognition rate, precision as a control, plus cost, latency and escalation rate per image, all
+comparable across runs (`menu-poc compare`). In production there are no labels, so the same
+signals become monitors: rules confidence, share of LLM dishes dropped by grounding, share of
+prices left without a dish, escalation rate; plus periodic human review of a sample. An LLM judge
+can help with semantic equivalences, calibrated against human labels — never as the only judge.
+
+**Limitations and production improvements.**
+- Photo quality (glare, folds, perspective, cut edges) caps OCR quality; tilted or folded pages
+  still misalign prices. → better deskew/dewarping, higher OCR resolution for small text, or a
+  VLM fallback only when OCR confidence itself is low.
+- Shared price grids, set menus and unpriced dishes defeat price anchoring. → handled by the LLM.
+- Confidence is a hand-made heuristic calibrated on ~8 distinct pages. → recalibrate on reviewed
+  production samples; corrections become labelled data for a small line classifier that could
+  replace most LLM calls (cost goes down as volume goes up).
+- Throughput and cost at scale → Batch API (−50%) for non-interactive ingestion, content cache
+  plus a perceptual hash to skip re-uploaded menus, async workers.
+- Out of scope here by decision: normalising dishes across menus (catalogue, embeddings).
+
+## Project layout
+
+```
+src/menu_poc/
+  models.py, interfaces.py, config.py   contracts (pydantic + Protocols), run config
+  pipeline.py, cli.py                   cascade orchestration, `menu-poc` command
+  io/  cache/                           zip/dir reader, JSON helpers, content-addressed store
+  preprocess/  ocr/  parsing/           image prep, RapidOCR adapter, layout + rules + confidence
+  llm/                                  Anthropic + fake client, pricing, structurer, grounding
+  evaluation/                           golden loader, matching, metrics, Markdown reports
+prompts/structure_v1.md                 versioned LLM prompt (its hash is part of the cache key)
+data/golden/                            golden labels (AI-drafted, pending human review)
+docs/decision_log.md                    every design decision and the AI tools used
+```
+
+## How AI was used to build this
+
+Built with Claude Code (Claude Opus 5.5) as a pair: design discussion and decisions with the user
+(`docs/decision_log.md`), contracts and integration in the main session, four parallel sub-agents
+for independent modules (OCR + rules, LLM connector, evaluation, golden-set draft from the images),
+then a fresh-context code-review agent and an error-analysis agent that tuned the rules on the dev
+split only. Every agent output was checked by tests and by re-running the evaluation.

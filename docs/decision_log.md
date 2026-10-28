@@ -189,6 +189,31 @@ Decisiones (reemplazan la parte de normalización de la Discusión 4):
 - Sin `ANTHROPIC_API_KEY` en el entorno: el LLM se probó con respuestas grabadas; las corridas reales
   con Haiku/Sonnet requieren que el usuario exporte la key.
 
+## Discusión 8 — Revisión e iteración (2026-10-28)
+
+### Revisión de código (agente de contexto limpio, sólo lectura)
+Corregidos con tests de regresión: normalización que borraba alfabetos no latinos (grounding
+descartaba esos platos); matching goloso → asignación óptima (húngaro, agrega `scipy`); predicciones
+repetidas que sumaban TP; ids de imagen inconsistentes/duplicados; llamadas LLM fallidas pero cobradas
+registradas como $0; `effort`/`max_tokens` fuera de la clave del caché; verificador fuera del manejo
+de errores; señales de confianza de las reglas perdidas al usar LLM; re-corridas parciales que no
+cubrían el mismo set de imágenes (ahora se arrastran los resultados previos); validaciones de config.
+Pendientes menores (documentados): rutas relativas al directorio actual, versiones del OCR a mano,
+dos funciones de normalización.
+
+### Análisis de errores del clasificador por reglas (sólo dev, test medido una vez al final)
+- Taxonomía en dev: bebidas, nombres cortados por el borde de la foto, fragmentos de descripción,
+  códigos de alérgenos, notas de porción; misses por tableros multicolumna, grillas de precios
+  compartidas (pizzas), perspectiva, menús sin precio.
+- Cambios generalizables: número decimal suelto = precio; línea que empieza con "(" = nota; códigos
+  de dieta/alérgenos = ruido; viñetas como numeración; descripciones en minúscula con precio;
+  bebidas descartadas (política del golden, a confirmar); confianza con `recall_proxy`
+  (precios sin plato), `name_gate` (nombres con forma de descripción) y `header_gate`.
+- Resultado: dev recall 72,6% → 79,4%, precision 75,0% → 85,3%; test sin cambios (70,1%) → sin
+  sobreajuste. Total 71,9% → 76,8% recall, 72,4% → 79,5% precision.
+- Enrutamiento: ninguna página con recall < 60% queda fuera del LLM (antes 1 en test con conf 0,92).
+  8/19 páginas (42%) irían al LLM con umbral 0,6. La confianza sigue más a F1/precision que a recall.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
