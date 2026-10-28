@@ -1,12 +1,12 @@
-# Default run configuration. CLI flags override these values.
+# Run configuration. The CLI flags --input, --output and --llm-model override these values.
 # Relative paths here are relative to the project root.
 input_path: "../_20260514 AI code test TO SEND/source/google_images.zip"
 runs_dir: tmp             # --output; one sub-directory per run
-artifacts_dir: artifacts  # --artifacts; stage cache (OCR, LLM answers)
+artifacts_dir: artifacts  # stage cache (OCR, LLM answers)
 
 llm_policy: fallback      # fallback (only low-confidence images) | always
 # OCR + rules always run. Set an LLM model to add the LLM step for hard pages:
-# llm_model: haiku        # haiku | sonnet | opus (ANTHROPIC_API_KEY in .env) | ollama (local, free)
+# llm_model: haiku        # --llm-model; haiku | sonnet | opus (ANTHROPIC_API_KEY) | ollama
 llm_offline: false        # true = only cached LLM answers, never call the API
 
 confidence_threshold: 0.6

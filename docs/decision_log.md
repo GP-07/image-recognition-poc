@@ -320,6 +320,26 @@ dos funciones de normalización.
 - Se mantiene `_` como descarte convencional (no es una variable que se lea).
 - Verificado: `items.csv` byte a byte idéntico al de antes del refactor, mismas métricas, 212 tests.
 
+## Discusión 15 — El comando corre siempre entero; validación como fase del pipeline (2026-10-28)
+
+- El CLI tenía demasiadas opciones (`--config`, `--artifacts`, `--llm-policy`, `--offline`,
+  `--threshold`, `--image-ids`, `--reuse-from`, `--only-low-confidence`, `--golden`). Quedan
+  `--input`, `--output` y `--llm-model`; el resto vive en `config/default.yaml`.
+- Sin corridas parciales: se eliminan `image_ids`, `reuse_from`, `only_low_confidence`,
+  `select_images` y `merge_previous`. Re-correr con otro modelo sigue siendo barato porque el OCR
+  y las respuestas del LLM salen de la caché por contenido.
+- El archivo de config es del sistema: se asume que existe (sin chequeo ni flag).
+- Las validaciones salen de `cli.py` y pasan al pipeline como una fase `validate_inputs()`, una
+  sola vez antes de la cadena. No es un `Step` más porque los pasos corren por imagen, y "no hay
+  imágenes" o "la API key no sirve" son condiciones de la corrida. Dentro de esa fase cada paso
+  valida lo suyo (`Step.validate()`, que reemplaza a `ensure_ready`):
+  - el OCR carga sus modelos; si no puede, `InputValidationError` y la corrida no arranca;
+  - el LLM comprueba que puede llamar al modelo; si no, se desactiva y devuelve un warning;
+  - el pipeline verifica que el input tenga imágenes y avisa si no hay LLM configurado.
+- Exit codes: 0 cuando corre (aunque haya warnings o errores por imagen), 2 si no puede arrancar.
+- Verificado: `items.csv` idéntico al anterior; con `--llm-model haiku` y sin key, la corrida usa
+  OCR + reglas y el manifest guarda el modelo pedido y `llm_model: null`.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -333,3 +353,4 @@ dos funciones de normalización.
 | 2026-10-28 | Ollama (modelos abiertos locales, ej. Qwen2.5 7B) — soportado, no ejecutado | Alternativa gratuita y local al LLM de Claude (no instalado en esta máquina). |
 | 2026-10-28 | Subagente de Claude Code (Opus 5.5, visión) | Re-etiquetado del golden set con la nueva política (todos los ítems pedibles). |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Refactor de estilo: constantes, typings, modelos y dataclasses en archivos propios; sin asserts ni variables de una letra. |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Simplificación del CLI (corrida siempre completa) y validación de inputs como fase del pipeline. |

@@ -18,7 +18,16 @@ from menu_poc.models import (
     StructureResult,
 )
 from menu_poc.pipeline import PipelineBuilder, PipelineBuildError
-from menu_poc.steps import DedupStep, ImageContext, LlmStep, OcrStep, RulesStep, Step, VerifyStep
+from menu_poc.steps import (
+    DedupStep,
+    ImageContext,
+    InputValidationError,
+    LlmStep,
+    OcrStep,
+    RulesStep,
+    Step,
+    VerifyStep,
+)
 
 
 def _ref(image_id="r/a", color=(10, 20, 30)):
@@ -60,9 +69,16 @@ class _Structurer:
         )
 
 
+def _rules():
+    return RulesStep(_Parser(0.1))
+
+
 class _Ocr:
     def fingerprint(self):
         return {"name": "fake"}
+
+    def ensure_ready(self):
+        pass
 
     def run(self, image, image_id):
         return _ocr(image_id)
@@ -203,12 +219,50 @@ def test_pipeline_process_returns_a_result_with_total_time(tmp_path):
     assert result.dishes[0].name == "Lamb curry" and "total" in result.timings_s
 
 
-def test_pipeline_fails_fast_when_ocr_cannot_load(tmp_path):
+# --- run-level validation ---------------------------------------------------------------------
+
+
+def _image_dir(tmp_path):
+    folder = tmp_path / "images" / "r"
+    folder.mkdir(parents=True)
+    (folder / "a.png").write_bytes(_ref().data)
+    return tmp_path / "images"
+
+
+def test_validate_inputs_fails_when_ocr_cannot_load(tmp_path):
     class BrokenOcr(_Ocr):
         def ensure_ready(self):
             raise RuntimeError("model file missing")
 
     store = ArtifactStore(tmp_path)
     pipeline = PipelineBuilder().add(OcrStep(_Pre(), BrokenOcr(), store)).build()
-    with pytest.raises(RuntimeError, match="model file missing"):
-        pipeline.ensure_ready()
+    with pytest.raises(InputValidationError, match="model file missing"):
+        pipeline.validate_inputs(_image_dir(tmp_path))
+
+
+@pytest.mark.parametrize("make_input", [lambda tmp: tmp / "missing.zip", lambda tmp: tmp])
+def test_validate_inputs_fails_without_images(tmp_path, make_input):
+    pipeline = PipelineBuilder().add(OcrStep(_Pre(), _Ocr(), ArtifactStore(tmp_path))).build()
+    with pytest.raises(InputValidationError):
+        pipeline.validate_inputs(make_input(tmp_path))
+
+
+def test_no_llm_configured_warns_how_to_enable_it(tmp_path):
+    pieces = _pieces(tmp_path)
+    pipeline = PipelineBuilder().add(pieces["ocr"]).add(pieces["rules"]).build()
+    refs, warnings = pipeline.validate_inputs(_image_dir(tmp_path))
+    assert [ref.image_id for ref in refs] == ["r/a"] and not pipeline.uses_llm
+    assert "OCR + rules only" in warnings[0] and "--llm-model haiku" in warnings[0]
+
+
+def test_unavailable_llm_turns_its_step_off(tmp_path):
+    class NoKeyStructurer(_Structurer):
+        def unavailable_reason(self):
+            return "no key"
+
+    store = ArtifactStore(tmp_path)
+    llm = LlmStep(NoKeyStructurer(), store, policy="always")
+    pipeline = PipelineBuilder().add(OcrStep(_Pre(), _Ocr(), store)).add(_rules()).add(llm).build()
+    _, warnings = pipeline.validate_inputs(_image_dir(tmp_path))
+    assert warnings == ["LLM step disabled: no key. Results come from OCR + rules only."]
+    assert not pipeline.uses_llm and not pipeline.process(_ref()).llm_used

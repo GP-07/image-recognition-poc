@@ -1,41 +1,12 @@
-"""Run-level helpers: which images to process, where results go, carrying over a previous run."""
+"""Run directories: one per run, named after what actually ran."""
 
 from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
 
-from menu_poc.data_classes import ImageRef
-from menu_poc.io.dataset import iter_images
-from menu_poc.io.writers import read_jsonl, write_yaml
-from menu_poc.models import ImageResult, RunConfig
-
-
-def merge_previous(config: RunConfig, results: list[ImageResult]) -> list[ImageResult]:
-    """With ``reuse_from``: carry over the previous run's results for the images not re-run, so
-    the new run covers the same image set and stays comparable with other runs."""
-    if config.reuse_from is None:
-        return results
-    redone = {result.image_id for result in results}
-    previous = read_jsonl(config.reuse_from / "results.jsonl", ImageResult)
-    merged = [result for result in previous if result.image_id not in redone] + results
-    return sorted(merged, key=lambda result: result.image_id)
-
-
-def select_images(config: RunConfig) -> list[ImageRef]:
-    """Images for this run: explicit ids, or the low-confidence ones of a previous run."""
-    ids = config.image_ids
-    if config.reuse_from is not None and config.only_low_confidence:
-        previous = read_jsonl(config.reuse_from / "results.jsonl", ImageResult)
-        low = [
-            result.image_id
-            for result in previous
-            if result.rules_confidence < config.confidence_threshold
-        ]
-        ids = [image_id for image_id in low if ids is None or image_id in ids]
-        if not ids:
-            return []
-    return list(iter_images(config.input_path, ids))
+from menu_poc.io.writers import write_yaml
+from menu_poc.models import RunConfig
 
 
 def new_run_dir(config: RunConfig) -> Path:

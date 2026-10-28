@@ -61,8 +61,8 @@ class PipelineBuilder:
         return Pipeline(steps)
 
     @classmethod
-    def from_config(cls, config: RunConfig, llm: LLMEngine | None = None) -> PipelineBuilder:
-        """The production pieces for a run configuration (``llm``: an already checked engine)."""
+    def from_config(cls, config: RunConfig) -> PipelineBuilder:
+        """The production pieces for a run configuration."""
         store = ArtifactStore(config.artifacts_dir)
         builder = cls()
         builder.add(OcrStep(ImagePreprocessor(config.max_image_side), RapidOcrEngine(), store))
@@ -70,10 +70,9 @@ class PipelineBuilder:
         if config.dedup:
             builder.add(DedupStep(config.dedup_max_distance))
         if config.uses_llm:
-            engine = llm or LLMEngine.get_for_alias(config.llm_model)
             builder.add(
                 LlmStep(
-                    LLMStructurer(engine),
+                    LLMStructurer(LLMEngine.get_for_alias(config.llm_model)),
                     store,
                     config.llm_policy,
                     config.confidence_threshold,

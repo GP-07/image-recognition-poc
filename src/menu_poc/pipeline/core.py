@@ -9,10 +9,12 @@ from pathlib import Path
 
 from PIL import Image
 
+from menu_poc.constants import LLM_HELP
 from menu_poc.data_classes import ImageContext, ImageRef
+from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_jsonl
 from menu_poc.models import ImageResult
-from menu_poc.steps.base import Step
+from menu_poc.steps import InputValidationError, LlmStep, Step
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +35,25 @@ class Pipeline:
     def step_names(self) -> list[str]:
         return [step.name for step in self.steps]
 
-    def ensure_ready(self) -> None:
-        """Raise when a required step cannot run (e.g. the OCR models cannot be loaded)."""
-        for step in self.steps:
-            step.ensure_ready()
+    @property
+    def uses_llm(self) -> bool:
+        """True when the LLM step is in the chain and passed its validation."""
+        return any(isinstance(step, LlmStep) and step.enabled for step in self.steps)
+
+    def validate_inputs(self, input_path: Path) -> tuple[list[ImageRef], list[str]]:
+        """Run-level checks, once, before any image: the input has images, and every step can do
+        its job (``Step.validate``). Returns the images and the warnings; raises
+        ``InputValidationError`` when the run cannot go on."""
+        try:
+            refs = list(iter_images(input_path))
+        except (FileNotFoundError, ValueError) as exc:  # missing input, clashing image ids
+            raise InputValidationError(str(exc)) from exc
+        if not refs:
+            raise InputValidationError(f"no images found in {input_path}")
+        warnings = [warning for step in self.steps for warning in step.validate()]
+        if not any(isinstance(step, LlmStep) for step in self.steps):
+            warnings.append(f"No LLM configured: results come from OCR + rules only. {LLM_HELP}")
+        return refs, warnings
 
     def process(self, ref: ImageRef) -> ImageResult:
         ctx = self.head.handle(ImageContext.for_image(ref))

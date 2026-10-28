@@ -11,18 +11,16 @@ from menu_poc.constants import CONFIG_PATH_FIELDS, PROJECT_ROOT
 from menu_poc.models import RunConfig
 
 
-def load_config(path: Path | None = None, **overrides: Any) -> RunConfig:
-    """Load a YAML config (optional) and apply non-None overrides on top.
+def load_config(path: Path, **overrides: Any) -> RunConfig:
+    """Load the YAML config and apply the non-None overrides on top.
 
     Relative paths in the YAML file are relative to the project root; relative paths given as
     overrides (CLI flags) are relative to the current directory, as usual for a command line.
     """
-    data: dict[str, Any] = {}
-    if path is not None:
-        data = yaml.safe_load(Path(path).read_text()) or {}
-        for field in CONFIG_PATH_FIELDS:
-            if data.get(field) is not None:
-                data[field] = PROJECT_ROOT / Path(data[field]).expanduser()
+    data: dict[str, Any] = yaml.safe_load(Path(path).read_text()) or {}
+    for field in CONFIG_PATH_FIELDS:
+        if data.get(field) is not None:
+            data[field] = PROJECT_ROOT / Path(data[field]).expanduser()
     for key, value in overrides.items():
         if value is None:
             continue

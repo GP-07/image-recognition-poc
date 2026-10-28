@@ -21,7 +21,7 @@ DEFAULT_RUNS_DIR = PROJECT_ROOT / "tmp"  # one sub-directory per run
 DEFAULT_ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"  # stage cache, reused across runs
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v2.md"
-CONFIG_PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir", "reuse_from")
+CONFIG_PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir")
 
 DEFAULT_CONFIDENCE_THRESHOLD = 0.6  # rules confidence below this sends the page to the LLM
 DEFAULT_DEDUP_MAX_DISTANCE = 10  # perceptual hash bits out of 256

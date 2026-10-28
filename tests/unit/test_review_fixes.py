@@ -8,12 +8,10 @@ from PIL import Image
 
 from menu_poc.evaluation.matching import match_dishes, normalize
 from menu_poc.io.dataset import iter_images
-from menu_poc.io.writers import write_jsonl
 from menu_poc.llm.fake_engine import FakeEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
-from menu_poc.models import Dish, GoldenDish, ImageResult, OcrLine, OcrResult, RunConfig
-from menu_poc.pipeline import merge_previous
+from menu_poc.models import Dish, GoldenDish, OcrLine, OcrResult
 
 
 def _png() -> bytes:
@@ -46,9 +44,9 @@ def test_numbered_names_stay_distinct():
     assert normalize("Lamb curry 12,50") == "lamb curry"
 
 
-def test_root_level_images_can_be_selected(tmp_path):
+def test_root_level_images_get_an_id(tmp_path):
     (tmp_path / "root.png").write_bytes(_png())
-    assert [ref.image_id for ref in iter_images(tmp_path, ["unknown/root"])] == ["unknown/root"]
+    assert [ref.image_id for ref in iter_images(tmp_path)] == ["unknown/root"]
 
 
 def test_duplicate_image_ids_are_rejected(tmp_path):
@@ -72,30 +70,3 @@ def test_llm_cache_key_changes_with_client_settings():
     assert (
         LLMStructurer(Client("low")).fingerprint() != LLMStructurer(Client("medium")).fingerprint()
     )
-
-
-def test_merge_previous_keeps_the_full_image_set(tmp_path):
-    prev = tmp_path / "prev"
-    write_jsonl(
-        prev / "results.jsonl",
-        [
-            ImageResult(image_id=image_id, restaurant_id="r", rules_confidence=confidence)
-            for image_id, confidence in [("r/a", 0.9), ("r/b", 0.1)]
-        ],
-    )
-    config = RunConfig(
-        input_path="x.zip", llm_model="haiku", reuse_from=prev, only_low_confidence=True
-    )
-    redone = [ImageResult(image_id="r/b", restaurant_id="r", llm_used=True)]
-    merged = merge_previous(config, redone)
-    assert [(result.image_id, result.llm_used) for result in merged] == [
-        ("r/a", False),
-        ("r/b", True),
-    ]
-
-
-def test_config_rejects_useless_combinations():
-    with pytest.raises(ValueError):
-        RunConfig(input_path="x.zip", reuse_from="runs/x")  # reuse without only_low_confidence
-    with pytest.raises(ValueError):
-        RunConfig(input_path="x.zip", reuse_from="runs/x", only_low_confidence=True)  # no LLM

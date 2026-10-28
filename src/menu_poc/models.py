@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
 from menu_poc.constants import (
     DEFAULT_ARTIFACTS_DIR,
@@ -39,11 +39,6 @@ class RunConfig(BaseModel):
     dedup_max_distance: int = Field(DEFAULT_DEDUP_MAX_DISTANCE, ge=0)
     max_image_side: int = Field(DEFAULT_MAX_IMAGE_SIDE, gt=0)
 
-    # Image selection
-    image_ids: list[str] | None = None  # restrict to these "<restaurant>/<file stem>" ids
-    reuse_from: Path | None = None  # previous run dir; with only_low_confidence picks its images
-    only_low_confidence: bool = False
-
     @field_validator("llm_model")
     @classmethod
     def _resolve_model(cls, value: str | None) -> str | None:
@@ -51,14 +46,6 @@ class RunConfig(BaseModel):
         from menu_poc.llm.engine import LLMEngine
 
         return None if value is None else LLMEngine.get_for_alias(value).model
-
-    @model_validator(mode="after")
-    def _check(self) -> RunConfig:
-        if self.only_low_confidence != (self.reuse_from is not None):
-            raise ValueError("only_low_confidence and reuse_from go together")
-        if self.only_low_confidence and not self.uses_llm:
-            raise ValueError("re-running low-confidence images needs an LLM model (llm_model)")
-        return self
 
     @property
     def uses_llm(self) -> bool:

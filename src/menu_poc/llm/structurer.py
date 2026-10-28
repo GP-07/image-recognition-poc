@@ -46,6 +46,9 @@ class LLMStructurer:
             "render": RENDER_VERSION,
         }
 
+    def unavailable_reason(self) -> str | None:
+        return self.client.unavailable_reason()
+
     def structure(self, ocr: OcrResult) -> StructureResult:
         if not ocr.lines:  # nothing to read: skip the paid call
             usage = LLMUsage(model=self.client.model)

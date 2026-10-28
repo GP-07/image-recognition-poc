@@ -45,7 +45,6 @@ def test_iter_images_from_zip_skips_macosx_and_filters(tmp_path):
     refs = list(iter_images(zpath))
     assert [ref.image_id for ref in refs] == ["r1/a", "r2/b"]
     assert refs[0].open().size == (8, 8)
-    assert [ref.image_id for ref in iter_images(zpath, ["r2/b"])] == ["r2/b"]
 
 
 def test_iter_images_from_dir(tmp_path):
@@ -66,7 +65,7 @@ def test_config_overrides_and_validation(tmp_path):
     cfg = load_config(cfg_file, llm_model="Haiku", llm_policy=None)
     assert cfg.uses_llm and cfg.llm_model == "claude-haiku-5-5" and cfg.llm_policy == "always"
     with pytest.raises(ValueError):
-        RunConfig(input_path="x.zip", only_low_confidence=True)
+        RunConfig(input_path="x.zip", confidence_threshold=2)
 
 
 def test_jsonl_roundtrip(tmp_path):

@@ -28,6 +28,17 @@ class LlmStep(Step):
         self.policy = policy
         self.threshold = threshold
         self.offline = offline  # only cached answers, never call the API
+        self.enabled = True  # turned off by ``validate`` when the model cannot be used
+
+    def validate(self) -> list[str]:
+        """An unusable LLM (missing or invalid key, server down) never fails the run: the step
+        turns itself off and every page keeps the rules output, so a CI job without the secret
+        still has results."""
+        reason = None if self.offline else self.structurer.unavailable_reason()
+        if reason is None:
+            return []
+        self.enabled = False
+        return [f"LLM step disabled: {reason}. Results come from OCR + rules only."]
 
     def needed(self, ctx: ImageContext) -> bool:
         """``always``: every image; ``fallback``: only when the rules are not confident."""
@@ -35,7 +46,7 @@ class LlmStep(Step):
         return self.policy == "always" or parsed.confidence < self.threshold
 
     def process(self, ctx: ImageContext) -> bool:
-        if not self.needed(ctx):
+        if not self.enabled or not self.needed(ctx):
             return False  # the rules output is the answer
         ocr = require(ctx.ocr, "OCR output")
         key = make_key("llm", ctx.ocr_key, self.structurer.fingerprint())

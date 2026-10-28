@@ -16,15 +16,17 @@ choices and how quality and cost are measured.
   ollama` (aliases; exact ids also accepted; one model per run) to add the LLM step: Claude, or a
   free local model through Ollama (`ollama` = `qwen2.5:7b`; `ollama/<model>` for another).
   Without it the run uses OCR + rules and the output says how to enable the LLM.
-  `--llm-policy fallback | always` picks which pages go to it.
-- **Never fails for a missing key:** the LLM connection is checked first, before any image is
-  read (a free `models.retrieve` call proves the key is valid for the model). Without a valid
-  `ANTHROPIC_API_KEY` (env or `.env`) or a running Ollama, the run degrades to OCR + rules and
-  records a warning in `manifest.json`. The OCR engine is checked at start-up too, but it is the
-  core of the pipeline: if its models cannot load, the run stops with an error (exit code 3).
+  Which pages go to it (`llm_policy: fallback | always`) is set in `config/default.yaml`.
+- **One way to run it: the whole input, every time.** The command has three flags (`--input`,
+  `--output`, `--llm-model`); everything else lives in `config/default.yaml`.
+- **Inputs are validated once, before any image is processed** (`Pipeline.validate_inputs`):
+  the input must hold images, and each step checks what it needs for the whole run. The OCR models
+  must load, or the run stops (exit code 2). The LLM never stops it: without a valid
+  `ANTHROPIC_API_KEY` (env or `.env`; a free `models.retrieve` call proves the key works for the
+  model) or a running Ollama, the LLM step turns itself off and `manifest.json` records why.
 - **Output:** `items.csv`, one row per extracted item, in `tmp/<run>/` unless `--output` is given.
 - **Every slow or paid stage is cached by content**, so re-running with another model reuses the
-  OCR and only pays for the LLM call; `--only-low-confidence` re-runs just the hard pages.
+  OCR and only pays for the LLM calls of the pages that need it.
 - **Measured, not guessed:** a golden set with language aliases, a dev/test split by restaurant,
   recall (recognition rate) as the main metric, precision as a control, cost and latency per image.
 
@@ -55,7 +57,8 @@ system's fixed order (`dedup → ocr → rules → llm → verify`), adds `verif
 present and rejects invalid chains (e.g. an LLM without OCR). Optional pieces are just not added.
 
 ```python
-pipeline = PipelineBuilder.from_config(config, llm_engine).build()   # production
+pipeline = PipelineBuilder.from_config(config).build()               # production
+refs, warnings = pipeline.validate_inputs(config.input_path)       # once, before any image
 pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(...)).build()
 # -> dedup? no · ocr → rules → llm → verify, whatever the insertion order
 ```
@@ -85,14 +88,14 @@ cp .env.example .env    # put ANTHROPIC_API_KEY there (never committed); env var
 .venv/bin/menu-poc run --input /path/to/images --output /path/to/output
 
 # Cascade: LLM only for low-confidence pages
-.venv/bin/menu-poc run --llm-model haiku --llm-policy fallback
+.venv/bin/menu-poc run --llm-model haiku
 
 # Same with a free local model (brew install ollama && ollama pull qwen2.5:7b)
 .venv/bin/menu-poc run --llm-model ollama
 
-# Not good enough? Re-run only the hard pages with a stronger model; the OCR comes from the cache
-.venv/bin/menu-poc run --llm-model sonnet \
-    --reuse-from tmp/<previous run> --only-low-confidence
+# Not good enough? Run again with a stronger model: OCR comes from the cache, and only the
+# low-confidence pages are sent to the LLM
+.venv/bin/menu-poc run --llm-model sonnet
 
 # Evaluate / compare
 .venv/bin/menu-poc eval tmp/<run>
@@ -104,22 +107,21 @@ cp .env.example .env    # put ANTHROPIC_API_KEY there (never committed); env var
 ```
 
 **Inputs and outputs.** Defaults live in `config/default.yaml` (its relative paths are relative to
-the project root, so the command works from any directory); every path can be overridden:
-`--input` (zip or folder, read-only, never extracted), `--output` (default `tmp/` in the
-project) and `--artifacts` (stage cache, default `artifacts/`). Each run creates
-`<output>/<timestamp>_<label>/`:
+the project root, so the command works from any directory): `--input` (zip or folder, read-only,
+never extracted) and `--output` (default `tmp/` in the project) override them; the stage cache
+is `artifacts/`. Each run creates `<output>/<timestamp>_<label>/`:
 
 | File | Content |
 |---|---|
 | `items.csv` | **the extracted items**, one row each: image, restaurant, item, description, prices (`8.5\|12` for sizes), section, source (`rules`/`llm`), `duplicate_of` |
-| `results.jsonl` | full per-image record (nested): items plus confidence and its signals, LLM usage and cost, timings, `duplicate_of`, per-image `error`; used by `eval` and `--reuse-from` |
+| `results.jsonl` | full per-image record (nested): items plus confidence and its signals, LLM usage and cost, timings, `duplicate_of`, per-image `error`; used by `eval` |
 | `manifest.json` | requested vs effective LLM model, counts, duplicates, run-level `warnings` and per-image `errors` |
 | `config.yaml` | the effective configuration |
 | `summary.md`, `metrics.json` | evaluation against the golden set, when one exists |
 
 Exit code is 0 when images were processed, even with warnings or per-image errors (they are in
-the output); non-zero only when the run cannot start: no images or missing config file (1-2), or
-an OCR engine that cannot load (3).
+the output); 2 when the run cannot start: no images in the input, or an OCR engine that cannot
+load.
 
 **CI (sketch).** The same command runs in a GitHub Actions job: store `ANTHROPIC_API_KEY` as a
 repository secret and expose it as an env variable, run `menu-poc run --llm-model haiku --input …

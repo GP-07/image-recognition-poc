@@ -6,12 +6,14 @@ import urllib.error
 
 import pytest
 
-from menu_poc.cli import resolve_llm
+from menu_poc.cache.store import ArtifactStore
 from menu_poc.llm import ollama_engine as ollama
 from menu_poc.llm.anthropic_engine import AnthropicEngine
 from menu_poc.llm.engine import LLMEngine, LLMOutputError
 from menu_poc.llm.ollama_engine import OllamaEngine
+from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.models import RunConfig
+from menu_poc.steps import LlmStep
 
 
 class _Resp(io.BytesIO):
@@ -73,13 +75,17 @@ def test_ollama_availability(monkeypatch):
     assert "not reachable" in OllamaEngine("qwen2.5:7b").unavailable_reason()
 
 
-def test_missing_api_key_degrades_to_ocr_with_a_warning(monkeypatch):
+def _haiku_step(tmp_path, offline=False):
+    structurer = LLMStructurer(LLMEngine.get_for_alias("haiku"))
+    return LlmStep(structurer, ArtifactStore(tmp_path), offline=offline)
+
+
+def test_missing_api_key_disables_the_llm_step_with_a_warning(monkeypatch, tmp_path):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
-    warnings: list[str] = []
-    config, client = resolve_llm(RunConfig(input_path="x.zip", llm_model="haiku"), warnings)
-    assert not config.uses_llm and client is None
-    assert "ANTHROPIC_API_KEY" in warnings[0]
+    step = _haiku_step(tmp_path)
+    warnings = step.validate()
+    assert not step.enabled and "ANTHROPIC_API_KEY" in warnings[0]
 
 
 class _FakeModels:
@@ -97,23 +103,21 @@ class _FakeSdk:
         self.models = _FakeModels(error)
 
 
-def test_api_key_present_keeps_the_llm(monkeypatch):
+def test_api_key_present_keeps_the_llm(monkeypatch, tmp_path):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(AnthropicEngine, "_client", lambda self: _FakeSdk())
-    warnings: list[str] = []
-    config, client = resolve_llm(RunConfig(input_path="x.zip", llm_model="haiku"), warnings)
-    assert config.uses_llm and isinstance(client, AnthropicEngine) and not warnings
+    step = _haiku_step(tmp_path)
+    assert step.validate() == [] and step.enabled
 
 
-def test_offline_mode_needs_no_key(monkeypatch):
+def test_offline_mode_needs_no_key(monkeypatch, tmp_path):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
-    cfg = RunConfig(input_path="x.zip", llm_model="haiku", llm_offline=True)
-    config, client = resolve_llm(cfg, [])
-    assert config.uses_llm and client is not None
+    step = _haiku_step(tmp_path, offline=True)
+    assert step.validate() == [] and step.enabled
 
 
-def test_invalid_api_key_degrades_before_processing(monkeypatch):
+def test_invalid_api_key_degrades_before_processing(monkeypatch, tmp_path):
     import anthropic
     import httpx2 as httpx
 
@@ -121,9 +125,9 @@ def test_invalid_api_key_degrades_before_processing(monkeypatch):
     response = httpx.Response(401, request=httpx.Request("GET", "https://api.anthropic.com"))
     error = anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
     monkeypatch.setattr(AnthropicEngine, "_client", lambda self: _FakeSdk(error))
-    warnings: list[str] = []
-    config, client = resolve_llm(RunConfig(input_path="x.zip", llm_model="haiku"), warnings)
-    assert not config.uses_llm and client is None and "invalid" in warnings[0]
+    step = _haiku_step(tmp_path)
+    warnings = step.validate()
+    assert not step.enabled and "invalid" in warnings[0]
 
 
 @pytest.mark.parametrize(
@@ -143,10 +147,3 @@ def test_model_aliases(alias, expected):
 def test_unknown_model_is_rejected_early():
     with pytest.raises(ValueError, match="haiku, sonnet, opus, ollama"):
         RunConfig(input_path="x.zip", llm_model="gpt-5")
-
-
-def test_no_llm_configured_warns_how_to_enable_it():
-    warnings: list[str] = []
-    config, engine = resolve_llm(RunConfig(input_path="x.zip"), warnings)
-    assert engine is None and not config.uses_llm
-    assert "OCR + rules only" in warnings[0] and "--llm-model haiku" in warnings[0]

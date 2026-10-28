@@ -3,6 +3,8 @@
 Each step does its own work on the shared ``ImageContext`` and decides whether the image goes on
 to the next step. An exception stops the chain for that image only (the run continues), and the
 output gathered so far is kept: e.g. if the LLM fails, the rules output stays.
+
+Before the first image, every step validates once what it needs for the whole run (``validate``).
 """
 
 from __future__ import annotations
@@ -15,6 +17,10 @@ from menu_poc.data_classes import ImageContext
 from menu_poc.typings import ValueT
 
 log = logging.getLogger(__name__)
+
+
+class InputValidationError(RuntimeError):
+    """The run cannot start: no images, or a step that every image needs cannot run."""
 
 
 class MissingInputError(RuntimeError):
@@ -35,8 +41,10 @@ class Step(ABC):
     def __init__(self) -> None:
         self.next: Step | None = None
 
-    def ensure_ready(self) -> None:  # noqa: B027  (optional hook, most steps need nothing)
-        """Fail fast, before any image, when the step cannot run at all. Default: nothing."""
+    def validate(self) -> list[str]:
+        """Checked once, before any image. Raise ``InputValidationError`` when the run cannot go
+        on without this step; return warnings for what the step will not do. Default: nothing."""
+        return []
 
     def handle(self, ctx: ImageContext) -> ImageContext:
         try:

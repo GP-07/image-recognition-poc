@@ -44,6 +44,10 @@ class Parser(Protocol):
 class Structurer(Protocol):
     def fingerprint(self) -> dict[str, Any]: ...
 
+    def unavailable_reason(self) -> str | None:
+        """None when the model can be called, else why not (checked before any image)."""
+        ...
+
     def structure(self, ocr: OcrResult) -> StructureResult: ...
 
 

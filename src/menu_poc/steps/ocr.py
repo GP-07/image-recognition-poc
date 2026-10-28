@@ -8,7 +8,7 @@ from menu_poc.cache.store import ArtifactStore, make_key
 from menu_poc.data_classes import ImageContext
 from menu_poc.interfaces import OcrEngine, Preprocessor
 from menu_poc.models import OcrResult
-from menu_poc.steps.base import Step
+from menu_poc.steps.base import InputValidationError, Step
 
 
 class OcrStep(Step):
@@ -20,8 +20,13 @@ class OcrStep(Step):
         self.engine = engine
         self.store = store
 
-    def ensure_ready(self) -> None:
-        self.engine.ensure_ready()  # no OCR, no pipeline: this one is fatal
+    def validate(self) -> list[str]:
+        """Load the OCR models now: without OCR there is nothing to run, so this one is fatal."""
+        try:
+            self.engine.ensure_ready()
+        except Exception as exc:
+            raise InputValidationError(f"the OCR engine cannot run: {exc}") from exc
+        return []
 
     def process(self, ctx: ImageContext) -> bool:
         ref = ctx.ref

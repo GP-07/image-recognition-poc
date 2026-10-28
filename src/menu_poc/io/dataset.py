@@ -42,26 +42,22 @@ def _check_unique(paths: list[PurePosixPath]) -> None:
             raise ValueError(f"Duplicate image id {_image_id(path)!r}: {other} and {path}")
 
 
-def iter_images(source: Path, image_ids: list[str] | None = None) -> Iterator[ImageRef]:
-    """Yield images sorted by id. ``image_ids`` restricts the selection."""
+def iter_images(source: Path) -> Iterator[ImageRef]:
+    """Yield every image of the input, sorted by id."""
     source = Path(source)
-    wanted = set(image_ids) if image_ids else None
 
     if source.is_file() and source.suffix.lower() == ".zip":
         with zipfile.ZipFile(source) as archive:
             names = sorted(name for name in archive.namelist() if _is_image(PurePosixPath(name)))
             _check_unique([PurePosixPath(name) for name in names])
             for name in names:
-                path = PurePosixPath(name)
-                if wanted is None or _image_id(path) in wanted:
-                    yield _ref(path, archive.read(name))
+                yield _ref(PurePosixPath(name), archive.read(name))
     elif source.is_dir():
         files = sorted(file for file in source.rglob("*") if file.is_file())
         paths = {file: PurePosixPath(file.relative_to(source).as_posix()) for file in files}
         images = {file: path for file, path in paths.items() if _is_image(path)}
         _check_unique(list(images.values()))
         for file, path in images.items():
-            if wanted is None or _image_id(path) in wanted:
-                yield _ref(path, file.read_bytes())
+            yield _ref(path, file.read_bytes())
     else:
         raise FileNotFoundError(f"Input must be a .zip file or a directory: {source}")
