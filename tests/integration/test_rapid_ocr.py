@@ -22,7 +22,7 @@ IMAGE_ID = "7571032721762097332/63bac2469809e9b1432e6f152996440d"  # single page
 def test_rapidocr_reads_and_rules_parse_a_real_menu():
     if not DATASET.exists():
         pytest.skip(f"dataset not found: {DATASET}")
-    (ref,) = iter_images(DATASET, [IMAGE_ID])
+    (ref,) = [ref for ref in iter_images(DATASET) if ref.image_id == IMAGE_ID]
     image = ImagePreprocessor()(ref.open())
 
     engine = RapidOcrEngine()
