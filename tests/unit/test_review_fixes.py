@@ -86,7 +86,7 @@ def test_merge_previous_keeps_the_full_image_set(tmp_path):
         ],
     )
     config = RunConfig(
-        input_path="x.zip", mode="ocr+llm", reuse_from=prev, only_low_confidence=True
+        input_path="x.zip", llm_model="haiku", reuse_from=prev, only_low_confidence=True
     )
     redone = [ImageResult(image_id="r/b", restaurant_id="r", llm_used=True)]
     merged = merge_previous(config, redone)
@@ -97,4 +97,4 @@ def test_config_rejects_useless_combinations():
     with pytest.raises(ValueError):
         RunConfig(input_path="x.zip", reuse_from="runs/x")  # reuse without only_low_confidence
     with pytest.raises(ValueError):
-        RunConfig(input_path="x.zip", reuse_from="runs/x", only_low_confidence=True)  # mode ocr
+        RunConfig(input_path="x.zip", reuse_from="runs/x", only_low_confidence=True)  # no LLM

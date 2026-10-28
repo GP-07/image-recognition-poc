@@ -61,9 +61,10 @@ def test_iter_images_rejects_missing_input(tmp_path):
 
 def test_config_overrides_and_validation(tmp_path):
     cfg_file = tmp_path / "c.yaml"
-    cfg_file.write_text("input_path: x.zip\nmode: ocr\n")
-    cfg = load_config(cfg_file, mode="ocr+llm", llm_model=None)
-    assert cfg.uses_llm and cfg.llm_model == "claude-haiku-5-5"
+    cfg_file.write_text("input_path: x.zip\nllm_policy: always\n")
+    assert not load_config(cfg_file).uses_llm  # no model configured: OCR + rules only
+    cfg = load_config(cfg_file, llm_model="Haiku", llm_policy=None)
+    assert cfg.uses_llm and cfg.llm_model == "claude-haiku-5-5" and cfg.llm_policy == "always"
     with pytest.raises(ValueError):
         RunConfig(input_path="x.zip", only_low_confidence=True)
 

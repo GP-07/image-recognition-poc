@@ -40,6 +40,9 @@ class Step(ABC):
     def __init__(self) -> None:
         self.next: Step | None = None
 
+    def ensure_ready(self) -> None:  # noqa: B027  (optional hook, most steps need nothing)
+        """Fail fast, before any image, when the step cannot run at all. Default: nothing."""
+
     def handle(self, ctx: ImageContext) -> ImageContext:
         try:
             proceed = self.process(ctx)

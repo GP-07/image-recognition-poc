@@ -13,7 +13,6 @@ from menu_poc.llm.engine import LLMEngine
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir", "reuse_from")
 
-Mode = Literal["ocr", "ocr+llm"]
 LLMPolicy = Literal["fallback", "always"]
 
 
@@ -22,10 +21,10 @@ class RunConfig(BaseModel):
     runs_dir: Path = PROJECT_ROOT / "tmp"  # one sub-directory per run
     artifacts_dir: Path = PROJECT_ROOT / "artifacts"  # stage cache, reused across runs
 
-    mode: Mode = "ocr"
+    # OCR + rules always run. The LLM step runs only when a model is configured: an alias
+    # (haiku, sonnet, opus, ollama) or an exact id, stored resolved to the exact id.
+    llm_model: str | None = None
     llm_policy: LLMPolicy = "fallback"
-    # Alias (haiku, sonnet, opus, ollama) or exact id; stored resolved to the exact id.
-    llm_model: str = Field("haiku", validate_default=True)
     llm_offline: bool = False  # only use cached LLM answers; never call the API
 
     confidence_threshold: float = Field(0.6, ge=0.0, le=1.0)
@@ -40,20 +39,20 @@ class RunConfig(BaseModel):
 
     @field_validator("llm_model")
     @classmethod
-    def _resolve_model(cls, value: str) -> str:
-        return LLMEngine.get_for_alias(value).model
+    def _resolve_model(cls, value: str | None) -> str | None:
+        return None if value is None else LLMEngine.get_for_alias(value).model
 
     @model_validator(mode="after")
     def _check(self) -> RunConfig:
         if self.only_low_confidence != (self.reuse_from is not None):
             raise ValueError("only_low_confidence and reuse_from go together")
         if self.only_low_confidence and not self.uses_llm:
-            raise ValueError("re-running low-confidence images only makes sense with mode ocr+llm")
+            raise ValueError("re-running low-confidence images needs an LLM model (llm_model)")
         return self
 
     @property
     def uses_llm(self) -> bool:
-        return self.mode == "ocr+llm"
+        return self.llm_model is not None
 
 
 def load_config(path: Path | None = None, **overrides: Any) -> RunConfig:

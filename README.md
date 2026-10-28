@@ -12,13 +12,16 @@ choices and how quality and cost are measured.
   structures the OCR text; every LLM dish is **verified against the OCR** to drop hallucinations.
 - **Duplicate photos are detected before any OCR/LLM call** (file hash + perceptual hash) and get
   the original's result.
-- **Configurable, one model per run:** `--mode ocr | ocr+llm`, `--llm-policy fallback | always`,
-  `--llm-model haiku | sonnet | opus | ollama` (aliases; exact ids also accepted): Claude, or a
+- **OCR + rules always run; the LLM is opt-in:** pass `--llm-model haiku | sonnet | opus |
+  ollama` (aliases; exact ids also accepted; one model per run) to add the LLM step: Claude, or a
   free local model through Ollama (`ollama` = `qwen2.5:7b`; `ollama/<model>` for another).
+  Without it the run uses OCR + rules and the output says how to enable the LLM.
+  `--llm-policy fallback | always` picks which pages go to it.
 - **Never fails for a missing key:** the LLM connection is checked first, before any image is
   read (a free `models.retrieve` call proves the key is valid for the model). Without a valid
-  `ANTHROPIC_API_KEY` (env or `.env`) or a running Ollama, an `ocr+llm` run degrades to OCR +
-  rules and records a warning in `manifest.json`.
+  `ANTHROPIC_API_KEY` (env or `.env`) or a running Ollama, the run degrades to OCR + rules and
+  records a warning in `manifest.json`. The OCR engine is checked at start-up too, but it is the
+  core of the pipeline: if its models cannot load, the run stops with an error (exit code 3).
 - **Output:** `items.csv`, one row per extracted item, in `tmp/<run>/` unless `--output` is given.
 - **Every slow or paid stage is cached by content**, so re-running with another model reuses the
   OCR and only pays for the LLM call; `--only-low-confidence` re-runs just the hard pages.
@@ -65,7 +68,7 @@ pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(.
 | OCR (RapidOCR: PP-OCR models on ONNX Runtime) | always | ~3–5 s/image CPU (rotated pages ~13 s) | Deterministic text + positions; same models as PaddleOCR, far lighter install |
 | Layout + rule parser | always | ms | Prices are the strongest cheap signal of "this line is a dish" |
 | Confidence | always | ms | Decides whether the paid LLM is needed |
-| Text LLM | `ocr+llm` mode only: pages below the confidence threshold (`fallback`) or every page (`always`) | ≈ $0.001–0.002/page with Haiku; $0 with Ollama (slower, local) | Understands layouts the rules cannot (size grids, prices under photos) |
+| Text LLM | only with `--llm-model`: pages below the confidence threshold (`fallback`) or every page (`always`) | ≈ $0.001–0.002/page with Haiku; $0 with Ollama (slower, local) | Understands layouts the rules cannot (size grids, prices under photos) |
 | Grounding check | after the LLM | ms | Turns the LLM into a verifiable step |
 
 Why not a vision LLM (VLM) on the image? It would be simple and accurate, but its output cannot
@@ -78,17 +81,17 @@ OCR text gives the LLM exactly what it needs and gives us a ground truth to veri
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 cp .env.example .env    # put ANTHROPIC_API_KEY there (never committed); env variables win
 
-# Rules only (free, deterministic). Input: a .zip or a folder of <restaurant>/<image>.jpg
-.venv/bin/menu-poc run --mode ocr --input /path/to/images --output /path/to/output
+# OCR + rules only (free, deterministic). Input: a .zip or a folder of <restaurant>/<image>.jpg
+.venv/bin/menu-poc run --input /path/to/images --output /path/to/output
 
 # Cascade: LLM only for low-confidence pages
-.venv/bin/menu-poc run --mode ocr+llm --llm-policy fallback --llm-model haiku
+.venv/bin/menu-poc run --llm-model haiku --llm-policy fallback
 
 # Same with a free local model (brew install ollama && ollama pull qwen2.5:7b)
-.venv/bin/menu-poc run --mode ocr+llm --llm-model ollama
+.venv/bin/menu-poc run --llm-model ollama
 
 # Not good enough? Re-run only the hard pages with a stronger model; the OCR comes from the cache
-.venv/bin/menu-poc run --mode ocr+llm --llm-model sonnet \
+.venv/bin/menu-poc run --llm-model sonnet \
     --reuse-from tmp/<previous run> --only-low-confidence
 
 # Evaluate / compare
@@ -110,15 +113,16 @@ project) and `--artifacts` (stage cache, default `artifacts/`). Each run creates
 |---|---|
 | `items.csv` | **the extracted items**, one row each: image, restaurant, item, description, prices (`8.5\|12` for sizes), section, source (`rules`/`llm`), `duplicate_of` |
 | `results.jsonl` | full per-image record (nested): items plus confidence and its signals, LLM usage and cost, timings, `duplicate_of`, per-image `error`; used by `eval` and `--reuse-from` |
-| `manifest.json` | requested vs effective mode, counts, duplicates, run-level `warnings` and per-image `errors` |
+| `manifest.json` | requested vs effective LLM model, counts, duplicates, run-level `warnings` and per-image `errors` |
 | `config.yaml` | the effective configuration |
 | `summary.md`, `metrics.json` | evaluation against the golden set, when one exists |
 
 Exit code is 0 when images were processed, even with warnings or per-image errors (they are in
-the output); non-zero only for unusable input (no images, missing config file).
+the output); non-zero only when the run cannot start: no images or missing config file (1-2), or
+an OCR engine that cannot load (3).
 
 **CI (sketch).** The same command runs in a GitHub Actions job: store `ANTHROPIC_API_KEY` as a
-repository secret and expose it as an env variable, run `menu-poc run --mode ocr+llm --input …
+repository secret and expose it as an env variable, run `menu-poc run --llm-model haiku --input …
 --output out/`, and upload `out/` as a job artifact (and/or fail the job on a recall drop from
 `metrics.json`). If the secret is missing, the job still produces OCR + rules results and the
 warning shows up in `manifest.json`.

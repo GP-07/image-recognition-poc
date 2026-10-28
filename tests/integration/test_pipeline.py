@@ -121,7 +121,7 @@ def _by_id(results):
 
 def test_ocr_mode_never_calls_llm(tmp_path):
     structurer = FakeStructurer()
-    pipe, config = _pipeline(tmp_path, structurer=structurer, mode="ocr")
+    pipe, config = _pipeline(tmp_path, structurer=structurer)
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert structurer.calls == 0
     assert all(not r.llm_used for r in results.values())
@@ -129,7 +129,7 @@ def test_ocr_mode_never_calls_llm(tmp_path):
 
 
 def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_path):
-    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="fallback")
+    pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="fallback")
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert not results["r1/high"].llm_used
     low = results["r1/low"]
@@ -139,20 +139,20 @@ def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_
 
 
 def test_always_policy_escalates_every_image(tmp_path):
-    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
+    pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="always")
     results = pipe.run(select_images(config), tmp_path / "run")
     assert all(r.llm_used for r in results)
 
 
 def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
     ocr = FakeOcr()
-    first, cfg1 = _pipeline(tmp_path, ocr=ocr, mode="ocr+llm", llm_policy="always")
+    first, cfg1 = _pipeline(tmp_path, ocr=ocr, llm_model="haiku", llm_policy="always")
     first.run(select_images(cfg1), tmp_path / "run1")
     assert ocr.calls == 2
 
     same = FakeStructurer()
     second, cfg2 = _pipeline(
-        tmp_path, ocr=ocr, structurer=same, mode="ocr+llm", llm_policy="always"
+        tmp_path, ocr=ocr, structurer=same, llm_model="haiku", llm_policy="always"
     )
     results = second.run(select_images(cfg2), tmp_path / "run2")
     assert ocr.calls == 2 and same.calls == 0
@@ -160,21 +160,21 @@ def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
 
     other = FakeStructurer(model="m2")
     third, cfg3 = _pipeline(
-        tmp_path, ocr=ocr, structurer=other, mode="ocr+llm", llm_policy="always"
+        tmp_path, ocr=ocr, structurer=other, llm_model="haiku", llm_policy="always"
     )
     third.run(select_images(cfg3), tmp_path / "run3")
     assert ocr.calls == 2 and other.calls == 2
 
 
 def test_offline_cache_miss_keeps_rules_output(tmp_path):
-    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always", llm_offline=True)
+    pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="always", llm_offline=True)
     results = pipe.run(select_images(config), tmp_path / "run")
     assert all(not r.llm_used and r.dishes[0].origin == "rules" for r in results)
     assert all("offline" in r.error for r in results)
 
 
 def test_llm_failure_keeps_rules_output(tmp_path):
-    pipe, config = _pipeline(tmp_path, structurer=FakeStructurer(fail=True), mode="ocr+llm")
+    pipe, config = _pipeline(tmp_path, structurer=FakeStructurer(fail=True), llm_model="haiku")
     low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert not low.llm_used and low.dishes[0].origin == "rules" and "api down" in low.error
 
@@ -206,12 +206,14 @@ def test_select_only_low_confidence_from_previous_run(tmp_path):
             ImageResult(image_id="r1/low", restaurant_id="r1", rules_confidence=0.1),
         ],
     )
-    config = RunConfig(input_path=zpath, mode="ocr+llm", reuse_from=prev, only_low_confidence=True)
+    config = RunConfig(
+        input_path=zpath, llm_model="haiku", reuse_from=prev, only_low_confidence=True
+    )
     assert [r.image_id for r in select_images(config)] == ["r1/low"]
 
 
 def test_new_run_dir_writes_config(tmp_path):
-    config = RunConfig(input_path="x.zip", runs_dir=tmp_path, mode="ocr+llm")
+    config = RunConfig(input_path="x.zip", runs_dir=tmp_path, llm_model="haiku")
     run_dir = new_run_dir(config)
     assert "llm-fallback-claude-haiku-5-5" in run_dir.name
     assert (run_dir / "config.yaml").exists()
@@ -226,7 +228,7 @@ class RaisingVerifier:
 
 
 def test_verifier_failure_is_isolated(tmp_path):
-    config = RunConfig(input_path=_zip(tmp_path, ["high", "low"]), mode="ocr+llm")
+    config = RunConfig(input_path=_zip(tmp_path, ["high", "low"]), llm_model="haiku")
     store = ArtifactStore(tmp_path / "a")
     pipe = _build(config, store, verifier=RaisingVerifier())
     low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
@@ -241,13 +243,13 @@ def test_billed_failure_keeps_its_cost(tmp_path):
             usage = LLMUsage(model="m", output_tokens=16000, cost_usd=0.32)
             raise LLMOutputError("truncated", usage=usage)
 
-    pipe, config = _pipeline(tmp_path, structurer=TruncatingStructurer(), mode="ocr+llm")
+    pipe, config = _pipeline(tmp_path, structurer=TruncatingStructurer(), llm_model="haiku")
     low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert not low.llm_used and low.llm_usage.cost_usd == pytest.approx(0.32)
 
 
 def test_rules_signals_survive_llm_replacement(tmp_path):
-    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
+    pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="always")
     low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert low.llm_used and low.rules_dish_count == 1 and low.llm_prompt_version == "v1"
 

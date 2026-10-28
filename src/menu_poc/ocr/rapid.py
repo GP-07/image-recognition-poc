@@ -112,6 +112,9 @@ class RapidOcrEngine:
             "deskew": self.deskew,
         }
 
+    def ensure_ready(self) -> None:
+        self._get_engine()
+
     def _get_engine(self) -> Any:
         if self._engine is None:
             from rapidocr import RapidOCR

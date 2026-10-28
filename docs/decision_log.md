@@ -285,6 +285,18 @@ dos funciones de normalización.
 - Verificado: misma salida y mismas métricas que antes del refactor; 14 tests nuevos por step y
   del builder (210 en total).
 
+## Discusión 13 — Sin `--mode`: OCR + reglas siempre, LLM opcional (2026-10-28)
+
+- `ocr` vs `ocr+llm` era un detalle de implementación expuesto al usuario. Ahora OCR + reglas son
+  el núcleo y corren siempre; el paso LLM se agrega sólo si hay `llm_model` (`--llm-model` o YAML).
+- Sin modelo configurado: warning en consola y en `manifest.json` diciendo que se usa sólo OCR +
+  reglas y cómo habilitar el LLM (alias + `ANTHROPIC_API_KEY`, u `ollama`). Con modelo pero sin key
+  válida: igual que antes, degrada con warning (`requested_llm_model` vs `llm_model` en el manifest).
+- OCR: el motor (modelos) se carga y verifica al inicio (`ensure_ready` del step); si no puede
+  correr, la corrida termina con error (exit 3) antes de procesar imágenes. Un fallo de OCR en una
+  imagen puntual (archivo corrupto) sigue aislado: queda como error de esa imagen y la corrida sigue.
+- Reportes: el modo se deriva de `llm_model`; las corridas viejas conservan su `mode` guardado.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |

@@ -33,6 +33,11 @@ class Pipeline:
     def step_names(self) -> list[str]:
         return [step.name for step in self.steps]
 
+    def ensure_ready(self) -> None:
+        """Raise when a required step cannot run (e.g. the OCR models cannot be loaded)."""
+        for step in self.steps:
+            step.ensure_ready()
+
     def process(self, ref: ImageRef) -> ImageResult:
         ctx = self.head.handle(ImageContext.for_image(ref))
         ctx.result.timings_s["total"] = sum(ctx.result.timings_s.values())

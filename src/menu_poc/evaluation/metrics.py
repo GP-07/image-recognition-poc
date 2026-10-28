@@ -171,7 +171,8 @@ def aggregate(
     llm_latency = sum(m.llm_latency_s for m in images)
     return RunMetrics(
         run=run,
-        mode=config.get("mode"),
+        # Older runs stored a "mode"; newer ones use the LLM step iff an LLM model is set.
+        mode=config.get("mode") or ("ocr+llm" if config.get("llm_model") else "ocr"),
         llm_model=config.get("llm_model"),
         llm_policy=config.get("llm_policy"),
         threshold=threshold,

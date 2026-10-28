@@ -4,9 +4,9 @@ input_path: "../_20260514 AI code test TO SEND/source/google_images.zip"
 runs_dir: tmp             # --output; one sub-directory per run
 artifacts_dir: artifacts  # --artifacts; stage cache (OCR, LLM answers)
 
-mode: ocr                 # ocr | ocr+llm
 llm_policy: fallback      # fallback (only low-confidence images) | always
-llm_model: haiku           # haiku | sonnet | opus | ollama (or an exact model id)
+# OCR + rules always run. Set an LLM model to add the LLM step for hard pages:
+# llm_model: haiku        # haiku | sonnet | opus (ANTHROPIC_API_KEY in .env) | ollama (local, free)
 llm_offline: false        # true = only cached LLM answers, never call the API
 
 confidence_threshold: 0.6

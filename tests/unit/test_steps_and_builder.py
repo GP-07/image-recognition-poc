@@ -191,7 +191,7 @@ def test_invalid_pipelines_are_rejected(tmp_path, names, message):
 def test_from_config_includes_only_the_requested_pieces(tmp_path):
     ocr_only = RunConfig(input_path="x.zip", artifacts_dir=tmp_path, dedup=False)
     assert PipelineBuilder.from_config(ocr_only).build().step_names == ["ocr", "rules"]
-    cascade = RunConfig(input_path="x.zip", artifacts_dir=tmp_path, mode="ocr+llm")
+    cascade = RunConfig(input_path="x.zip", artifacts_dir=tmp_path, llm_model="haiku")
     names = PipelineBuilder.from_config(cascade).build().step_names
     assert names == ["dedup", "ocr", "rules", "llm", "verify"]
 
@@ -201,3 +201,14 @@ def test_pipeline_process_returns_a_result_with_total_time(tmp_path):
     pipeline = PipelineBuilder().add(p["ocr"]).add(p["rules"]).build()
     result = pipeline.process(_ref())
     assert result.dishes[0].name == "Lamb curry" and "total" in result.timings_s
+
+
+def test_pipeline_fails_fast_when_ocr_cannot_load(tmp_path):
+    class BrokenOcr(_Ocr):
+        def ensure_ready(self):
+            raise RuntimeError("model file missing")
+
+    store = ArtifactStore(tmp_path)
+    pipeline = PipelineBuilder().add(OcrStep(_Pre(), BrokenOcr(), store)).build()
+    with pytest.raises(RuntimeError, match="model file missing"):
+        pipeline.ensure_ready()

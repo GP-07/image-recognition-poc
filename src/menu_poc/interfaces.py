@@ -29,6 +29,10 @@ class Preprocessor(Protocol):
 class OcrEngine(Protocol):
     def fingerprint(self) -> dict[str, Any]: ...
 
+    def ensure_ready(self) -> None:
+        """Load the models now; raise if the engine cannot run (checked before any image)."""
+        ...
+
     def run(self, image: Image.Image, image_id: str) -> OcrResult: ...
 
 

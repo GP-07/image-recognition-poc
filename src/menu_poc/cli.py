@@ -21,17 +21,24 @@ DEFAULT_CONFIG = PROJECT_ROOT / "config" / "default.yaml"
 DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
 
 
+LLM_HELP = (
+    "Add --llm-model haiku|sonnet|opus (needs ANTHROPIC_API_KEY in .env) or --llm-model ollama "
+    "(free, local) to let an LLM handle the pages the rules are not confident about."
+)
+
+
 def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLMEngine | None]:
-    """The LLM engine for this run, or degrade to OCR + rules with a warning when it cannot run
-    (no API key, local server down): a CI job without the secret still produces results."""
+    """The LLM engine for this run, or OCR + rules only with a warning saying why and how to
+    enable it. A missing key never fails the run: a CI job without the secret still has results."""
     if not config.uses_llm:
+        warnings.append(f"No LLM configured: results come from OCR + rules only. {LLM_HELP}")
         return config, None
     engine = LLMEngine.get_for_alias(config.llm_model)
     reason = None if config.llm_offline else engine.unavailable_reason()
     if reason is None:
         return config, engine
     warnings.append(f"LLM step disabled: {reason}. Results come from OCR + rules only.")
-    return config.model_copy(update={"mode": "ocr"}), None
+    return config.model_copy(update={"llm_model": None}), None
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
@@ -43,7 +50,6 @@ def _cmd_run(args: argparse.Namespace) -> int:
         input_path=args.input,
         runs_dir=args.output,
         artifacts_dir=args.artifacts,
-        mode=args.mode,
         llm_policy=args.llm_policy,
         llm_model=args.llm_model,
         llm_offline=True if args.offline else None,
@@ -63,6 +69,11 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print("No images selected.", file=sys.stderr)
         return 1
     pipeline = PipelineBuilder.from_config(config, client).build()
+    try:
+        pipeline.ensure_ready()
+    except Exception as exc:  # OCR is the core of the pipeline: without it there is no run
+        print(f"ERROR: the OCR engine cannot run: {exc}", file=sys.stderr)
+        return 3
     run_dir = new_run_dir(config)  # effective config: reports must show what actually ran
     print(f"Run {run_dir} — {len(refs)} images, steps: {' → '.join(pipeline.step_names)}")
     started = datetime.now().isoformat(timespec="seconds")
@@ -82,9 +93,8 @@ def _cmd_run(args: argparse.Namespace) -> int:
             "run": run_dir.name,
             "started": started,
             "finished": datetime.now().isoformat(timespec="seconds"),
-            "requested_mode": requested.mode,
-            "effective_mode": config.mode,
-            "llm_model": config.llm_model if config.uses_llm else None,
+            "requested_llm_model": requested.llm_model,
+            "llm_model": config.llm_model,  # None: OCR + rules only (see warnings)
             "n_images": len(results),
             "n_dishes": sum(len(r.dishes) for r in results),
             "duplicates": duplicates,
@@ -131,7 +141,6 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--input", type=Path, help="zip file or directory of images")
     run.add_argument("--output", type=Path, help="directory for run results (default: tmp/)")
     run.add_argument("--artifacts", type=Path, help="stage cache directory (default: artifacts/)")
-    run.add_argument("--mode", choices=["ocr", "ocr+llm"])
     run.add_argument("--llm-policy", choices=["fallback", "always"])
     run.add_argument(
         "--llm-model", help="haiku | sonnet | opus | ollama (or an exact id); one model per run"

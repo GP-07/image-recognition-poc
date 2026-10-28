@@ -19,6 +19,9 @@ class OcrStep(Step):
         self.engine = engine
         self.store = store
 
+    def ensure_ready(self) -> None:
+        self.engine.ensure_ready()  # no OCR, no pipeline: this one is fatal
+
     def process(self, ctx: ImageContext) -> bool:
         ref = ctx.ref
         key = make_key(
