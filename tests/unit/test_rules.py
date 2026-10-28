@@ -106,11 +106,88 @@ def test_sections_change_with_headers():
         [
             ("POSTRES", 50, 100, 30),
             ("Tiramisu 4,50€", 50, 140),
-            ("Bebidas", 50, 190, 40),
-            ("Agua 1,50€", 50, 240),
+            ("Ensaladas", 50, 190, 40),
+            ("Caprese 7,50€", 50, 240),
         ]
     )
-    assert {d.name: d.section for d in result.dishes} == {"Tiramisu": "POSTRES", "Agua": "Bebidas"}
+    assert {d.name: d.section for d in result.dishes} == {
+        "Tiramisu": "POSTRES",
+        "Caprese": "Ensaladas",
+    }
+
+
+def test_drinks_are_not_dishes():
+    result = _parse(
+        [
+            ("Tiramisu 4,50€", 50, 100),
+            ("LATA 33 CL 2,20€", 50, 150),
+            ("REFRESCOS 2,50€", 50, 200),
+            ("Bebidas", 50, 260, 40),
+            ("Agua 1,50€", 50, 310),
+            ("Café 1,20€", 50, 350),
+        ]
+    )
+    assert [d.name for d in result.dishes] == ["Tiramisu"]
+    assert result.signals["drinks"] == 4
+
+
+def test_ordering_note_with_price_is_not_a_dish():
+    # "(2p) por encargo" carries the price of the name on its row.
+    result = _parse([("UNI NIGIRI", 50, 100), ("8,00 (2p) por encargo", 400, 100)])
+    assert [(d.name, d.prices) for d in result.dishes] == [("UNI NIGIRI", [8.0])]
+
+
+def test_diet_codes_are_noise():
+    assert all(is_noise(_line(t)) for t in ("O.V.F.S", "O.V.O.S.a.", "KSG"))
+    assert not is_noise(_line("Naan"))
+
+
+def test_bulleted_names_are_dishes_even_without_price():
+    result = _parse(
+        [
+            ("· MARGARITA", 50, 100),
+            ("Tomate y mozzarella", 70, 122),
+            ("· HAWAIANA", 50, 160),
+            ("Jamón dulce y piña", 70, 182),
+            ("·PLATOS SECOS·", 50, 240, 40),
+        ]
+    )
+    assert [d.name for d in result.dishes] == ["MARGARITA", "HAWAIANA"]
+    assert result.dishes[0].description == "Tomate y mozzarella"
+
+
+def test_price_on_a_description_tail_goes_to_the_next_name():
+    # Tilted photo: the next dish's price sits on the row of the description's last line.
+    result = _parse(
+        [
+            ("7. Murgh Makhni", 50, 100),
+            ("11,50€", 600, 100),
+            ("Es un plato del Punjab. La salsa esta hecha", 70, 122),
+            ("a base de mantequilla y especias 10,00€", 70, 144),
+            ("Pollo Mango", 50, 168),
+        ]
+    )
+    dishes = _by_name(result)
+    assert set(dishes) == {"Murgh Makhni", "Pollo Mango"}
+    assert dishes["Murgh Makhni"].prices == [11.5]
+    assert dishes["Pollo Mango"].prices == [10.0]
+
+
+def test_caps_line_like_the_dish_name_starts_a_new_dish():
+    # The second price was cut by the photo edge; its leader dots and the name style still tell
+    # a new dish (a title would not end in leaders).
+    result = _parse(
+        [
+            ("EBI TEMPURA", 50, 100),
+            ("13,50", 600, 100),
+            ("Langostinos rebozados", 50, 122),
+            ("TORI KAISU..", 50, 160),
+            ("Pollo frito con sesamo", 50, 182),
+        ]
+    )
+    assert [d.name for d in result.dishes] == ["EBI TEMPURA", "TORI KAISU"]
+    assert result.dishes[1].prices == []
+    assert result.dishes[1].description == "Pollo frito con sesamo"
 
 
 def test_repeated_logo_text_is_not_a_section():
@@ -139,13 +216,14 @@ def test_noise_lines_are_not_dishes():
     assert [d.name for d in result.dishes] == ["Pizza Margarita"]
 
 
-def test_is_noise_and_clean_name():
-    def line(text, conf=0.95):
-        return OcrLine(id=0, text=text, bbox=(0, 0, 100, 20), confidence=conf)
+def _line(text, conf=0.95):
+    return OcrLine(id=0, text=text, bbox=(0, 0, 100, 20), confidence=conf)
 
-    assert is_noise(line("@#"))
-    assert is_noise(line("Pollo curry", conf=0.3))
-    assert not is_noise(line("Pollo curry"))
+
+def test_is_noise_and_clean_name():
+    assert is_noise(_line("@#"))
+    assert is_noise(_line("Pollo curry", conf=0.3))
+    assert not is_noise(_line("Pollo curry"))
     assert clean_name("46. LAMB CURRY ...... 15,90€") == ("LAMB CURRY", None)
     assert clean_name("1 Boston: cebolla, bacon") == ("Boston", "cebolla, bacon")
     assert clean_name(".Pollo Chili (Picante)") == ("Pollo Chili (Picante)", None)

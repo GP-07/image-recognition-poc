@@ -19,6 +19,8 @@ from menu_poc.parsing.prices import find_prices, is_price_only, looks_like_phone
         ("Cordero Vindaloo12,95", [12.95]),
         ("4 unitats x 3,90€ Amb formatge x 4,50€", [3.9, 4.5]),
         ("11,95 €/8uds", [11.95]),
+        ("..12.5", [12.5]),  # price column cut by the photo edge
+        ("8.9", [8.9]),
     ],
 )
 def test_finds_prices(text, expected):
@@ -39,6 +41,9 @@ def test_finds_prices(text, expected):
         "1,5 l",
         "Botella 0,75 cl",
         "Ref 1.25.50",
+        "6.",
+        "12",
+        "Mix 1.5 kg",
     ],
 )
 def test_rejects_non_prices(text):
@@ -56,6 +61,7 @@ def test_price_only_lines():
     assert is_price_only("8,15€ 9,50€")
     assert is_price_only("4.00 (8u)")
     assert is_price_only("11,95 €/8uds")
+    assert is_price_only("...13.5")
     assert not is_price_only("Margarita 8,15€")
     assert not is_price_only("no price here")
 

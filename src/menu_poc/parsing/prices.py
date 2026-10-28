@@ -1,7 +1,9 @@
 """Price detection in OCR text (Spanish / Catalan menu conventions).
 
 Accepted: ``15,90€``, ``15,90 €``, ``€ 8.50``, ``8,95``, ``12.45``, ``3€``, ``10 EUR`` and several
-prices on one line (pizza sizes). A number without a currency sign must have exactly two decimals.
+prices on one line (pizza sizes). A number without a currency sign must have exactly two decimals,
+except when it is alone on its line (``..12.5``, ``8.9``): a price column cut by the photo edge or
+printed with one decimal.
 Rejected: phone numbers, times (``12:30``), years, percentages, quantities with units (``1,5 l``)
 and dish numbering (``46.``).
 """
@@ -34,6 +36,8 @@ _PRICE_RE = re.compile(
 # Spanish phone numbers: 9 digits split by spaces/dashes (93 444 47 37) or only by dots
 # (934.44.47.37); mixing dots and spaces would also match a row of prices like "9.50 12.45".
 _PHONE_RE = re.compile(r"(?<!\d)(?:\+34\s?)?[6-9](?:(?:[ -]?\d){8}|(?:\.?\d){8})(?!\d)")
+# A decimal number alone on its OCR line, at most with dotted leaders around it.
+_BARE_PRICE_RE = re.compile(r"^[.…_\-·•\s]*(\d{1,3}[.,]\d{1,2})[.…_\-·•\s]*$")
 _PORTION_NOTE_RE = re.compile(r"\([^()]{0,8}\)")  # "(8u)", "(2p)", "(4 pzs)"
 _LEADERS_RE = re.compile(r"[.…_\-·•\s]{3,}")
 
@@ -56,6 +60,11 @@ def find_prices(text: str) -> list[PriceMatch]:
         value = float(raw.replace(",", "."))
         if MIN_PRICE <= value <= MAX_PRICE:
             matches.append(PriceMatch(value=value, start=m.start(), end=m.end()))
+    bare = None if matches else _BARE_PRICE_RE.match(text)
+    if bare is not None:
+        value = float(bare.group(1).replace(",", "."))
+        if MIN_PRICE <= value <= MAX_PRICE:
+            matches.append(PriceMatch(value=value, start=bare.start(1), end=bare.end(1)))
     return matches
 
 

@@ -41,3 +41,25 @@ def test_score_is_bounded_and_monotonic_in_attachment():
     values = [score(_stats(attached_prices=n))[0] for n in range(0, 21, 5)]
     assert values == sorted(values)
     assert all(0.0 <= v <= 1.0 for v in values)
+
+
+def test_leftover_prices_estimate_missed_dishes():
+    value, signals = score(_stats(price_tokens=25))  # 5 prices left: ~5 dishes missed
+    assert signals["recall_proxy"] == 0.8
+    assert value < score(_stats())[0] * 0.81
+
+
+def test_fragment_or_description_names_cap_the_score():
+    clean, _ = score(_stats(suspicious_names=2))  # 10%: tolerated
+    broken, signals = score(_stats(suspicious_names=10))  # half the names
+    assert clean >= 0.9
+    assert signals["name_gate"] < 0.7
+    assert broken < 0.6
+
+
+def test_more_titles_than_dishes_caps_the_score():
+    ok, _ = score(_stats(headers=8))
+    value, signals = score(_stats(headers=40))  # caps dish names taken for titles
+    assert ok >= 0.9
+    assert signals["header_gate"] == 0.4
+    assert value < 0.6
