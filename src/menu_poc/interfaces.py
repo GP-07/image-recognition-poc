@@ -10,9 +10,9 @@ from typing import Any, Protocol
 
 from PIL import Image
 
+from menu_poc.llm.client import LLMClient  # noqa: F401  (re-exported: stage interfaces live here)
 from menu_poc.models import (
     Dish,
-    LLMUsage,
     OcrResult,
     ParseResult,
     StructureResult,
@@ -36,18 +36,6 @@ class Parser(Protocol):
     def fingerprint(self) -> dict[str, Any]: ...
 
     def parse(self, ocr: OcrResult) -> ParseResult: ...
-
-
-class LLMClient(Protocol):
-    model: str
-
-    def fingerprint(self) -> dict[str, Any]: ...
-
-    def complete_json(
-        self, system: str, user: str, schema: dict[str, Any]
-    ) -> tuple[dict[str, Any], LLMUsage]:
-        """Return a JSON object that validates against ``schema`` plus usage/cost."""
-        ...
 
 
 class Structurer(Protocol):

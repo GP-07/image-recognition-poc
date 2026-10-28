@@ -11,7 +11,7 @@ from menu_poc.evaluation.golden import GoldenDish
 from menu_poc.evaluation.matching import match_dishes, normalize
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_jsonl
-from menu_poc.llm.client import FakeLLMClient
+from menu_poc.llm.fake_client import FakeLLMClient
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.models import Dish, ImageResult, OcrLine, OcrResult

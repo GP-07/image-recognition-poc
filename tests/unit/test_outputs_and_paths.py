@@ -3,7 +3,7 @@
 import csv
 
 from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
-from menu_poc.io.writers import write_items_csv
+from menu_poc.io.writers import ItemRow, write_items_csv
 from menu_poc.models import Dish, ImageResult
 
 
@@ -39,3 +39,10 @@ def test_config_paths_are_relative_to_project_root_and_flags_to_cwd(tmp_path, mo
     assert config.runs_dir == PROJECT_ROOT / "out"
     config = load_config(cfg, runs_dir="my_output")
     assert config.runs_dir == tmp_path.resolve() / "my_output"
+
+
+def test_item_row_from_dish():
+    result = ImageResult(image_id="r/b", restaurant_id="r", duplicate_of="r/a")
+    row = ItemRow.from_dish(Dish(name="Café", prices=[1.2], origin="rules"), result)
+    assert row == ItemRow("r/b", "r", "Café", "", "1.2", "", "rules", "r/a")
+    assert ItemRow.columns()[:3] == ["image_id", "restaurant_id", "item"]

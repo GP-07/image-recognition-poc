@@ -13,7 +13,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from menu_poc.interfaces import LLMClient
+from menu_poc.llm.client import LLMClient
 from menu_poc.llm.text import render_lines
 from menu_poc.models import Dish, LLMUsage, OcrResult, StructureResult
 

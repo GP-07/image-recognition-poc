@@ -242,7 +242,7 @@ dos funciones de normalización.
 ## Discusión 10 — Aliases, validación temprana, salida por defecto y CSV (2026-10-28)
 
 - `--llm-model` acepta aliases sin distinguir mayúsculas: `haiku`, `sonnet`, `opus`, `ollama`
-  (modelo local de `OLLAMA_MODEL`, por defecto `qwen2.5:7b`); los ids exactos siguen valiendo.
+  (`ollama` = `qwen2.5:7b` por defecto, sin variable de entorno); los ids exactos siguen valiendo.
   Un nombre desconocido falla al cargar la config, con la lista de aliases.
 - La conexión LLM se valida **antes de leer imágenes**: con key presente se hace `models.retrieve`
   (gratis) para probar que es válida y puede usar el modelo; si no, warning inmediato y la corrida

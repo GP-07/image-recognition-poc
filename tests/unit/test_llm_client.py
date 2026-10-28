@@ -11,15 +11,15 @@ import httpx2
 import pytest
 from anthropic.types import Message
 
+from menu_poc.llm.anthropic_client import AnthropicClient
 from menu_poc.llm.client import (
-    AnthropicClient,
-    FakeLLMClient,
     LLMError,
     LLMOutputError,
     LLMRetryableError,
     make_llm_client,
     prompt_key,
 )
+from menu_poc.llm.fake_client import FakeLLMClient
 from menu_poc.llm.pricing import UnknownModelError, cost_usd
 
 SCHEMA = {"type": "object", "properties": {}, "additionalProperties": False}
@@ -90,19 +90,21 @@ def test_refusal_raises_output_error():
         stop_reason="refusal",
         stop_details={"type": "refusal", "category": None, "explanation": "nope"},
     )
-    client = AnthropicClient(sdk_client=_StubSDK(msg))
+    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(msg))
     with pytest.raises(LLMOutputError, match="refused.*nope"):
         client.complete_json("s", "u", SCHEMA)
 
 
 def test_max_tokens_raises_output_error():
-    client = AnthropicClient(sdk_client=_StubSDK(_message('{"dishes": [', "max_tokens")))
+    client = AnthropicClient(
+        "claude-haiku-5-5", sdk_client=_StubSDK(_message('{"dishes": [', "max_tokens"))
+    )
     with pytest.raises(LLMOutputError, match="truncated"):
         client.complete_json("s", "u", SCHEMA)
 
 
 def test_invalid_json_raises_output_error():
-    client = AnthropicClient(sdk_client=_StubSDK(_message("not json")))
+    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(_message("not json")))
     with pytest.raises(LLMOutputError, match="invalid JSON"):
         client.complete_json("s", "u", SCHEMA)
 
@@ -117,7 +119,7 @@ def test_invalid_json_raises_output_error():
     ],
 )
 def test_api_errors_are_classified(cls, status, expected):
-    client = AnthropicClient(sdk_client=_StubSDK(_status_error(cls, status)))
+    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(_status_error(cls, status)))
     with pytest.raises(expected) as info:
         client.complete_json("s", "u", SCHEMA)
     assert (info.type is LLMRetryableError) == (expected is LLMRetryableError)
@@ -125,7 +127,9 @@ def test_api_errors_are_classified(cls, status, expected):
 
 def test_connection_error_is_retryable():
     request = httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
-    client = AnthropicClient(sdk_client=_StubSDK(anthropic.APIConnectionError(request=request)))
+    client = AnthropicClient(
+        "claude-haiku-5-5", sdk_client=_StubSDK(anthropic.APIConnectionError(request=request))
+    )
     with pytest.raises(LLMRetryableError):
         client.complete_json("s", "u", SCHEMA)
 

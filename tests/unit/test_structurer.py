@@ -6,7 +6,8 @@ from typing import Any
 
 import pytest
 
-from menu_poc.llm.client import FakeLLMClient, prompt_key
+from menu_poc.llm.client import prompt_key
+from menu_poc.llm.fake_client import FakeLLMClient
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import (
     DEFAULT_PROMPT_PATH,

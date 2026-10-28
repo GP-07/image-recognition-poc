@@ -1,21 +1,20 @@
 """Model aliases: users pick ``haiku``, ``sonnet``, ``opus`` or ``ollama``; exact ids also work.
 
-``ollama`` runs the local model named by ``OLLAMA_MODEL`` (default ``qwen2.5:7b``).
+Ids starting with ``ollama/`` run a local model through Ollama (``ollama/<model>`` picks another
+local model than the default).
 """
 
 from __future__ import annotations
 
-import os
-
 from menu_poc.llm.pricing import PRICES
 
 OLLAMA_PREFIX = "ollama/"
-DEFAULT_OLLAMA_MODEL = "qwen2.5:7b"
 
 ALIASES = {
     "haiku": "claude-haiku-5-5",
     "sonnet": "claude-sonnet-5-5",
     "opus": "claude-opus-5-5",
+    "ollama": f"{OLLAMA_PREFIX}qwen2.5:7b",
 }
 
 
@@ -24,9 +23,8 @@ def resolve_model(name: str) -> str:
     key = name.strip().lower()
     if key in ALIASES:
         return ALIASES[key]
-    if key == "ollama":
-        return OLLAMA_PREFIX + os.environ.get("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL)
     if key.startswith(OLLAMA_PREFIX) or key in PRICES:
         return key
-    choices = ", ".join([*ALIASES, "ollama"])
-    raise ValueError(f"Unknown LLM model {name!r}. Use one of: {choices} (or an exact model id)")
+    raise ValueError(
+        f"Unknown LLM model {name!r}. Use one of: {', '.join(ALIASES)} (or an exact model id)"
+    )

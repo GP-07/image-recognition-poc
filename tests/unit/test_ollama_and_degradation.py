@@ -8,9 +8,10 @@ import pytest
 
 from menu_poc.cli import resolve_llm
 from menu_poc.config import RunConfig
-from menu_poc.llm import ollama
-from menu_poc.llm.client import AnthropicClient, LLMOutputError, make_llm_client
-from menu_poc.llm.ollama import OllamaClient
+from menu_poc.llm import ollama_client as ollama
+from menu_poc.llm.anthropic_client import AnthropicClient
+from menu_poc.llm.client import LLMOutputError, make_llm_client
+from menu_poc.llm.ollama_client import OllamaClient
 
 
 class _Resp(io.BytesIO):
@@ -135,8 +136,7 @@ def test_invalid_api_key_degrades_before_processing(monkeypatch):
         ("claude-haiku-5-5", "claude-haiku-5-5"),
     ],
 )
-def test_model_aliases(alias, expected, monkeypatch):
-    monkeypatch.delenv("OLLAMA_MODEL", raising=False)
+def test_model_aliases(alias, expected):
     assert RunConfig(input_path="x.zip", llm_model=alias).llm_model == expected
 
 
