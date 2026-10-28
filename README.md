@@ -131,7 +131,7 @@ Current scope (every orderable item, duplicate photos scored once, 15 distinct p
 | run | recall dev | recall test | recall all | precision | % pages to LLM | cost / image | time / image |
 |---|---|---|---|---|---|---|---|
 | Rules only (`runs/20261028-125023_ocr`) | 74.6% | 55.6% | 69.2% | 84.3% | 0% | $0 | 4.1 s |
-| Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | ≈ 40% | ≈ $0.001 | |
+| Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | 47% (7/15) | ≈ $0.001 | |
 
 History, earlier scope (food only, duplicate photos counted twice): rules baseline 71.9% recall /
 72.4% precision → after error analysis on dev 76.8% / 79.5% (dev 72.6% → 79.4%, test unchanged at
