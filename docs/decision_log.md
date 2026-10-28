@@ -1,0 +1,175 @@
+# Decision log — Task 4: Image Processing POC (extracción de platos de cartas)
+
+Registro de análisis, decisiones y herramientas (incluidas las de IA) usadas durante el POC.
+
+## Enunciado
+
+Diseñar un sistema que extraiga platos de imágenes de cartas (`google_images.zip`).
+POC local y liviano: sin GPU, sin entrenar modelos, no se espera alta precisión.
+Importa: arquitectura, selección de modelos, estrategia de evaluación, implementación limpia.
+
+## Dataset observado (2026-10-27)
+
+- 19 fotos JPG en 10 carpetas (una carpeta = un restaurante, id tipo Google Place; 2 fotos por carpeta, una tiene 1).
+- Resoluciones entre 1385x620 y 5712x4284.
+- Son **fotos de celular, no escaneos**: perspectiva, papel doblado (trípticos), reflejos en fundas
+  plásticas, dedos, fotos tomadas desde la calle (pizarras/atriles), varias rotadas 90°.
+- **Diseño complejo**: 2–4 columnas, precios en columnas separadas (tamaños de pizza), tipografías
+  decorativas en títulos de sección, fotos de platos intercaladas, iconos de alérgenos.
+- **Multilingüe**: el mismo plato en catalán / castellano / inglés (carta india, burgers).
+- Tipos de cocina: india, pizza, sushi, libanesa, burgers/sándwiches, etc.
+- **Los formatos no se repiten entre restaurantes**, y dentro de un mismo restaurante las dos fotos
+  suelen ser tomas distintas (otra página, otra distancia, atril vs. primer plano).
+
+## Discusión 1 — ¿OCR, LLM u otra cosa?
+
+Postura inicial del usuario: OCR, porque no hay manuscrito ni errores ortográficos, y el OCR es
+determinista y rápido.
+
+Análisis:
+- El OCR es una pieza muy buena (rápido, determinista, barato, no alucina), pero:
+  1. "Sin errores ortográficos" ≠ "OCR sin errores": los errores vienen de la foto (ángulo, brillo,
+     tipografía), no del texto. Tesseract sufrirá con estas imágenes.
+  2. El problema principal no es leer sino **estructurar**: qué línea es nombre, descripción, precio,
+     sección o traducción, y el orden de lectura en multi-columna.
+
+Alternativas evaluadas:
+
+| Enfoque | Ejemplos | Cuándo |
+|---|---|---|
+| OCR clásico + reglas | Tesseract + regex anclada en precios | Escaneos / plantillas fijas, sin red. Baseline. |
+| OCR deep-learning + layout | PaddleOCR, docTR, Surya, Apple Vision (ocrmac) | Fotos reales, texto rotado, bboxes. CPU. |
+| OCR + LLM de texto (estructurador) | OCR → LLM → JSON con esquema | Layouts variados; salida verificable contra el OCR. |
+| VLM end-to-end | Claude / Gemini / GPT; local Qwen2.5-VL, MiniCPM-V | Máxima calidad, mínimo código; costo, latencia, alucinación. |
+| Modelos OCR-free / fine-tune | Donut, Pix2Struct, LayoutLMv3 | Producción con datos etiquetados. Fuera de alcance (no entrenar). |
+| Document AI gestionado | Google Document AI, AWS Textract, Azure DI | Producción rápida, lock-in. |
+| Clasificador liviano sobre líneas OCR | Gradient boosting con features geométricas | Con unos cientos de líneas etiquetadas. |
+
+Propuesta inicial: pipeline modular con estrategias intercambiables (reglas / LLM / VLM),
+grounding contra el OCR y evaluación comparativa.
+
+## Discusión 2 — Costo de estrategias intercambiables y agrupación por formato
+
+Preocupaciones del usuario:
+- Tener varias estrategias intercambiables parece costoso.
+- Idea: comparar todas las imágenes (normalizadas en posición) para agrupar las que comparten formato.
+- Recordatorio: se aceptan fallos; nada de entrenar; liviano y rápido; lo importante es la arquitectura
+  (qué componente y cuándo).
+
+Conclusiones:
+- Las estrategias múltiples **no corren todas en producción**: se comparan sólo en la evaluación del POC.
+  En ejecución se usa una **cascada**: lo barato siempre, lo caro sólo si la confianza es baja.
+- Agrupar por formato / plantillas **no sirve para generalizar en este dataset**: ~10 layouts distintos
+  sobre 19 fotos; cada "plantilla" tendría ≤2 ejemplos y habría que escribirla a mano.
+  Aporte esperado sobre cartas nuevas ≈ 0%. Además la homografía sólo endereza superficies planas
+  (no trípticos doblados ni fotos de atriles).
+- Sí tiene valor como **caché / deduplicación** en producción (misma carta re-subida, cadenas con
+  carta común): huella perceptual + huella de layout → reutilizar extracción previa.
+
+Estimaciones (a validar con ground truth, recall de nombres de plato):
+- OCR + reglas: ~35–55% global (mejor en una columna, peor en trípticos / multi-columna).
+- OCR + LLM de texto (con grounding): ~70–85%.
+- VLM end-to-end: ~85–95%, con mayor costo y riesgo de alucinación.
+- Plantillas por formato sobre cartas nuevas: ~0%.
+
+## Discusión 3 — Respuestas a las preguntas del enunciado (borrador del usuario + correcciones)
+
+### Técnica
+- Cascada por confianza: OCR → parser de reglas → confianza → (si baja) **LLM de texto** sobre el
+  texto del OCR, validado contra el OCR.
+- Corrección: el LLM procesa el **texto** del OCR, no la imagen (si procesa la imagen es un VLM).
+- Corrección: el VLM no se descarta por costo (con un modelo chico ronda los milicentavos por imagen)
+  sino porque su salida no se puede verificar contra nada y es menos determinista. Queda como último
+  escalón opcional cuando el propio OCR falla (confianza de OCR baja), y para pre-etiquetar el golden set.
+
+### Evaluación
+- Base: **golden set etiquetado a mano** (6–8 imágenes) + métricas deterministas: precision / recall / F1
+  de nombres (fuzzy match), exactitud de precio y sección, tasa de alucinación (ítems no presentes en
+  el OCR), % de imágenes escaladas al LLM, latencia y costo por imagen.
+- Un modelo fuerte puede **pre-etiquetar** el golden set (un humano corrige).
+- LLM-as-judge sólo como complemento (equivalencias semánticas, traducciones) y para muestreo en
+  producción sin etiquetas, calibrado contra humanos. No hace falta un agente: es una llamada simple.
+
+### Modelo LLM elegido
+- **Claude Haiku 5.5** (`claude-haiku-5-5`, $0.10 / $0.50 por MTok in/out) para estructurar: tarea de
+  extracción simple, structured outputs con JSON Schema, effort `low`. ~4k tokens in + ~3k out ≈
+  US$0.002 por imagen; las 19 imágenes ≈ US$0.04.
+- Escalado a **Claude Sonnet 5.5** (`claude-sonnet-5-5`, $2 / $10) sólo si falla la validación (≈ US$0.04/imagen).
+- Producción: Batch API (−50%) para ingesta no interactiva; prompt caching del system prompt + schema.
+- Desde 2026-10-21 la API no acepta `temperature`: el determinismo se logra con schema estricto,
+  grounding contra el OCR y caché de respuestas en disco (re-ejecución reproducible sin API key).
+- Alternativa local sin costo: modelo abierto vía Ollama (menor calidad, más lento en CPU).
+
+## Discusión 4 — Caché, normalización y estrategias configurables
+
+### Caché (desde el inicio)
+- Caché por contenido: clave = sha256 de la imagen + etapa + config (motor OCR, modelo, versión de prompt).
+  Costo ~0; hace las re-ejecuciones instantáneas, reproducibles y sin API key.
+- Huella perceptual para cartas "casi iguales": sólo útil en producción; en este dataset no hay duplicados.
+
+### Normalización contra catálogo (desde el inicio, acotada)
+- Barata en cómputo con embeddings multilingües chicos en CPU (evitar arrastrar torch: preferir
+  fastembed/ONNX o model2vec).
+- Problema real: no hay catálogo. En el POC: (1) deduplicar traducciones dentro de una misma carta,
+  (2) mapear a un catálogo semilla chico hecho a mano, con umbral; siempre conservar el nombre original.
+- Riesgo: fusiones falsas ("Pollo Tikka" vs "Pollo Tikka Masala") → umbral conservador + evaluar aparte.
+
+### Estrategias habilitables
+- Modos: `ocr` (sólo reglas) y `ocr+llm`, con política de LLM `fallback` (sólo si confianza baja) o
+  `always` (techo de calidad del LLM); modelo LLM configurable. "Sólo LLM" no aplica: su entrada es el OCR.
+- Interfaces (Protocol) por etapa + registro + config (CLI/YAML). La evaluación corre una matriz chica
+  de configuraciones y produce una tabla comparativa.
+
+## Discusión 5 — Alcance: reconocimiento y costo, sin normalización
+
+Aclaración del usuario: lo que importa es **reconocer los platos de cada menú**; no importa que el mismo
+plato quede con nombres distintos entre menús. No se pide normalizar. Métricas que importan:
+**tasa de reconocimiento** y **costo de procesamiento**.
+
+Decisiones (reemplazan la parte de normalización de la Discusión 4):
+- **Fuera de alcance:** catálogo, embeddings y normalización entre menús → menos dependencias, menos costo.
+- **Se mantiene el caché** (reduce costo y hace reproducible la evaluación).
+- **Traducciones dentro de una carta:** no se deduplican en la salida. En el golden set cada plato se
+  etiqueta una vez con sus variantes de idioma como alias: acertar cualquier alias = reconocido, y las
+  traducciones extra no cuentan como falsos positivos.
+- **Métricas principales:** recall (tasa de reconocimiento) y costo/latencia por imagen. Precision como
+  control (que no se cuelen títulos, teléfonos, alérgenos). Precio: se extrae porque ayuda al parser,
+  pero es métrica secundaria.
+
+## Discusión 6 — Rol del precio, un modelo por corrida y reutilización del OCR
+
+### Por qué el precio en el parser por reglas
+- El OCR devuelve líneas sin semántica; las reglas necesitan señales baratas para decidir qué es un plato.
+- El patrón de precio (`\d+[.,]\d{1,2}\s?€`) es la señal más fuerte: casi todo plato tiene uno y casi
+  nada más lo tiene (teléfonos/fechas se excluyen por formato).
+- Uso: línea con precio (o alineada en altura con un precio de otra columna) = plato; líneas siguientes
+  sin precio = descripción; líneas grandes / mayúsculas sin precio = título de sección.
+- No es la única señal: numeración ("46. LAMB CURRY"), líneas de puntos, tipografía (alto del bbox,
+  mayúsculas). Se combinan en un score.
+- Falla en: precios por sección o menú del día, tablas de tamaños separadas del nombre (pizzas),
+  precios bajo fotos (sushi). Esos casos bajan la confianza y disparan el LLM.
+- El "% de precios asociados a un plato" es además el indicador de confianza.
+
+### Un solo modelo por corrida
+- El modelo LLM es configurable, pero una corrida usa uno solo (se descarta el escalado
+  Haiku → Sonnet dentro de la misma corrida). Comparar modelos = comparar corridas.
+
+### Artefactos por etapa y re-ejecución parcial
+- Cada etapa persiste su salida con clave de contenido:
+  - OCR: hash(imagen) + motor + versión + parámetros + versión de preprocesado.
+  - LLM: hash(salida OCR) + modelo + versión de prompt.
+- Re-correr con Sonnet reutiliza el OCR guardado y sólo vuelve a llamar al LLM; se puede limitar a las
+  imágenes con bajo reconocimiento / baja confianza.
+- Determinismo del OCR: mismo motor, versión, parámetros y preprocesado → mismo resultado en la práctica.
+  Puede variar al cambiar versión de librería/pesos, preprocesado o hardware (diferencias numéricas
+  mínimas). Por eso esos datos van en la clave del caché; con el artefacto guardado no se depende de ello.
+- El LLM no es determinista: por eso también se guarda su salida.
+- En producción no hay golden set: "tasa baja" se detecta con proxies (confianza, % de ítems verificados
+  contra el OCR, % de precios sin plato).
+
+## Herramientas de IA usadas durante el POC
+
+| Fecha | Herramienta | Uso |
+|---|---|---|
+| 2026-10-27 | Claude Code (Claude Opus 5.5) | Inspección del dataset, análisis de alternativas, diseño de arquitectura, este log. |
+| 2026-10-27 | Claude Haiku 5.5 / Sonnet 5.5 (elegidos, aún no usados) | Estructurador de texto OCR → JSON; un modelo por corrida (Haiku por defecto, Sonnet en una re-corrida). |

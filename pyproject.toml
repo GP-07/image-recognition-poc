@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "menu-poc"
+version = "0.1.0"
+description = "Lightweight POC: extract dishes from restaurant menu photos (OCR + rules + optional LLM)."
+requires-python = ">=3.10"
+dependencies = [
+    "rapidocr>=3.0",
+    "onnxruntime>=1.18",
+    "pillow>=10",
+    "pydantic>=2.6",
+    "pyyaml>=6",
+    "rapidfuzz>=3",
+    "anthropic>=0.40",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+menu-poc = "menu_poc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: runs the real OCR model (seconds per image)"]
+addopts = "-m 'not slow'"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

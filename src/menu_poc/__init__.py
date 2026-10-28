@@ -1,0 +1,1 @@
+"""Menu dish extraction POC."""

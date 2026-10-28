@@ -1,0 +1,12 @@
+# Default run configuration. CLI flags override these values.
+input_path: "../_20260514 AI code test TO SEND/source/google_images.zip"
+runs_dir: runs
+artifacts_dir: artifacts
+
+mode: ocr                 # ocr | ocr+llm
+llm_policy: fallback      # fallback (only low-confidence images) | always
+llm_model: claude-haiku-5-5
+llm_offline: false        # true = only cached LLM answers, never call the API
+
+confidence_threshold: 0.6
+max_image_side: 2000
