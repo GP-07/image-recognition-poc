@@ -1,0 +1,546 @@
+{
+ "note": "Real RapidOCR output (engine run in scratch, max side 2000 px). The response is hand-written in the exact shape Claude returns under DISHES_SCHEMA (no API key was available to record a live call); it includes typical model behaviour: OCR typos fixed, leading numbers dropped. OCR truncated to lines 0-40 to keep the fixture small.",
+ "model": "claude-haiku-5-5",
+ "ocr": {
+  "image_id": "16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b",
+  "width": 1500,
+  "height": 2000,
+  "lines": [
+   {
+    "id": 0,
+    "text": "XAI-CORDERO-LAMB",
+    "bbox": [
+     682.0,
+     413.0,
+     932.0,
+     445.0
+    ],
+    "confidence": 0.98322
+   },
+   {
+    "id": 1,
+    "text": "46. LAMB CURRY.",
+    "bbox": [
+     206.0,
+     450.0,
+     402.0,
+     485.0
+    ],
+    "confidence": 0.99556
+   },
+   {
+    "id": 2,
+    "text": "15,90€",
+    "bbox": [
+     1159.0,
+     457.0,
+     1226.0,
+     492.0
+    ],
+    "confidence": 0.99986
+   },
+   {
+    "id": 3,
+    "text": "61.FISH",
+    "bbox": [
+     1409.0,
+     463.0,
+     1499.0,
+     498.0
+    ],
+    "confidence": 0.99984
+   },
+   {
+    "id": 4,
+    "text": "Xai al curry tradicional",
+    "bbox": [
+     236.0,
+     479.0,
+     458.0,
+     513.0
+    ],
+    "confidence": 0.9917
+   },
+   {
+    "id": 5,
+    "text": "Peix a",
+    "bbox": [
+     1437.0,
+     489.0,
+     1499.0,
+     519.0
+    ],
+    "confidence": 0.99616
+   },
+   {
+    "id": 6,
+    "text": "Cordero al curry tradicional",
+    "bbox": [
+     237.0,
+     504.0,
+     504.0,
+     542.0
+    ],
+    "confidence": 0.989
+   },
+   {
+    "id": 7,
+    "text": "Pesca",
+    "bbox": [
+     1437.0,
+     512.0,
+     1499.0,
+     540.0
+    ],
+    "confidence": 0.99993
+   },
+   {
+    "id": 8,
+    "text": "Traditional Lamb curry",
+    "bbox": [
+     239.0,
+     529.0,
+     460.0,
+     567.0
+    ],
+    "confidence": 0.99978
+   },
+   {
+    "id": 9,
+    "text": "Fish in",
+    "bbox": [
+     1437.0,
+     536.0,
+     1499.0,
+     565.0
+    ],
+    "confidence": 0.99717
+   },
+   {
+    "id": 10,
+    "text": "47. ROGAN GOSHT..",
+    "bbox": [
+     208.0,
+     579.0,
+     426.0,
+     614.0
+    ],
+    "confidence": 0.96957
+   },
+   {
+    "id": 11,
+    "text": "15,90€",
+    "bbox": [
+     1161.0,
+     583.0,
+     1225.0,
+     612.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 12,
+    "text": "62.FISH",
+    "bbox": [
+     1409.0,
+     579.0,
+     1499.0,
+     612.0
+    ],
+    "confidence": 0.99946
+   },
+   {
+    "id": 13,
+    "text": "Xai en una salsa a l' estil nord de la India",
+    "bbox": [
+     239.0,
+     607.0,
+     635.0,
+     646.0
+    ],
+    "confidence": 0.9672
+   },
+   {
+    "id": 14,
+    "text": "Peix tr",
+    "bbox": [
+     1437.0,
+     603.0,
+     1499.0,
+     635.0
+    ],
+    "confidence": 0.96053
+   },
+   {
+    "id": 15,
+    "text": "Cordero en una salsa al estilo del norte de la India",
+    "bbox": [
+     240.0,
+     633.0,
+     714.0,
+     674.0
+    ],
+    "confidence": 0.99778
+   },
+   {
+    "id": 16,
+    "text": "Pesca",
+    "bbox": [
+     1439.0,
+     629.0,
+     1499.0,
+     657.0
+    ],
+    "confidence": 0.99989
+   },
+   {
+    "id": 17,
+    "text": "Tender pieces of lamb in a north Indian Style",
+    "bbox": [
+     242.0,
+     660.0,
+     663.0,
+     699.0
+    ],
+    "confidence": 0.99886
+   },
+   {
+    "id": 18,
+    "text": "Fish w",
+    "bbox": [
+     1438.0,
+     650.0,
+     1499.0,
+     682.0
+    ],
+    "confidence": 0.96544
+   },
+   {
+    "id": 19,
+    "text": "48. BHUNA GOSHT.",
+    "bbox": [
+     211.0,
+     711.0,
+     425.0,
+     743.0
+    ],
+    "confidence": 0.97718
+   },
+   {
+    "id": 20,
+    "text": "15,90€",
+    "bbox": [
+     1163.0,
+     705.0,
+     1227.0,
+     734.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 21,
+    "text": "63. JHIN",
+    "bbox": [
+     1410.0,
+     694.0,
+     1499.0,
+     729.0
+    ],
+    "confidence": 0.92932
+   },
+   {
+    "id": 22,
+    "text": "Llagos",
+    "bbox": [
+     1438.0,
+     721.0,
+     1499.0,
+     753.0
+    ],
+    "confidence": 0.99899
+   },
+   {
+    "id": 23,
+    "text": "Xai desossat cuinat amb ceba, tomaquet i especies tradicionals",
+    "bbox": [
+     241.0,
+     738.0,
+     832.0,
+     772.0
+    ],
+    "confidence": 0.98376
+   },
+   {
+    "id": 24,
+    "text": "Cordero deshuesado, cocinado con cebolla y tomate con especies tradicionales",
+    "bbox": [
+     241.0,
+     758.0,
+     977.0,
+     799.0
+    ],
+    "confidence": 0.99569
+   },
+   {
+    "id": 25,
+    "text": "64. JHIN",
+    "bbox": [
+     1410.0,
+     764.0,
+     1499.0,
+     798.0
+    ],
+    "confidence": 0.95522
+   },
+   {
+    "id": 26,
+    "text": "Tender pieces of lamb cooked with tomatoes, onions and traditional spices",
+    "bbox": [
+     244.0,
+     785.0,
+     929.0,
+     825.0
+    ],
+    "confidence": 0.99865
+   },
+   {
+    "id": 27,
+    "text": "Llagos",
+    "bbox": [
+     1439.0,
+     791.0,
+     1499.0,
+     821.0
+    ],
+    "confidence": 0.99863
+   },
+   {
+    "id": 28,
+    "text": "Lango",
+    "bbox": [
+     1439.0,
+     816.0,
+     1499.0,
+     844.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 29,
+    "text": "15,90€",
+    "bbox": [
+     1158.0,
+     825.0,
+     1225.0,
+     858.0
+    ],
+    "confidence": 0.99995
+   },
+   {
+    "id": 30,
+    "text": "49. SAAG GOSHT..",
+    "bbox": [
+     217.0,
+     843.0,
+     420.0,
+     870.0
+    ],
+    "confidence": 0.9796
+   },
+   {
+    "id": 31,
+    "text": "Prawn",
+    "bbox": [
+     1438.0,
+     838.0,
+     1499.0,
+     866.0
+    ],
+    "confidence": 0.99978
+   },
+   {
+    "id": 32,
+    "text": "Xai amb espinacs i especies tradicionals",
+    "bbox": [
+     246.0,
+     865.0,
+     633.0,
+     899.0
+    ],
+    "confidence": 0.98122
+   },
+   {
+    "id": 33,
+    "text": "65.JHIN",
+    "bbox": [
+     1410.0,
+     881.0,
+     1499.0,
+     915.0
+    ],
+    "confidence": 0.99974
+   },
+   {
+    "id": 34,
+    "text": "Cordero con espinacas y especias tradicionales",
+    "bbox": [
+     247.0,
+     889.0,
+     698.0,
+     925.0
+    ],
+    "confidence": 0.99879
+   },
+   {
+    "id": 35,
+    "text": "Llagos",
+    "bbox": [
+     1438.0,
+     908.0,
+     1499.0,
+     936.0
+    ],
+    "confidence": 0.99652
+   },
+   {
+    "id": 36,
+    "text": "Lamb with spinach, traditionally spiced",
+    "bbox": [
+     248.0,
+     916.0,
+     617.0,
+     950.0
+    ],
+    "confidence": 0.9998
+   },
+   {
+    "id": 37,
+    "text": "Lango",
+    "bbox": [
+     1439.0,
+     931.0,
+     1499.0,
+     961.0
+    ],
+    "confidence": 0.99993
+   },
+   {
+    "id": 38,
+    "text": "15,90€",
+    "bbox": [
+     1167.0,
+     948.0,
+     1233.0,
+     980.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 39,
+    "text": "Prawn",
+    "bbox": [
+     1439.0,
+     955.0,
+     1499.0,
+     983.0
+    ],
+    "confidence": 0.99971
+   },
+   {
+    "id": 40,
+    "text": "50. LAMB VINDALOO.",
+    "bbox": [
+     218.0,
+     967.0,
+     454.0,
+     1002.0
+    ],
+    "confidence": 0.99406
+   }
+  ],
+  "engine": "rapidocr-scratch"
+ },
+ "response": {
+  "dishes": [
+   {
+    "name": "LAMB CURRY",
+    "description": "Xai al curry tradicional / Cordero al curry tradicional / Traditional Lamb curry",
+    "prices": [
+     15.9
+    ],
+    "section": "XAI-CORDERO-LAMB",
+    "source_line_ids": [
+     1,
+     2,
+     4,
+     6,
+     8
+    ]
+   },
+   {
+    "name": "ROGAN GOSHT",
+    "description": "Xai en una salsa a l' estil nord de la India / Cordero en una salsa al estilo del norte de la India / Tender pieces of lamb in a north Indian Style",
+    "prices": [
+     15.9
+    ],
+    "section": "XAI-CORDERO-LAMB",
+    "source_line_ids": [
+     10,
+     11,
+     13,
+     15,
+     17
+    ]
+   },
+   {
+    "name": "BHUNA GOSHT",
+    "description": "Xai desossat cuinat amb ceba, tomaquet i especies tradicionals / Cordero deshuesado, cocinado con cebolla y tomate con especies tradicionales / Tender pieces of lamb cooked with tomatoes, onions and traditional spices",
+    "prices": [
+     15.9
+    ],
+    "section": "XAI-CORDERO-LAMB",
+    "source_line_ids": [
+     19,
+     20,
+     23,
+     24,
+     26
+    ]
+   },
+   {
+    "name": "SAAG GOSHT",
+    "description": "Xai amb espinacs i especies tradicionals / Cordero con espinacas y especias tradicionales / Lamb with spinach, traditionally spiced",
+    "prices": [
+     15.9
+    ],
+    "section": "XAI-CORDERO-LAMB",
+    "source_line_ids": [
+     30,
+     29,
+     32,
+     34,
+     36
+    ]
+   },
+   {
+    "name": "LAMB VINDALOO",
+    "description": null,
+    "prices": [
+     15.9
+    ],
+    "section": "XAI-CORDERO-LAMB",
+    "source_line_ids": [
+     40,
+     38
+    ]
+   }
+  ]
+ },
+ "expected_names": [
+  "LAMB CURRY",
+  "ROGAN GOSHT",
+  "BHUNA GOSHT",
+  "SAAG GOSHT",
+  "LAMB VINDALOO"
+ ]
+}

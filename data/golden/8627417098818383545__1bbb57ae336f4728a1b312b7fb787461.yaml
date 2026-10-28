@@ -1,0 +1,77 @@
+image_id: "8627417098818383545/1bbb57ae336f4728a1b312b7fb787461"
+split: test
+reviewed: false
+notes: "Liban (Lebanese restaurant) large street poster with food photos around a numbered text menu (items 1-38), Catalan/Spanish; legible. Lines under each dish are descriptions in two languages, not aliases. 'Falafel' appears twice (23 as a plate, 33 as a sandwich 'Stilo Libanes') - listed once to avoid duplicate names; reviewer may split it. Items 18 and 19 are both 'Combinado Machawi' (19 marked '2 personas'), kept as two entries. Excluded: 30 Ayran (salted yogurt drink = beverage), sandwich supplements (formatge, humus/mutabal), bread price note, food photos (no labels)."
+dishes:
+  - name: "Ensalada El Mausem"
+    aliases: []
+  - name: "Fattouch"
+    aliases: []
+  - name: "Tabule"
+    aliases: []
+  - name: "Hommos"
+    aliases: []
+  - name: "Muttabal"
+    aliases: []
+  - name: "Mohamara"
+    aliases: []
+  - name: "Baba Ganouge"
+    aliases: []
+  - name: "Combinados de Cremas"
+    aliases: []
+  - name: "Malube"
+    aliases: []
+  - name: "Maghmour"
+    aliases: []
+  - name: "Couscous"
+    aliases: []
+  - name: "Kebbe Neye"
+    aliases: []
+  - name: "Lahme Mishui"
+    aliases: []
+  - name: "Xix Twouk"
+    aliases: []
+  - name: "Kafta Mishui"
+    aliases: []
+  - name: "Mjadara"
+    aliases: []
+  - name: "Jawaneh"
+    aliases: []
+  - name: "Combinado Machawi"
+    aliases: []
+  - name: "Combinado Machawi (2 personas)"
+    aliases: []
+  - name: "Hommos Bel-lahme"
+    aliases: []
+  - name: "Arayes Gibne"
+    aliases: []
+  - name: "Arayes lahme"
+    aliases: []
+  - name: "Falafel"
+    aliases: []
+  - name: "Plato Shawarma"
+    aliases: []
+  - name: "Fatayer"
+    aliases: []
+  - name: "Combinado de Fatayer"
+    aliases: []
+  - name: "Kebbe Mikli"
+    aliases: []
+  - name: "Warak Inab"
+    aliases: []
+  - name: "Kousa Mechi"
+    aliases: []
+  - name: "Shawarma Ternera"
+    aliases: []
+  - name: "Shawarma de pollo"
+    aliases: []
+  - name: "Kafta"
+    aliases: []
+  - name: "Combinado con Carne"
+    aliases: []
+  - name: "Combinado Vegetal"
+    aliases: []
+  - name: "Combinado Carne Extra"
+    aliases: []
+  - name: "Combinado Vegetal Extra"
+    aliases: []

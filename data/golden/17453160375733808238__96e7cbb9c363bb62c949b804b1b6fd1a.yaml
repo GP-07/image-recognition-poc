@@ -1,0 +1,41 @@
+image_id: "17453160375733808238/96e7cbb9c363bb62c949b804b1b6fd1a"
+split: test
+reviewed: false
+notes: "Same Japanese spiral-bound photo menu, pages with Ruibe, Sashimi and Nigiri sushi (items 9, 19, 21, 221-236), landscape photo, legible. Nigiri items have Catalan/English translations of the name below (used as aliases); Ruibe and Sashimi de salmon have descriptions (not aliases). Item 21 is printed only as a descriptive line ('Bola de arroz cubierto...', priced as 'Variado') - kept as printed, reviewer may prefer 'Nigiri variado'. Sashimi price variants (Variado / Solo salmon / Solo atun) are not listed as separate dishes. Top of the left page (item above 9) and bottom of page under row 234-236 cut off; 236's English line not visible."
+dishes:
+  - name: "Ruibe"
+    aliases: []
+  - name: "Sashimi de salmón"
+    aliases: []
+  - name: "Bola de arroz cubierto con loncha de pescado crudo"
+    aliases: ["Bola d'arròs cobert amb llesques de peix cru", "Slices of fresh raw fish on rice"]
+  - name: "Salmón"
+    aliases: ["Salmó", "Salmon"]
+  - name: "Salmón y queso"
+    aliases: ["Salmó i formatge", "Salmon and cheese"]
+  - name: "Salmón y mango"
+    aliases: ["Salmó i mango", "Salmon and mango"]
+  - name: "Aburi salmón"
+    aliases: ["Salmón flameado", "Salmó flamejat", "Flamed salmon"]
+  - name: "Atún"
+    aliases: ["Tonyina", "Tuna"]
+  - name: "Anguila"
+    aliases: ["Eel"]
+  - name: "Aburi pez mantequilla"
+    aliases: ["Pez mantequilla flameado", "Peix mantega flamejat", "Flamed butter fish"]
+  - name: "Pez mantequilla"
+    aliases: ["Peix mantega", "Butter fish"]
+  - name: "Langostino"
+    aliases: ["Llagostí", "Prawn"]
+  - name: "Pulpo con trufa"
+    aliases: ["Pop amb tòfona", "Octopus with truffle"]
+  - name: "Aguacate"
+    aliases: ["Alvocat", "Avocado"]
+  - name: "Tortilla japonesa"
+    aliases: ["Truita japonesa", "Japanese omelette"]
+  - name: "Solomillo de ternera con trufa"
+    aliases: ["Filet de vedella amb tofona", "Veal sirloin with truffle"]
+  - name: "Solomillo ternera con vieira"
+    aliases: ["Filet vedella amb vieira", "Veal sirloin with scallop"]
+  - name: "Aburi Atún"
+    aliases: ["Atún flameado", "Tonyina flamejat"]

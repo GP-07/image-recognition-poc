@@ -1,0 +1,29 @@
+image_id: "16055038156589254689/73f185f9fc81066b39c0e71d111c4d97"
+split: dev
+reviewed: false
+notes: "Same photo as 50b409d7... at half resolution (1512x2016); same labels. Indian restaurant menu booklet, page 'Xai - Cordero - Lamb' (items 46-57), photographed at the table; trilingual (Catalan/Spanish/English). Only Lamb Curry's sub-lines are pure name translations (aliases, as in the reference example); other sub-lines are descriptions. LEFT OUT: right-hand page items 61-77 (Fish..., Jhinga..., Palak..., Shahi..., Chana..., Karahi..., Dal M..., Dal T..., Mix Ve...) whose names are cut off at the edge; show-through text from the reverse page (Chicken dishes) is not legible."
+dishes:
+  - name: "LAMB CURRY"
+    aliases: ["Xai al curry tradicional", "Cordero al curry tradicional"]
+  - name: "ROGAN GOSHT"
+    aliases: []
+  - name: "BHUNA GOSHT"
+    aliases: []
+  - name: "SAAG GOSHT"
+    aliases: []
+  - name: "LAMB VINDALOO"
+    aliases: []
+  - name: "LAMB KARAHI"
+    aliases: []
+  - name: "LAMB NILGIRI"
+    aliases: []
+  - name: "LAMB DAHI"
+    aliases: []
+  - name: "LAMB BOTI MASALA"
+    aliases: []
+  - name: "MANGO LAMB"
+    aliases: []
+  - name: "LAMB BALTI"
+    aliases: []
+  - name: "LAMB MADRAS"
+    aliases: []

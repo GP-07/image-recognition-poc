@@ -1,0 +1,91 @@
+image_id: "12353399953336620223/a8c3a678c184ef488d25f9774c20128d"
+split: dev
+reviewed: false
+notes: "Japanese restaurant, single printed page (two columns: Sushi pescado crudo con arroz, Frituras/Fregits) photographed flat on a bamboo mat; low resolution (620x1385) but text is legible when zoomed. Names kept as printed incl. typos ('Abogato Nigiri', 'Gukan Salmon Spicy'). Spanish descriptions under each item are not aliases. Right-hand prices partly cut but all dish names readable. Temaki listed once (its description lists flavours, not separate items)."
+dishes:
+  - name: "KAPPA MAKI"
+    aliases: []
+  - name: "SAKE MAKI"
+    aliases: []
+  - name: "TEKKA MAKI"
+    aliases: []
+  - name: "AGUACATE MAKI"
+    aliases: []
+  - name: "EBI NIGIRI"
+    aliases: []
+  - name: "SAKE NIGIRI"
+    aliases: []
+  - name: "MAGURO NIGIRI"
+    aliases: []
+  - name: "TAI NIGIRI"
+    aliases: []
+  - name: "UNAGI NIGIRI"
+    aliases: []
+  - name: "IKA NIGIRI"
+    aliases: []
+  - name: "IKURA NIGIRI"
+    aliases: []
+  - name: "TOBIKKO NIGIRI"
+    aliases: []
+  - name: "ABOGATO NIGIRI"
+    aliases: []
+  - name: "UNI NIGIRI"
+    aliases: []
+  - name: "GUNKAN ATÚN SPICY"
+    aliases: []
+  - name: "GUKAN SALMÓN SPICY"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE SALMÓN"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE DORADA"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE CALAMARES"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE ATÚN"
+    aliases: []
+  - name: "TEMAKI"
+    aliases: []
+  - name: "ONIGIRI"
+    aliases: []
+  - name: "MAKI VARIADO"
+    aliases: []
+  - name: "SUSHI VARIADO (TYU/ZYO/KOKUJO)"
+    aliases: []
+  - name: "SUSHI Y SASHIMI VARIADO"
+    aliases: []
+  - name: "Ura maki"
+    aliases: []
+  - name: "SAKE URAMAKI"
+    aliases: []
+  - name: "TEMPURA FUTOMAKI"
+    aliases: []
+  - name: "SPICY TUNA MAKI"
+    aliases: []
+  - name: "CALIFORNIA MAKI"
+    aliases: []
+  - name: "NIKU MAKI"
+    aliases: []
+  - name: "GYUNIKU MAKI"
+    aliases: []
+  - name: "PHILADELPHIA MAKI"
+    aliases: []
+  - name: "PINKUDORAGON RORU"
+    aliases: []
+  - name: "KAEDE RORU"
+    aliases: []
+  - name: "Uramaki de salmón semicrudo y langostinos rebozados"
+    aliases: []
+  - name: "Uramaki con crujiente de cangrejo y aguacate"
+    aliases: []
+  - name: "CHIRASHI DONBURI"
+    aliases: []
+  - name: "TEMPURA NO MORIAWASE"
+    aliases: []
+  - name: "EBI TEMPURA"
+    aliases: []
+  - name: "TORI KAISU"
+    aliases: []
+  - name: "SAKANA FURAI"
+    aliases: []
+  - name: "TONKASU"
+    aliases: []

@@ -58,7 +58,7 @@ class OcrResult(BaseModel):
     height: int
     lines: list[OcrLine]
     engine: str
-    rotation: int = 0  # degrees applied to the image before OCR (0, 90, 180, 270)
+    rotation: int = 0  # total counter-clockwise degrees applied, incl. small deskew (e.g. 358, 88)
     elapsed_s: float = 0.0
 
     def line(self, line_id: int) -> OcrLine:

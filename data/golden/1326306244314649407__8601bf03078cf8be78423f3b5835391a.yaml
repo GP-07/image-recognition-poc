@@ -1,0 +1,51 @@
+image_id: "1326306244314649407/8601bf03078cf8be78423f3b5835391a"
+split: dev
+reviewed: false
+notes: "Chicago's Pizza Factory printed menu sheet, flat and legible. Pizzas, Complementos, Bebidas y Postres, Ofertas. Excluded: beverages (Lata 33cl list, agua), 'Tarrinas de salsa' (sauce add-on), the add-ingredient list, and promotions 'Festin M', 'Festin XL', '2a pizza al 50% dto' (combos/discounts, not a concrete dish - reviewer may decide otherwise for Festin). Desserts included."
+dishes:
+  - name: "MARGARITA"
+    aliases: []
+  - name: "4 QUESOS PLUS"
+    aliases: []
+  - name: "VEGGIE"
+    aliases: []
+  - name: "HAWAIANA"
+    aliases: []
+  - name: "CLASSIC PLUS"
+    aliases: []
+  - name: "THE BOSTON"
+    aliases: []
+  - name: "TEX & MEX"
+    aliases: []
+  - name: "7 PECADOS"
+    aliases: []
+  - name: "IN EXTREMIS"
+    aliases: []
+  - name: "ÓPERA"
+    aliases: []
+  - name: "TARTUFATA"
+    aliases: []
+  - name: "CABRA"
+    aliases: []
+  - name: "JOHNNY PEPPERONI"
+    aliases: []
+  - name: "CHEESE & MUSHROOMS"
+    aliases: []
+  - name: "CHEESE & SAUSAGE"
+    aliases: []
+  - name: "PAN DE AJO"
+    aliases: []
+  - name: "PAN DE AJO + QUESO"
+    aliases: []
+  - name: "ALITAS DE POLLO"
+    aliases: []
+  - name: "ALITAS BARBACOA / PICANTES"
+    aliases: []
+  - name: "HELADOS BEN& JERRY'S"
+    aliases: []
+  - name: "PIZZA NUTELLA"
+    aliases: []
+  - name: "BROWNIE"
+    aliases: []
+  - name: "COOKIES"
+    aliases: []

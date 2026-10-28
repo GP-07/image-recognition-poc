@@ -1,0 +1,67 @@
+image_id: "2564282930447335749/2f04957e9038d0282481700cbf990c80"
+split: test
+reviewed: false
+notes: "La Clotenca (Barcelona) printed paper menu, pizza side, photo rotated 90 degrees; Catalan. Sections Pizzes Classic, Pizzes Healthy, Cosetes Bones. Each pizza has a playful subtitle (e.g. 'O SOLE MIO', 'LA DE LA CASA') - treated as tagline, not alias; reviewer may want them as aliases. 'CALABAZA' (Pumpkin Passion) is partly washed out by glare but reconstructible from visible letters - included, flag for review. Les Cassoletes listed as three dishes (header + variant). Excluded: 'De Temporada - pregunta'ns!' (no concrete dish), Pa d'all price variants (amb formatge / amb brie i tofona negra) folded into one item, offers 'Ofertes Clotenques', size/dough tables, beer promos."
+dishes:
+  - name: "4 ESTACIONS"
+    aliases: []
+  - name: "5 FORMATGES"
+    aliases: []
+  - name: "AMERICANA"
+    aliases: []
+  - name: "BBQ"
+    aliases: []
+  - name: "CARB-O-NADA"
+    aliases: []
+  - name: "CLOTENCA"
+    aliases: []
+  - name: "DELIZZIA"
+    aliases: []
+  - name: "GREGA"
+    aliases: []
+  - name: "HAWAIANA"
+    aliases: []
+  - name: "ITALIANA"
+    aliases: []
+  - name: "LA PESTO"
+    aliases: []
+  - name: "MALLORQUINA"
+    aliases: []
+  - name: "MEDITERRANEA"
+    aliases: []
+  - name: "PAGESA"
+    aliases: []
+  - name: "PICANT"
+    aliases: []
+  - name: "TRUFATTA"
+    aliases: []
+  - name: "LA SUPREMA"
+    aliases: []
+  - name: "VEGGIE"
+    aliases: []
+  - name: "POP - EYE"
+    aliases: []
+  - name: "LA MEX"
+    aliases: []
+  - name: "CALABACÍN"
+    aliases: []
+  - name: "MARRAKECH"
+    aliases: []
+  - name: "SWEET & SOUR"
+    aliases: []
+  - name: "LA ATÚN"
+    aliases: []
+  - name: "CALABAZA"
+    aliases: []
+  - name: "LA JAPO"
+    aliases: []
+  - name: "PA D'ALL"
+    aliases: []
+  - name: "LES CASSOLETES DE PROVOLONE"
+    aliases: []
+  - name: "LES CASSOLETES DE SOBRASSADA"
+    aliases: []
+  - name: "LES CASSOLETES DE TÒFONA NEGRA"
+    aliases: []
+  - name: "LA MANDONGA"
+    aliases: []

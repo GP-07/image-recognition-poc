@@ -1,0 +1,25 @@
+image_id: "7571032721762097332/8a339445e1a8029008955dc43d14f078"
+split: test
+reviewed: false
+notes: "Decoded pixels identical to 63bac246... (same photo saved twice); same labels. Vitali Pizza single printed sheet (back side: Ensaladas, drinks, Postres) photographed on a dark table, dim but legible. Spellings as printed ('Cheescake', 'Straciatella', 'Tiramisu' with umlaut). Excluded: all drinks (Agua, Coca Cola, Fanta/Nestea, San Miguel, Lambrusco/Vino), contact/delivery info."
+dishes:
+  - name: "Brisa Mediterránea"
+    aliases: []
+  - name: "Verde di Búfala"
+    aliases: []
+  - name: "Soufflé al Cioccolato"
+    aliases: []
+  - name: "Coppa Cheescake Monterosa"
+    aliases: []
+  - name: "Coppa Pistacchio y Crema"
+    aliases: []
+  - name: "Coppa Mascarpone"
+    aliases: []
+  - name: "Coppa Straciatella"
+    aliases: []
+  - name: "Coppa Tiramisü"
+    aliases: []
+  - name: "Coppa Profiterol"
+    aliases: []
+  - name: "Coppa Mousse Cioccolato"
+    aliases: []

@@ -1,0 +1,49 @@
+image_id: "2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e"
+split: test
+reviewed: false
+notes: "La Clotenca printed paper menu, reverse side (Burgers, Entrepans, Amanides, Pastes, Dolcos), photo rotated 90 degrees; Catalan; legible. Subtitles (e.g. 'VEGANA', 'THE ONE AND ONLY', 'MAMMA MIA') treated as taglines, not aliases. Pastes is a 'pasta combo': the priced 'Salses' (Pommodoro, Pisto, Pesto, Trufa, Brooklin) are labeled as the orderable dishes; pasta shapes (Tallarins healthy, Spaguettis, Tortiglione) are choices, not dishes. 'PESTO' first letters washed out by glare (reconstructed from '..STO' + 'Salsa de pesto fresc'), flag for review. Excluded: 'Clotenca Surprise' (weekly surprise, no concrete dish), Toppings Burgers list, beer pairings."
+dishes:
+  - name: "SHEPPERD"
+    aliases: []
+  - name: "DELIGHT"
+    aliases: []
+  - name: "GORGON-Z"
+    aliases: []
+  - name: "DE LUX"
+    aliases: []
+  - name: "AL GUST"
+    aliases: []
+  - name: "MENÚ INFANTIL"
+    aliases: []
+  - name: "MR PERRY"
+    aliases: []
+  - name: "MONSIEUR"
+    aliases: []
+  - name: "MISS BRIE"
+    aliases: []
+  - name: "MADAME"
+    aliases: []
+  - name: "VEGETAL"
+    aliases: []
+  - name: "CONTRASTES"
+    aliases: []
+  - name: "CESAR"
+    aliases: []
+  - name: "DELIRIUM"
+    aliases: []
+  - name: "POMMODORO"
+    aliases: []
+  - name: "PISTO"
+    aliases: []
+  - name: "PESTO"
+    aliases: []
+  - name: "TRUFA"
+    aliases: []
+  - name: "BROOKLIN"
+    aliases: []
+  - name: "PIZZA NUTELLA"
+    aliases: []
+  - name: "TIRAMISÚ"
+    aliases: []
+  - name: "NUTELLA DELUX"
+    aliases: []

@@ -1,0 +1,155 @@
+image_id: "10320618957461533705/5b1f2c20f1b2db7837099aa9e9da6037"
+split: dev
+reviewed: false
+notes: "Indian restaurant (Taste of India / Taj Indian) tri-fold printed menu, photo rotated 90 degrees, Spanish. Numbered items 1-76 (no item 58 printed). Items 13-20 have their leading number partly cut at the page edge but names are legible. Descriptions under items are not aliases. Spellings kept as printed (e.g. 'Tomater Soup', section 'Diopaza' vs items 'Dopiaza')."
+dishes:
+  - name: "Daal Soup"
+    aliases: []
+  - name: "Murgh Soup"
+    aliases: []
+  - name: "Tomater Soup"
+    aliases: []
+  - name: "Papadum"
+    aliases: []
+  - name: "Cebollas Bhaji"
+    aliases: []
+  - name: "Samosas de Verdura"
+    aliases: []
+  - name: "Samosas de Carne"
+    aliases: []
+  - name: "Vegetable Pakoras"
+    aliases: []
+  - name: "Paneer Pakora"
+    aliases: []
+  - name: "Pollo Pakora"
+    aliases: []
+  - name: "Gamba Pakora"
+    aliases: []
+  - name: "Huevos Bhurji"
+    aliases: []
+  - name: "Paneer Pasanda"
+    aliases: []
+  - name: "Paneer Chili (Picante)"
+    aliases: []
+  - name: "Malai kofta"
+    aliases: []
+  - name: "Kofta Curry"
+    aliases: []
+  - name: "Murgh Makhni"
+    aliases: []
+  - name: "Pollo Mango"
+    aliases: []
+  - name: "Pollo Chili (Picante)"
+    aliases: []
+  - name: "Cordero Rogan Josh"
+    aliases: []
+  - name: "Pollo Tikka"
+    aliases: []
+  - name: "Pollo Malai Kebab"
+    aliases: []
+  - name: "Pollo Tandoori"
+    aliases: []
+  - name: "Pollo Shashlik"
+    aliases: []
+  - name: "Cordero Tikka"
+    aliases: []
+  - name: "Pescado Tikka"
+    aliases: []
+  - name: "Paneer Tikka"
+    aliases: []
+  - name: "Pollo Curry"
+    aliases: []
+  - name: "Cordero Curry"
+    aliases: []
+  - name: "Gambas Curry"
+    aliases: []
+  - name: "Pescado Curry"
+    aliases: []
+  - name: "Verduras Curry"
+    aliases: []
+  - name: "Pollo Dopiaza"
+    aliases: []
+  - name: "Cordero Dopiaza"
+    aliases: []
+  - name: "Gambas Dopiaza"
+    aliases: []
+  - name: "Langostinos Dopiaza"
+    aliases: []
+  - name: "Pescado Dopiaza"
+    aliases: []
+  - name: "Pollo Korma"
+    aliases: []
+  - name: "Cordero Korma"
+    aliases: []
+  - name: "Gambas Korma"
+    aliases: []
+  - name: "Langostinos Korma"
+    aliases: []
+  - name: "Pescado Korma"
+    aliases: []
+  - name: "Pollo Tikka Masala"
+    aliases: []
+  - name: "Cordero Tikka Masala"
+    aliases: []
+  - name: "Gambas Tikka Masala"
+    aliases: []
+  - name: "Langostinos Tikka Masala"
+    aliases: []
+  - name: "Pollo Madras"
+    aliases: []
+  - name: "Cordero Madras"
+    aliases: []
+  - name: "Gambas Madras"
+    aliases: []
+  - name: "Langostinos Madras"
+    aliases: []
+  - name: "Pescado Madras"
+    aliases: []
+  - name: "Verduras Madras"
+    aliases: []
+  - name: "Pollo Vindaloo"
+    aliases: []
+  - name: "Cordero Vindaloo"
+    aliases: []
+  - name: "Gambas Vindaloo"
+    aliases: []
+  - name: "Langostinos Vindaloo"
+    aliases: []
+  - name: "Pescado Vindaloo"
+    aliases: []
+  - name: "Pollo Phaal"
+    aliases: []
+  - name: "Cordero Phaal"
+    aliases: []
+  - name: "Pollo Jalfrezi"
+    aliases: []
+  - name: "Cordero Jalfrezi"
+    aliases: []
+  - name: "Gambas Jalfrezi"
+    aliases: []
+  - name: "Pollo Palak"
+    aliases: []
+  - name: "Cordero Palak"
+    aliases: []
+  - name: "Pollo Kadhai"
+    aliases: []
+  - name: "Cordero Kadhai"
+    aliases: []
+  - name: "Gambas Kadhai"
+    aliases: []
+  - name: "Pescado Kadhai"
+    aliases: []
+  - name: "Pollo Bhuna"
+    aliases: []
+  - name: "Cordero Bhuna"
+    aliases: []
+  - name: "Gambas Bhuna"
+    aliases: []
+  - name: "Pescado Bhuna"
+    aliases: []
+  - name: "Pollo Balti"
+    aliases: []
+  - name: "Cordero Balti"
+    aliases: []
+  - name: "Gambas Balti"
+    aliases: []

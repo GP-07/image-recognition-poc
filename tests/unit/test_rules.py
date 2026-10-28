@@ -1,0 +1,171 @@
+from menu_poc.models import OcrLine, OcrResult
+from menu_poc.parsing.rules import RuleBasedParser, clean_name, is_noise
+
+H = 20  # line height of synthetic text
+CHAR_W = 10
+
+
+def _page(items, width=1000, height=1400):
+    """``items``: (text, x0, y0) or (text, x0, y0, height)."""
+    lines = []
+    for i, item in enumerate(items):
+        text, x0, y0 = item[:3]
+        h = item[3] if len(item) > 3 else H
+        bbox = (x0, y0, x0 + CHAR_W * len(text), y0 + h)
+        lines.append(OcrLine(id=i, text=text, bbox=bbox, confidence=0.97))
+    return OcrResult(image_id="r/img", width=width, height=height, lines=lines, engine="fake")
+
+
+def _by_name(result):
+    return {d.name: d for d in result.dishes}
+
+
+def _parse(items, **kw):
+    return RuleBasedParser().parse(_page(items, **kw))
+
+
+def test_price_on_the_line_and_in_a_separate_column():
+    result = _parse(
+        [
+            ("ENTRANTES", 50, 100, 30),
+            ("Hummus ....... 5,50€", 50, 150),
+            ("Crema de garbanzos", 70, 172),
+            ("Falafel", 50, 210),
+            ("6,00€", 600, 212),
+            ("Croquetas vegetales", 70, 232),
+            ("Tabule", 50, 270),
+            ("4,90 €", 600, 268),
+        ]
+    )
+    dishes = _by_name(result)
+    assert set(dishes) == {"Hummus", "Falafel", "Tabule"}
+    assert dishes["Hummus"].prices == [5.5]
+    assert dishes["Hummus"].description == "Crema de garbanzos"
+    assert dishes["Falafel"].prices == [6.0]
+    assert dishes["Falafel"].description == "Croquetas vegetales"
+    assert all(d.section == "ENTRANTES" and d.origin == "rules" for d in result.dishes)
+    assert dishes["Falafel"].source_line_ids == [3, 4, 5]
+    assert result.confidence >= 0.6
+
+
+def test_several_sizes_on_one_row():
+    result = _parse([("Margarita", 50, 100), ("8,15€", 500, 100), ("9,50€", 600, 100)])
+    assert result.dishes[0].prices == [8.15, 9.5]
+
+
+def test_numbered_name_takes_price_from_its_translation():
+    result = _parse(
+        [
+            ("46. LAMB CURRY", 50, 100),
+            ("Xai al curry tradicional", 70, 122),
+            ("Cordero al curry tradicional 15,90€", 70, 144),
+            ("47. ROGAN GOSHT", 50, 190),
+            ("Cordero en salsa 15,90€", 70, 212),
+        ]
+    )
+    names = [d.name for d in result.dishes]
+    assert names == ["LAMB CURRY", "ROGAN GOSHT"]
+    assert result.dishes[0].prices == [15.9]
+    assert "Cordero al curry tradicional" in result.dishes[0].description
+
+
+def test_price_below_the_description_goes_to_the_dish():
+    result = _parse(
+        [
+            ("301. Philadelphia maki", 50, 100),
+            ("Salmon, aguacate y queso", 70, 122),
+            ("11,95 €/8uds", 70, 144),
+            ("302. Tuna roll", 50, 200),
+            ("Atun y pepino", 70, 222),
+            ("12,95 €/8uds", 70, 244),
+        ]
+    )
+    assert [(d.name, d.prices) for d in result.dishes] == [
+        ("Philadelphia maki", [11.95]),
+        ("Tuna roll", [12.95]),
+    ]
+
+
+def test_caps_title_followed_by_priced_ingredients_is_a_dish():
+    result = _parse(
+        [
+            ("BURGERS", 50, 60, 30),
+            ("SHEPPERD", 50, 100),
+            ("Pa de xapata amb sesam,", 50, 122),
+            ("tomaquet, escalopa de seitan 6,90€", 50, 144),
+        ]
+    )
+    (dish,) = result.dishes
+    assert dish.name == "SHEPPERD"
+    assert dish.prices == [6.9]
+    assert dish.section == "BURGERS"
+
+
+def test_sections_change_with_headers():
+    result = _parse(
+        [
+            ("POSTRES", 50, 100, 30),
+            ("Tiramisu 4,50€", 50, 140),
+            ("Bebidas", 50, 190, 40),
+            ("Agua 1,50€", 50, 240),
+        ]
+    )
+    assert {d.name: d.section for d in result.dishes} == {"Tiramisu": "POSTRES", "Agua": "Bebidas"}
+
+
+def test_repeated_logo_text_is_not_a_section():
+    items = []
+    y = 100
+    for section in ("SOPAS", "CURRY", "TANDOORI"):
+        items += [(section, 50, y, 30), ("TASTE OF INDIA", 50, y + 32)]
+        items += [(f"Plato {section.lower()} 9,50€", 50, y + 60)]
+        y += 120
+    sections = {d.section for d in _parse(items).dishes}
+    assert sections == {"SOPAS", "CURRY", "TANDOORI"}
+
+
+def test_noise_lines_are_not_dishes():
+    result = _parse(
+        [
+            ("Pizza Margarita 9,50€", 50, 100),
+            ("Tel. 93 444 47 37", 50, 160),
+            ("www.vitalipizza.com", 50, 200),
+            ("IVA incluido. Minimo 12,50€", 50, 240),
+            ("Abierto de 19:30 a 23:30", 50, 280),
+            ("Consulte nuestra carta de alérgenos", 50, 320),
+            ("info@restaurante.es", 50, 360),
+        ]
+    )
+    assert [d.name for d in result.dishes] == ["Pizza Margarita"]
+
+
+def test_is_noise_and_clean_name():
+    def line(text, conf=0.95):
+        return OcrLine(id=0, text=text, bbox=(0, 0, 100, 20), confidence=conf)
+
+    assert is_noise(line("@#"))
+    assert is_noise(line("Pollo curry", conf=0.3))
+    assert not is_noise(line("Pollo curry"))
+    assert clean_name("46. LAMB CURRY ...... 15,90€") == ("LAMB CURRY", None)
+    assert clean_name("1 Boston: cebolla, bacon") == ("Boston", "cebolla, bacon")
+    assert clean_name(".Pollo Chili (Picante)") == ("Pollo Chili (Picante)", None)
+
+
+def test_size_table_lowers_confidence():
+    # Pizza names in one block, a separate grid of size labels with prices: not understood.
+    items = [(f"PIZZA {name}", 50, 100 + 40 * i) for i, name in enumerate("ABCDEF")]
+    items += [
+        (f"{size} {p}€", 500, 400 + 30 * j)
+        for j, (size, p) in enumerate(
+            [("PEQUEÑA", "9,00"), ("MEDIANA", "12,00"), ("GRANDE", "15,00")] * 3
+        )
+    ]
+    result = _parse(items)
+    assert result.signals["price_attach"] < 0.5
+    assert result.confidence < 0.6
+
+
+def test_empty_and_priceless_pages():
+    assert _parse([]).confidence == 0.0
+    result = _parse([("BIENVENIDOS", 50, 100, 40), ("Gracias por su visita", 50, 200)])
+    assert result.dishes == [] and result.confidence == 0.0

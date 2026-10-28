@@ -1,0 +1,763 @@
+{
+ "note": "Real RapidOCR output (engine run in scratch, max side 2000 px). The response is hand-written in the exact shape Claude returns under DISHES_SCHEMA (no API key was available to record a live call); it includes typical model behaviour: OCR typos fixed, leading numbers dropped.",
+ "model": "claude-haiku-5-5",
+ "ocr": {
+  "image_id": "7571032721762097332/63bac2469809e9b1432e6f152996440d",
+  "width": 1500,
+  "height": 2000,
+  "lines": [
+   {
+    "id": 0,
+    "text": "ENSALADAS",
+    "bbox": [
+     240.0,
+     553.0,
+     457.0,
+     594.0
+    ],
+    "confidence": 0.9999
+   },
+   {
+    "id": 1,
+    "text": "4,90€",
+    "bbox": [
+     1136.0,
+     554.0,
+     1219.0,
+     594.0
+    ],
+    "confidence": 0.99997
+   },
+   {
+    "id": 2,
+    "text": "Brisa Mediterránea",
+    "bbox": [
+     240.0,
+     603.0,
+     458.0,
+     637.0
+    ],
+    "confidence": 0.99476
+   },
+   {
+    "id": 3,
+    "text": "Tomate fresco, rúcula, queso de cabra, atún, aceitunas negras, vinagreta provenzal",
+    "bbox": [
+     237.0,
+     604.0,
+     974.0,
+     670.0
+    ],
+    "confidence": 0.99777
+   },
+   {
+    "id": 4,
+    "text": "4,90€",
+    "bbox": [
+     1141.0,
+     630.0,
+     1223.0,
+     671.0
+    ],
+    "confidence": 0.99996
+   },
+   {
+    "id": 5,
+    "text": "cacerola",
+    "bbox": [
+     240.0,
+     662.0,
+     325.0,
+     689.0
+    ],
+    "confidence": 0.9998
+   },
+   {
+    "id": 6,
+    "text": "Verde di Búfala",
+    "bbox": [
+     241.0,
+     681.0,
+     417.0,
+     714.0
+    ],
+    "confidence": 0.99418
+   },
+   {
+    "id": 7,
+    "text": "Tomate fresco, rúcula, mozzarella di Búfala, vinagreta provenzal casera",
+    "bbox": [
+     240.0,
+     691.0,
+     874.0,
+     743.0
+    ],
+    "confidence": 0.99152
+   },
+   {
+    "id": 8,
+    "text": "1,50€",
+    "bbox": [
+     758.0,
+     749.0,
+     835.0,
+     786.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 9,
+    "text": "Agua",
+    "bbox": [
+     241.0,
+     774.0,
+     310.0,
+     807.0
+    ],
+    "confidence": 0.99992
+   },
+   {
+    "id": 10,
+    "text": "2,00€",
+    "bbox": [
+     757.0,
+     781.0,
+     837.0,
+     820.0
+    ],
+    "confidence": 0.99995
+   },
+   {
+    "id": 11,
+    "text": "Coca Cola / Zero",
+    "bbox": [
+     243.0,
+     800.0,
+     438.0,
+     837.0
+    ],
+    "confidence": 0.99181
+   },
+   {
+    "id": 12,
+    "text": "4,00€",
+    "bbox": [
+     758.0,
+     812.0,
+     839.0,
+     853.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 13,
+    "text": "Coca Cola / Botella de vidrio IL",
+    "bbox": [
+     245.0,
+     827.0,
+     594.0,
+     869.0
+    ],
+    "confidence": 0.97417
+   },
+   {
+    "id": 14,
+    "text": "2,00€",
+    "bbox": [
+     759.0,
+     846.0,
+     840.0,
+     887.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 15,
+    "text": "Fanta naranja / Nestea",
+    "bbox": [
+     243.0,
+     865.0,
+     508.0,
+     904.0
+    ],
+    "confidence": 0.99067
+   },
+   {
+    "id": 16,
+    "text": "2,20€",
+    "bbox": [
+     761.0,
+     879.0,
+     842.0,
+     920.0
+    ],
+    "confidence": 0.99995
+   },
+   {
+    "id": 17,
+    "text": "San Miguel",
+    "bbox": [
+     244.0,
+     903.0,
+     378.0,
+     939.0
+    ],
+    "confidence": 0.99906
+   },
+   {
+    "id": 18,
+    "text": "7,50€",
+    "bbox": [
+     763.0,
+     915.0,
+     843.0,
+     951.0
+    ],
+    "confidence": 0.99996
+   },
+   {
+    "id": 19,
+    "text": "Lambrusco / Vino tinto Rioja",
+    "bbox": [
+     245.0,
+     930.0,
+     568.0,
+     972.0
+    ],
+    "confidence": 0.9706
+   },
+   {
+    "id": 20,
+    "text": "POSTRES",
+    "bbox": [
+     243.0,
+     1002.0,
+     412.0,
+     1046.0
+    ],
+    "confidence": 0.99998
+   },
+   {
+    "id": 21,
+    "text": "3,50€",
+    "bbox": [
+     1168.0,
+     1007.0,
+     1253.0,
+     1047.0
+    ],
+    "confidence": 0.99995
+   },
+   {
+    "id": 22,
+    "text": "Soufflé al Cioccolato",
+    "bbox": [
+     245.0,
+     1045.0,
+     484.0,
+     1084.0
+    ],
+    "confidence": 0.98932
+   },
+   {
+    "id": 23,
+    "text": "3,60€",
+    "bbox": [
+     1172.0,
+     1070.0,
+     1258.0,
+     1109.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 24,
+    "text": "Soufflé con un goloso corazón de chocolate liquido. Se sirve caliente",
+    "bbox": [
+     245.0,
+     1061.0,
+     861.0,
+     1113.0
+    ],
+    "confidence": 0.99678
+   },
+   {
+    "id": 25,
+    "text": "Coppa Cheescake Monterosa",
+    "bbox": [
+     246.0,
+     1103.0,
+     579.0,
+     1148.0
+    ],
+    "confidence": 0.99279
+   },
+   {
+    "id": 26,
+    "text": "4,60€",
+    "bbox": [
+     1178.0,
+     1133.0,
+     1264.0,
+     1175.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 27,
+    "text": "Semifrio de fresas confitadas y bizcocho con sabor a vainilla y fresa",
+    "bbox": [
+     245.0,
+     1124.0,
+     856.0,
+     1175.0
+    ],
+    "confidence": 0.9951
+   },
+   {
+    "id": 28,
+    "text": "Coppa Pistacchio y Crema",
+    "bbox": [
+     246.0,
+     1167.0,
+     547.0,
+     1210.0
+    ],
+    "confidence": 0.99815
+   },
+   {
+    "id": 29,
+    "text": "Helado de crema de huevo ripelado con chocolate, helado de de pistacho/avellana Crema",
+    "bbox": [
+     244.0,
+     1178.0,
+     1061.0,
+     1238.0
+    ],
+    "confidence": 0.9945
+   },
+   {
+    "id": 30,
+    "text": "3,60€",
+    "bbox": [
+     1182.0,
+     1198.0,
+     1269.0,
+     1239.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 31,
+    "text": "Coppa Mascarpone",
+    "bbox": [
+     245.0,
+     1235.0,
+     472.0,
+     1275.0
+    ],
+    "confidence": 0.99942
+   },
+   {
+    "id": 32,
+    "text": "Crema mascarpone con chocolate y granitos de amaretto",
+    "bbox": [
+     243.0,
+     1253.0,
+     772.0,
+     1303.0
+    ],
+    "confidence": 0.99942
+   },
+   {
+    "id": 33,
+    "text": "4,60€",
+    "bbox": [
+     1189.0,
+     1264.0,
+     1276.0,
+     1304.0
+    ],
+    "confidence": 0.99989
+   },
+   {
+    "id": 34,
+    "text": "Coppa Straciatella",
+    "bbox": [
+     244.0,
+     1296.0,
+     462.0,
+     1338.0
+    ],
+    "confidence": 0.99983
+   },
+   {
+    "id": 35,
+    "text": "Helado de straciatella combinado con chocolate y avellana en de praliné",
+    "bbox": [
+     240.0,
+     1312.0,
+     913.0,
+     1366.0
+    ],
+    "confidence": 0.98958
+   },
+   {
+    "id": 36,
+    "text": "3,60€",
+    "bbox": [
+     1194.0,
+     1331.0,
+     1281.0,
+     1369.0
+    ],
+    "confidence": 0.99994
+   },
+   {
+    "id": 37,
+    "text": "Coppa Tiramisü",
+    "bbox": [
+     241.0,
+     1365.0,
+     432.0,
+     1404.0
+    ],
+    "confidence": 0.99912
+   },
+   {
+    "id": 38,
+    "text": "Crema en al zabaiona y café sobre un bizcocho empapado en café",
+    "bbox": [
+     238.0,
+     1380.0,
+     859.0,
+     1434.0
+    ],
+    "confidence": 0.99662
+   },
+   {
+    "id": 39,
+    "text": "3,60€",
+    "bbox": [
+     1201.0,
+     1398.0,
+     1288.0,
+     1438.0
+    ],
+    "confidence": 0.99985
+   },
+   {
+    "id": 40,
+    "text": "Coppa Profiterol",
+    "bbox": [
+     239.0,
+     1429.0,
+     438.0,
+     1469.0
+    ],
+    "confidence": 0.97099
+   },
+   {
+    "id": 41,
+    "text": "Crema al chocolate con profiterol relleno con crema de vainilla",
+    "bbox": [
+     237.0,
+     1448.0,
+     832.0,
+     1499.0
+    ],
+    "confidence": 0.99016
+   },
+   {
+    "id": 42,
+    "text": "3,60€",
+    "bbox": [
+     1206.0,
+     1466.0,
+     1294.0,
+     1505.0
+    ],
+    "confidence": 0.99991
+   },
+   {
+    "id": 43,
+    "text": "Coppa Mousse Cioccolato",
+    "bbox": [
+     238.0,
+     1491.0,
+     547.0,
+     1537.0
+    ],
+    "confidence": 0.99986
+   },
+   {
+    "id": 44,
+    "text": "Crema de chocolate y sabaiona decorada con virutas de chocolate",
+    "bbox": [
+     236.0,
+     1515.0,
+     865.0,
+     1567.0
+    ],
+    "confidence": 0.99719
+   },
+   {
+    "id": 45,
+    "text": "93 444 47 37",
+    "bbox": [
+     627.0,
+     1575.0,
+     896.0,
+     1622.0
+    ],
+    "confidence": 0.95137
+   },
+   {
+    "id": 46,
+    "text": "www.vitalipizza.com",
+    "bbox": [
+     526.0,
+     1616.0,
+     1002.0,
+     1666.0
+    ],
+    "confidence": 0.99998
+   },
+   {
+    "id": 47,
+    "text": " Servicio a domicilio",
+    "bbox": [
+     360.0,
+     1686.0,
+     596.0,
+     1722.0
+    ],
+    "confidence": 0.96465
+   },
+   {
+    "id": 48,
+    "text": "9",
+    "bbox": [
+     364.0,
+     1729.0,
+     393.0,
+     1753.0
+    ],
+    "confidence": 0.93163
+   },
+   {
+    "id": 49,
+    "text": "Pedido por WhatsApp en el 93 250 92 16",
+    "bbox": [
+     394.0,
+     1711.0,
+     806.0,
+     1754.0
+    ],
+    "confidence": 0.99264
+   },
+   {
+    "id": 50,
+    "text": "A Recoger en la calle Paris, 109",
+    "bbox": [
+     399.0,
+     1746.0,
+     715.0,
+     1785.0
+    ],
+    "confidence": 0.99952
+   },
+   {
+    "id": 51,
+    "text": "Pago online",
+    "bbox": [
+     402.0,
+     1785.0,
+     523.0,
+     1818.0
+    ],
+    "confidence": 0.97246
+   },
+   {
+    "id": 52,
+    "text": "Visa. Recoger Efectivo, Tickets restaurante, Cheques Gourmet Y Sodexo",
+    "bbox": [
+     401.0,
+     1803.0,
+     1111.0,
+     1849.0
+    ],
+    "confidence": 0.99659
+   },
+   {
+    "id": 53,
+    "text": "Solo cambio de 20€. IVA incluido. Reparto gratuito importe minimo 12,50€",
+    "bbox": [
+     401.0,
+     1837.0,
+     1148.0,
+     1880.0
+    ],
+    "confidence": 0.98058
+   },
+   {
+    "id": 54,
+    "text": "Abierto de Lunes a Domingo de 18h30 a 23h30 o hasta las 23h30",
+    "bbox": [
+     400.0,
+     1871.0,
+     1058.0,
+     1912.0
+    ],
+    "confidence": 0.99031
+   }
+  ],
+  "engine": "rapidocr-scratch"
+ },
+ "response": {
+  "dishes": [
+   {
+    "name": "Brisa Mediterránea",
+    "description": "Tomate fresco, rúcula, queso de cabra, atún, aceitunas negras, vinagreta provenzal",
+    "prices": [
+     4.9
+    ],
+    "section": "ENSALADAS",
+    "source_line_ids": [
+     2,
+     3,
+     1
+    ]
+   },
+   {
+    "name": "Verde di Búfala",
+    "description": "Tomate fresco, rúcula, mozzarella di Búfala, vinagreta provenzal casera",
+    "prices": [
+     4.9
+    ],
+    "section": "ENSALADAS",
+    "source_line_ids": [
+     6,
+     7,
+     4
+    ]
+   },
+   {
+    "name": "Soufflé al Cioccolato",
+    "description": "Soufflé con un goloso corazón de chocolate liquido. Se sirve caliente",
+    "prices": [
+     3.5
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     22,
+     24,
+     21
+    ]
+   },
+   {
+    "name": "Coppa Cheesecake Monterosa",
+    "description": "Semifrio de fresas confitadas y bizcocho con sabor a vainilla y fresa",
+    "prices": [
+     3.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     25,
+     27,
+     23
+    ]
+   },
+   {
+    "name": "Coppa Pistacchio y Crema",
+    "description": "Helado de crema de huevo ripelado con chocolate, helado de de pistacho/avellana Crema",
+    "prices": [
+     4.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     28,
+     29,
+     26
+    ]
+   },
+   {
+    "name": "Coppa Mascarpone",
+    "description": "Crema mascarpone con chocolate y granitos de amaretto",
+    "prices": [
+     3.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     31,
+     32,
+     30
+    ]
+   },
+   {
+    "name": "Coppa Straciatella",
+    "description": "Helado de straciatella combinado con chocolate y avellana en de praliné",
+    "prices": [
+     4.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     34,
+     35,
+     33
+    ]
+   },
+   {
+    "name": "Coppa Tiramisù",
+    "description": "Crema en al zabaiona y café sobre un bizcocho empapado en café",
+    "prices": [
+     3.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     37,
+     38,
+     36
+    ]
+   },
+   {
+    "name": "Coppa Profiterol",
+    "description": "Crema al chocolate con profiterol relleno con crema de vainilla",
+    "prices": [
+     3.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     40,
+     41,
+     39
+    ]
+   },
+   {
+    "name": "Coppa Mousse Cioccolato",
+    "description": "Crema de chocolate y sabaiona decorada con virutas de chocolate",
+    "prices": [
+     3.6
+    ],
+    "section": "POSTRES",
+    "source_line_ids": [
+     43,
+     44,
+     42
+    ]
+   }
+  ]
+ },
+ "expected_names": [
+  "Brisa Mediterránea",
+  "Verde di Búfala",
+  "Soufflé al Cioccolato",
+  "Coppa Cheesecake Monterosa",
+  "Coppa Pistacchio y Crema",
+  "Coppa Mascarpone",
+  "Coppa Straciatella",
+  "Coppa Tiramisù",
+  "Coppa Profiterol",
+  "Coppa Mousse Cioccolato"
+ ]
+}

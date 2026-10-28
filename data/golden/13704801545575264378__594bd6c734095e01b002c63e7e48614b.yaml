@@ -1,0 +1,123 @@
+image_id: "13704801545575264378/594bd6c734095e01b002c63e7e48614b"
+split: dev
+reviewed: false
+notes: "Veg World India vertical menu board in a wooden frame on the street, trilingual (Catalan/Spanish/English); small text but legible at full resolution. Sub-lines under each dish are mostly descriptions; they were added as aliases only when they are a direct translation of the dish name (e.g. Naan -> Pa/Pan/Bread, Mango Kulfi -> Helado de mango) - reviewer should check this judgment. Set menus (Thali, Menu Degustacion N1/N2, Menu Infantil) are listed as one item each; their component lines (which repeat a la carte dishes) are not listed separately. Excluded: hot drinks (Yogi tea, Chai, Tulsi tea, coffees, infusions), natural juices, lassis (bottom, partly cut). Spellings kept as printed ('Chilli Panner', 'Panner Tikka Dosa')."
+dishes:
+  - name: "Veg Pakora"
+    aliases: ["Croquetes de verdures", "Croquetas de verduras", "Indian vegetable fritters"]
+  - name: "Samosa"
+    aliases: []
+  - name: "Paneer Pakora"
+    aliases: []
+  - name: "Baingan Pakora"
+    aliases: ["Albergínia arrebossada", "Berenjena rebozada", "Crispy eggplant fritters"]
+  - name: "Mixed Starter Platter (For 2)"
+    aliases: ["Assortiment de aperitius variats", "Surtido de aperitivos variados"]
+  - name: "Pani Puri"
+    aliases: []
+  - name: "Dahi Puri Chat"
+    aliases: []
+  - name: "Masala Papad"
+    aliases: []
+  - name: "Chilli Mushroom"
+    aliases: []
+  - name: "Chilli Panner"
+    aliases: []
+  - name: "Hummus"
+    aliases: ["Paté de cigrons", "Paté de garbanzos", "Pureed chickpeas"]
+  - name: "Soup of the Day"
+    aliases: ["Sopa de el dia", "Sopa del dia"]
+  - name: "Chef's Garden Salad"
+    aliases: ["Amanida (Especialitat de l'Xef)", "Ensalada (Especialidad del Chef)"]
+  - name: "Masala Dosa"
+    aliases: []
+  - name: "Mushroom Dosa"
+    aliases: []
+  - name: "Mysore Masala Dosa"
+    aliases: []
+  - name: "Panner Tikka Dosa"
+    aliases: []
+  - name: "Idly"
+    aliases: []
+  - name: "Veg. Korma"
+    aliases: []
+  - name: "Palak Kofta"
+    aliases: []
+  - name: "Bhindi Baji"
+    aliases: []
+  - name: "Tandoori Baingan Bartha"
+    aliases: []
+  - name: "Daal Makhani"
+    aliases: []
+  - name: "Daal Tarka"
+    aliases: []
+  - name: "Channa Masala"
+    aliases: []
+  - name: "Mushroom Masala"
+    aliases: []
+  - name: "Malai Kofta"
+    aliases: []
+  - name: "Palak Paneer"
+    aliases: []
+  - name: "Paneer Kolhapuri"
+    aliases: []
+  - name: "Paneer Tikka Masala"
+    aliases: []
+  - name: "Shahi Paneer"
+    aliases: []
+  - name: "THALI Plat Combinat de l'India (for 1)"
+    aliases: []
+  - name: "Menú Degustación Nº1 (for 2)"
+    aliases: []
+  - name: "Menú Degustación Nº2 (for 2)"
+    aliases: []
+  - name: "Menú Infantil"
+    aliases: []
+  - name: "Paneer Tikka"
+    aliases: []
+  - name: "Tandoori Aloo"
+    aliases: []
+  - name: "Veg. Kebab"
+    aliases: ["Broquetes de kebab vegà", "Brochetas de kebab vegano", "Vegetable Kebab"]
+  - name: "Naan"
+    aliases: ["Pa", "Pan", "Bread"]
+  - name: "Butter Naan"
+    aliases: ["Pa amb mantega", "Pan con mantequilla", "Bread with butter"]
+  - name: "Garlic Naan"
+    aliases: ["Pa amb all", "Pan con ajo", "Garlic bread"]
+  - name: "Cheese Naan"
+    aliases: ["Pa amb formatge", "Pan con queso", "Bread with cheese"]
+  - name: "Cheese+Garlic Naan"
+    aliases: ["Pa amb formatge i all", "Pan con queso y ajo", "Bread with cheese and garlic"]
+  - name: "Aloo Naan"
+    aliases: ["Pa amb patata", "Pan con patata", "Bread with potato"]
+  - name: "Peshawari Naan"
+    aliases: []
+  - name: "Tandoori Roti"
+    aliases: ["Pa de farina integral", "Pan de harina integral", "Brown flour bread"]
+  - name: "Tandoori Paratha"
+    aliases: []
+  - name: "Veg. Biryani"
+    aliases: []
+  - name: "Pilaw Rice"
+    aliases: []
+  - name: "Lemon Rice"
+    aliases: ["Arròs amb llimona", "Arroz con limón"]
+  - name: "Jeera Rice"
+    aliases: ["Arròs amb comí", "Arroz con comino", "Cumin rice"]
+  - name: "Raita"
+    aliases: []
+  - name: "Indian Salad"
+    aliases: []
+  - name: "Mango Pickle"
+    aliases: []
+  - name: "Pastís de Xocolata o Fruits Secs"
+    aliases: ["Pastel de chocolate o frutos secos", "Chocolate or dry fruits cake"]
+  - name: "Gulab Jamun"
+    aliases: []
+  - name: "Mango Kulfi"
+    aliases: ["Gelat d' mango", "Helado de mango", "Mango ice cream"]
+  - name: "Rose Kulfi"
+    aliases: ["Gelat d' aigua de roses", "Helado de agua de rosas", "Rose flavored ice cream"]
+  - name: "Kulfi"
+    aliases: []

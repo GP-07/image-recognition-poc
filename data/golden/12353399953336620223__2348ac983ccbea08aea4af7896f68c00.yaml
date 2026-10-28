@@ -1,0 +1,205 @@
+image_id: "12353399953336620223/2348ac983ccbea08aea4af7896f68c00"
+split: dev
+reviewed: false
+notes: "Night photo of a Japanese restaurant window with 4 menus: two black boards (Platos especiales + Entrantes/Para acompanar/Sashimi; Sushi pescado crudo + Frituras), a printed 'Menu de la noche y fin de semana' sheet, and a 'Menu del dia' sheet, plus a 'Shoyu Ramen' poster. Small text and reflections; board text readable at full resolution. Dishes on several menus listed once (exact same name). Set menu 'Menu de Kaede (para 2 personas)' included as one item; its option lines not listed separately. LEFT OUT: the whole 'Menu del dia' sheet (12.50 EUR) - too blurry to read reliably (possibly Yakisoba, Yakimeshi, Edamame, Pechuga de pollo frito con sesamo, desserts). Night-menu items are blurry-ish uppercase; medium confidence on their exact wording. Beverages line excluded."
+dishes:
+  - name: "YAKITORI"
+    aliases: []
+  - name: "GYUNIKU NO ROLUMAKI"
+    aliases: []
+  - name: "GYUNIKU TATAKI"
+    aliases: []
+  - name: "TEPPANYAKI EBI"
+    aliases: []
+  - name: "KOMO TOKYO"
+    aliases: []
+  - name: "YASAI ITEME"
+    aliases: []
+  - name: "YAKI GYUNIKU"
+    aliases: []
+  - name: "YAKI KAMO"
+    aliases: []
+  - name: "WAFU GYUNIKU SUTEKI"
+    aliases: []
+  - name: "MAGURO TATAKI"
+    aliases: []
+  - name: "UNAZYU"
+    aliases: []
+  - name: "STEAK TARTARE (200g)"
+    aliases: []
+  - name: "MAGURO TEMPAYAKI (200g)"
+    aliases: []
+  - name: "Tatar de salmón (200g)"
+    aliases: []
+  - name: "MENÚ DE KAEDE (Para 2 Personas)"
+    aliases: []
+  - name: "WAFU SALADA NO MORIAWASE"
+    aliases: []
+  - name: "EBI I SAKE SALADA"
+    aliases: []
+  - name: "EDAMAME"
+    aliases: []
+  - name: "HIYASHI WAKAME SALAD"
+    aliases: []
+  - name: "MISOSHIRU"
+    aliases: []
+  - name: "KAISEN SOUP"
+    aliases: []
+  - name: "HARU MAKI"
+    aliases: []
+  - name: "EBI FA MAKI"
+    aliases: []
+  - name: "SHAO MAI"
+    aliases: []
+  - name: "AGEDASHI TOFU"
+    aliases: []
+  - name: "HIYA YAKKO"
+    aliases: []
+  - name: "NASUDENGAKU"
+    aliases: []
+  - name: "YAKI GYOZA"
+    aliases: []
+  - name: "GYOZA"
+    aliases: ["GYOZA (EMPANADILLAS DE CARNE Y VERDURAS)"]
+  - name: "YASAI GYOZA"
+    aliases: []
+  - name: "Empanadillas de bacalao y puerros"
+    aliases: []
+  - name: "HARGAO"
+    aliases: []
+  - name: "GOHAN"
+    aliases: []
+  - name: "PAN JAPONÉS"
+    aliases: ["PA JAPONÈS"]
+  - name: "YAKIMESHI"
+    aliases: []
+  - name: "EBI CHAHAN"
+    aliases: []
+  - name: "YAKI UDON"
+    aliases: []
+  - name: "EBI YAKI SOBA"
+    aliases: []
+  - name: "TEMPURA UDON"
+    aliases: []
+  - name: "KATSU DON"
+    aliases: []
+  - name: "SHOYU RAMEN"
+    aliases: ["Shoyu Ramen"]
+  - name: "SAKE SASHIMI (SALMÓN)"
+    aliases: []
+  - name: "MAGURO SASHIMI (ATÚN)"
+    aliases: []
+  - name: "SASHIMI NO MORIAWASE (VARIADO)"
+    aliases: []
+  - name: "KAPPA MAKI"
+    aliases: []
+  - name: "SAKE MAKI"
+    aliases: []
+  - name: "TEKKA MAKI"
+    aliases: []
+  - name: "FUTO MAKI"
+    aliases: []
+  - name: "EBI NIGIRI"
+    aliases: []
+  - name: "SAKE NIGIRI"
+    aliases: []
+  - name: "MAGURO NIGIRI"
+    aliases: []
+  - name: "TAI NIGIRI"
+    aliases: []
+  - name: "UNAGI NIGIRI"
+    aliases: []
+  - name: "IKA NIGIRI"
+    aliases: []
+  - name: "IKURA NIGIRI"
+    aliases: []
+  - name: "TOBIKKO NIGIRI"
+    aliases: []
+  - name: "ABOGATO NIGIRI"
+    aliases: []
+  - name: "UNI NIGIRI"
+    aliases: []
+  - name: "GUNKAN ATÚN SPICY"
+    aliases: []
+  - name: "GUKAN SALMÓN SPICY"
+    aliases: []
+  - name: "SUSHI FLAMEDO DE SALMÓN"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE DORADA"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE CALAMARES"
+    aliases: []
+  - name: "SUSHI FLAMEADO DE ATÚN"
+    aliases: []
+  - name: "TEMAKI"
+    aliases: []
+  - name: "ONIGIRI"
+    aliases: []
+  - name: "MAKI VARIADO"
+    aliases: []
+  - name: "SUSHI VARIADO (TYU/ZYO/KOKUJO)"
+    aliases: ["SUSHI VARIADO (4 NIGIRI, 4 MAKI)"]
+  - name: "SUSHI Y SASHIMI VARIADO"
+    aliases: []
+  - name: "Ura maki"
+    aliases: []
+  - name: "SAKE URAMAKI"
+    aliases: []
+  - name: "TEMPURA FUTOMAKI"
+    aliases: []
+  - name: "SPICY TUNA MAKI"
+    aliases: []
+  - name: "CALIFORNIA MAKI"
+    aliases: []
+  - name: "NIKU MAKI"
+    aliases: []
+  - name: "GYUNIKU MAKI"
+    aliases: []
+  - name: "PHILADELPHIA MAKI"
+    aliases: []
+  - name: "PINKUDORAGON RORU"
+    aliases: []
+  - name: "KAEDE RORU"
+    aliases: []
+  - name: "Uramaki de salmón semicrudo y langostinos rebozados"
+    aliases: []
+  - name: "Uramaki con crujiente de cangrejo y aguacate"
+    aliases: []
+  - name: "CHIRASHI DONBURI"
+    aliases: []
+  - name: "TEMPURA NO MORIAWASE"
+    aliases: []
+  - name: "EBI TEMPURA"
+    aliases: []
+  - name: "TORI KAISU"
+    aliases: []
+  - name: "SAKANA FURAI"
+    aliases: []
+  - name: "TONKASU"
+    aliases: []
+  - name: "PINCHO DE POLLO CON SALSA SOJA CARAMELIZADA"
+    aliases: []
+  - name: "CRUJIENTE ROLLITOS DE TERNERA Y VERDURAS"
+    aliases: []
+  - name: "SOPA DE MISO CON ALGAS Y TOFU"
+    aliases: []
+  - name: "ENSALADA CON VIRUTAS JAMÓN"
+    aliases: []
+  - name: "URAMAKI DE LANGOSTINOS FRITO (8 PIEZAS)"
+    aliases: []
+  - name: "SASHIMI VARIADO (9 LONCHAS)"
+    aliases: []
+  - name: "URAMAKI DE SALMÓN Y AGUACATE (8 PIEZAS)"
+    aliases: []
+  - name: "WOK DE TERNERA CON VERDURA"
+    aliases: []
+  - name: "CRUJIENTE DE PATO CON SOJA CARAMELIZADO"
+    aliases: []
+  - name: "PECHUGA DE POLLO FRITO CON SÉSAMO"
+    aliases: []
+  - name: "ARROZ FRITO CON SETAS Y BAMBÚ"
+    aliases: []
+  - name: "TALLARINES FRITO AL ESTILO JAPONÉS"
+    aliases: []
+  - name: "ARROZ BLANCO"
+    aliases: []

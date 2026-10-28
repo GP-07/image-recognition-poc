@@ -1,0 +1,95 @@
+image_id: "10320618957461533705/7167d9d1e8001dbdcb304e4db4da9233"
+split: dev
+reviewed: false
+notes: "Street photo of a restaurant entrance (Indian) with several menus on a stand: a table-top board (Entrantes / Pollo / Cordero), a 'Taj - Bowls' sheet partly covered, and an open booklet (Platos con Pollo / Platos con Cordero). Dishes appearing on both the board and the booklet are listed once; booklet spelling variants added as aliases (e.g. Dopizza/Dopiazza). Samosa items printed with '(2 uds.)' quantity, dropped from name. Left out: last row of the board's Cordero box (Cordero Palak / Cordero Biryani, cut by the booklet - but both are legible in the booklet so they are included), two Taj-Bowls items whose names are cut off ('...TTERFLY', and a 9,50 EUR item with no visible name). Background TV/food photos are not menu items. Spanish menu."
+dishes:
+  - name: "Papad"
+    aliases: []
+  - name: "Vegetable Pakora"
+    aliases: []
+  - name: "Paneer Pakora"
+    aliases: []
+  - name: "Samosas vegetal"
+    aliases: []
+  - name: "Aloo Tikki Chat"
+    aliases: []
+  - name: "Chat Papdi"
+    aliases: []
+  - name: "Dahi Puri"
+    aliases: []
+  - name: "Chilli Paneer"
+    aliases: []
+  - name: "Cebolla Bhaji"
+    aliases: []
+  - name: "Pollo Pakora"
+    aliases: []
+  - name: "Pescado Pakora"
+    aliases: []
+  - name: "Samosas de carne"
+    aliases: []
+  - name: "Chilli Chicken"
+    aliases: []
+  - name: "Lollipops De Pollo"
+    aliases: []
+  - name: "Pollo al Curry"
+    aliases: []
+  - name: "Pollo Madras"
+    aliases: []
+  - name: "Pollo Tikka Masala"
+    aliases: []
+  - name: "Pollo Korma"
+    aliases: []
+  - name: "Pollo Vindaloo"
+    aliases: []
+  - name: "Butter Chicken"
+    aliases: []
+  - name: "Murgh Masala"
+    aliases: []
+  - name: "Pollo Palak"
+    aliases: []
+  - name: "Pollo Jalfrezi"
+    aliases: []
+  - name: "Pollo Kadhai"
+    aliases: []
+  - name: "Pollo Balti"
+    aliases: []
+  - name: "Pollo Dopiazza"
+    aliases: []
+  - name: "Pollo Mango"
+    aliases: []
+  - name: "Pollo Nilgiri"
+    aliases: []
+  - name: "Pollo Mughlai"
+    aliases: []
+  - name: "Pollo Biryani"
+    aliases: []
+  - name: "Cordero Curry"
+    aliases: []
+  - name: "Cordero Madras"
+    aliases: []
+  - name: "Cordero Korma"
+    aliases: []
+  - name: "Cordero Vindaloo"
+    aliases: []
+  - name: "Cordero Balti"
+    aliases: []
+  - name: "Cordero Tikka Masala"
+    aliases: []
+  - name: "Cordero Rogan Josh"
+    aliases: []
+  - name: "Cordero Jalfrezi"
+    aliases: []
+  - name: "Cordero Kadhai"
+    aliases: []
+  - name: "Cordero Dopizza"
+    aliases: ["Cordero Dopiazza"]
+  - name: "Cordero Palak"
+    aliases: []
+  - name: "Cordero Biryani"
+    aliases: []
+  - name: "Tradicional"
+    aliases: []
+  - name: "Coco"
+    aliases: []
+  - name: "Magic Masala"
+    aliases: []
