@@ -13,10 +13,13 @@ choices and how quality and cost are measured.
 - **Duplicate photos are detected before any OCR/LLM call** (file hash + perceptual hash) and get
   the original's result.
 - **Configurable, one model per run:** `--mode ocr | ocr+llm`, `--llm-policy fallback | always`,
-  `--llm-model <id>`: Claude (`claude-haiku-5-5`, `claude-sonnet-5-5`) or a free local model
-  through Ollama (`ollama/qwen2.5:7b`).
-- **Never fails for a missing key:** without `ANTHROPIC_API_KEY` (env or `.env`) or a running
-  Ollama, an `ocr+llm` run degrades to OCR + rules and records a warning in `manifest.json`.
+  `--llm-model haiku | sonnet | opus | ollama` (aliases; exact ids also accepted): Claude, or a
+  free local model through Ollama (`OLLAMA_MODEL`, default `qwen2.5:7b`).
+- **Never fails for a missing key:** the LLM connection is checked first, before any image is
+  read (a free `models.retrieve` call proves the key is valid for the model). Without a valid
+  `ANTHROPIC_API_KEY` (env or `.env`) or a running Ollama, an `ocr+llm` run degrades to OCR +
+  rules and records a warning in `manifest.json`.
+- **Output:** `items.csv`, one row per extracted item, in `tmp/<run>/` unless `--output` is given.
 - **Every slow or paid stage is cached by content**, so re-running with another model reuses the
   OCR and only pays for the LLM call; `--only-low-confidence` re-runs just the hard pages.
 - **Measured, not guessed:** a golden set with language aliases, a dev/test split by restaurant,
@@ -66,31 +69,34 @@ cp .env.example .env    # put ANTHROPIC_API_KEY there (never committed); env var
 .venv/bin/menu-poc run --mode ocr --input /path/to/images --output /path/to/output
 
 # Cascade: LLM only for low-confidence pages
-.venv/bin/menu-poc run --mode ocr+llm --llm-policy fallback --llm-model claude-haiku-5-5
+.venv/bin/menu-poc run --mode ocr+llm --llm-policy fallback --llm-model haiku
 
 # Same with a free local model (brew install ollama && ollama pull qwen2.5:7b)
-.venv/bin/menu-poc run --mode ocr+llm --llm-model ollama/qwen2.5:7b
+.venv/bin/menu-poc run --mode ocr+llm --llm-model ollama
 
 # Not good enough? Re-run only the hard pages with a stronger model; the OCR comes from the cache
-.venv/bin/menu-poc run --mode ocr+llm --llm-model claude-sonnet-5-5 \
-    --reuse-from runs/<previous run> --only-low-confidence
+.venv/bin/menu-poc run --mode ocr+llm --llm-model sonnet \
+    --reuse-from tmp/<previous run> --only-low-confidence
 
 # Evaluate / compare
-.venv/bin/menu-poc eval runs/<run>
-.venv/bin/menu-poc compare runs/<run a> runs/<run b> --out docs/results.md
+.venv/bin/menu-poc eval tmp/<run>
+.venv/bin/menu-poc compare tmp/<run a> tmp/<run b> --out docs/results.md
 
 # Tests (the real-OCR test is marked slow)
 .venv/bin/pytest -q            # fast suite
 .venv/bin/pytest -q -m slow    # real OCR on one image
 ```
 
-**Inputs and outputs.** Defaults live in `config/default.yaml`; every path can be overridden:
-`--input` (zip or folder, read-only, never extracted), `--output` (default `runs/`) and
-`--artifacts` (stage cache, default `artifacts/`). Each run creates `<output>/<timestamp>_<label>/`:
+**Inputs and outputs.** Defaults live in `config/default.yaml` (its relative paths are relative to
+the project root, so the command works from any directory); every path can be overridden:
+`--input` (zip or folder, read-only, never extracted), `--output` (default `tmp/` in the
+project) and `--artifacts` (stage cache, default `artifacts/`). Each run creates
+`<output>/<timestamp>_<label>/`:
 
 | File | Content |
 |---|---|
-| `results.jsonl` | one line per image: items (name, description, prices, section), confidence, LLM usage and cost, timings, `duplicate_of`, per-image `error` |
+| `items.csv` | **the extracted items**, one row each: image, restaurant, item, description, prices (`8.5\|12` for sizes), section, source (`rules`/`llm`), `duplicate_of` |
+| `results.jsonl` | full per-image record (nested): items plus confidence and its signals, LLM usage and cost, timings, `duplicate_of`, per-image `error`; used by `eval` and `--reuse-from` |
 | `manifest.json` | requested vs effective mode, counts, duplicates, run-level `warnings` and per-image `errors` |
 | `config.yaml` | the effective configuration |
 | `summary.md`, `metrics.json` | evaluation against the golden set, when one exists |
@@ -130,7 +136,7 @@ Current scope (every orderable item, duplicate photos scored once, 15 distinct p
 
 | run | recall dev | recall test | recall all | precision | % pages to LLM | cost / image | time / image |
 |---|---|---|---|---|---|---|---|
-| Rules only (`runs/20261028-125023_ocr`) | 74.6% | 55.6% | 69.2% | 84.3% | 0% | $0 | 4.1 s |
+| Rules only (`tmp/20261028-125023_ocr`) | 74.6% | 55.6% | 69.2% | 84.3% | 0% | $0 | 4.1 s |
 | Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | 47% (7/15) | ≈ $0.001 | |
 
 History, earlier scope (food only, duplicate photos counted twice): rules baseline 71.9% recall /

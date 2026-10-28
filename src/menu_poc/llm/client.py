@@ -18,6 +18,7 @@ from collections.abc import Callable, Mapping
 from typing import Any
 
 from menu_poc.llm.pricing import cost_usd, price_for
+from menu_poc.llm.registry import resolve_model
 from menu_poc.llm.text import estimate_tokens
 from menu_poc.models import LLMUsage
 
@@ -71,10 +72,26 @@ class AnthropicClient:
         self._sdk = sdk_client
 
     def unavailable_reason(self) -> str | None:
-        """None when credentials are configured, else why the LLM step cannot run."""
-        if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
-            return None
-        return "ANTHROPIC_API_KEY is not set (environment or .env)"
+        """None when the key works for this model, else why the LLM step cannot run.
+
+        Checked once at start-up with ``models.retrieve``: free, fast, and it proves both that
+        the key is valid and that it can use the model, before any image is processed.
+        """
+        if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
+            return "ANTHROPIC_API_KEY is not set (environment or .env)"
+        import anthropic
+
+        try:
+            self._client().models.retrieve(self.model, timeout=10)
+        except anthropic.AuthenticationError:
+            return "ANTHROPIC_API_KEY is invalid (authentication failed)"
+        except (anthropic.PermissionDeniedError, anthropic.NotFoundError):
+            return f"this API key cannot use model {self.model}"
+        except anthropic.APIConnectionError as exc:
+            return f"Anthropic API not reachable ({exc})"
+        except anthropic.APIStatusError as exc:
+            return f"Anthropic API error {exc.status_code} while checking the key"
+        return None
 
     def _client(self) -> Any:
         if self._sdk is None:
@@ -198,6 +215,7 @@ def make_llm_client(model: str = DEFAULT_MODEL, fake_responses: FakeResponses | 
         return FakeLLMClient(fake_responses, model=f"fake/{model}")
     from menu_poc.llm.ollama import PREFIX, OllamaClient
 
+    model = resolve_model(model)
     if model.startswith(PREFIX):
         return OllamaClient(model)
     return AnthropicClient(model)

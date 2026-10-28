@@ -81,8 +81,24 @@ def test_missing_api_key_degrades_to_ocr_with_a_warning(monkeypatch):
     assert "ANTHROPIC_API_KEY" in warnings[0]
 
 
+class _FakeModels:
+    def __init__(self, error=None):
+        self.error = error
+
+    def retrieve(self, model_id, timeout=None):
+        if self.error:
+            raise self.error
+        return {"id": model_id}
+
+
+class _FakeSdk:
+    def __init__(self, error=None):
+        self.models = _FakeModels(error)
+
+
 def test_api_key_present_keeps_the_llm(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setattr(AnthropicClient, "_client", lambda self: _FakeSdk())
     warnings: list[str] = []
     config, client = resolve_llm(RunConfig(input_path="x.zip", mode="ocr+llm"), warnings)
     assert config.mode == "ocr+llm" and isinstance(client, AnthropicClient) and not warnings
@@ -94,3 +110,36 @@ def test_offline_mode_needs_no_key(monkeypatch):
     cfg = RunConfig(input_path="x.zip", mode="ocr+llm", llm_offline=True)
     config, client = resolve_llm(cfg, [])
     assert config.mode == "ocr+llm" and client is not None
+
+
+def test_invalid_api_key_degrades_before_processing(monkeypatch):
+    import anthropic
+    import httpx2 as httpx
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "wrong")
+    response = httpx.Response(401, request=httpx.Request("GET", "https://api.anthropic.com"))
+    error = anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
+    monkeypatch.setattr(AnthropicClient, "_client", lambda self: _FakeSdk(error))
+    warnings: list[str] = []
+    config, client = resolve_llm(RunConfig(input_path="x.zip", mode="ocr+llm"), warnings)
+    assert config.mode == "ocr" and client is None and "invalid" in warnings[0]
+
+
+@pytest.mark.parametrize(
+    ("alias", "expected"),
+    [
+        ("HAIKU", "claude-haiku-5-5"),
+        ("Sonnet", "claude-sonnet-5-5"),
+        ("ollama", "ollama/qwen2.5:7b"),
+        ("ollama/llama3.2:3b", "ollama/llama3.2:3b"),
+        ("claude-haiku-5-5", "claude-haiku-5-5"),
+    ],
+)
+def test_model_aliases(alias, expected, monkeypatch):
+    monkeypatch.delenv("OLLAMA_MODEL", raising=False)
+    assert RunConfig(input_path="x.zip", llm_model=alias).llm_model == expected
+
+
+def test_unknown_model_is_rejected_early():
+    with pytest.raises(ValueError, match="haiku, sonnet, opus, ollama"):
+        RunConfig(input_path="x.zip", llm_model="gpt-5")

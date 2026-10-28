@@ -6,7 +6,12 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from menu_poc.llm.registry import resolve_model
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir", "reuse_from")
 
 Mode = Literal["ocr", "ocr+llm"]
 LLMPolicy = Literal["fallback", "always"]
@@ -14,12 +19,13 @@ LLMPolicy = Literal["fallback", "always"]
 
 class RunConfig(BaseModel):
     input_path: Path
-    runs_dir: Path = Path("runs")
-    artifacts_dir: Path = Path("artifacts")
+    runs_dir: Path = PROJECT_ROOT / "tmp"  # one sub-directory per run
+    artifacts_dir: Path = PROJECT_ROOT / "artifacts"  # stage cache, reused across runs
 
     mode: Mode = "ocr"
     llm_policy: LLMPolicy = "fallback"
-    llm_model: str = "claude-haiku-5-5"
+    # Alias (haiku, sonnet, opus, ollama) or exact id; stored resolved to the exact id.
+    llm_model: str = Field("haiku", validate_default=True)
     llm_offline: bool = False  # only use cached LLM answers; never call the API
 
     confidence_threshold: float = Field(0.6, ge=0.0, le=1.0)
@@ -31,6 +37,11 @@ class RunConfig(BaseModel):
     image_ids: list[str] | None = None  # restrict to these "<restaurant>/<file stem>" ids
     reuse_from: Path | None = None  # previous run dir; with only_low_confidence picks its images
     only_low_confidence: bool = False
+
+    @field_validator("llm_model")
+    @classmethod
+    def _resolve_model(cls, value: str) -> str:
+        return resolve_model(value)
 
     @model_validator(mode="after")
     def _check(self) -> RunConfig:
@@ -46,9 +57,19 @@ class RunConfig(BaseModel):
 
 
 def load_config(path: Path | None = None, **overrides: Any) -> RunConfig:
-    """Load a YAML config (optional) and apply non-None overrides on top."""
+    """Load a YAML config (optional) and apply non-None overrides on top.
+
+    Relative paths in the YAML file are relative to the project root; relative paths given as
+    overrides (CLI flags) are relative to the current directory, as usual for a command line.
+    """
     data: dict[str, Any] = {}
     if path is not None:
         data = yaml.safe_load(Path(path).read_text()) or {}
-    data.update({k: v for k, v in overrides.items() if v is not None})
+        for field in PATH_FIELDS:
+            if data.get(field) is not None:
+                data[field] = PROJECT_ROOT / Path(data[field]).expanduser()
+    for key, value in overrides.items():
+        if value is None:
+            continue
+        data[key] = Path(value).expanduser().resolve() if key in PATH_FIELDS else value
     return RunConfig(**data)

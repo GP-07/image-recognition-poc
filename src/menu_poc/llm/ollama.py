@@ -1,6 +1,7 @@
 """Free, local LLM via Ollama (https://ollama.com): no API key, no cost, data stays on the machine.
 
-Select it with ``--llm-model ollama/<model>``, e.g. ``ollama/qwen2.5:7b``. Ollama's structured
+Select it with ``--llm-model ollama`` (model from ``OLLAMA_MODEL``, default ``qwen2.5:7b``) or
+``--llm-model ollama/<model>``. Ollama's structured
 outputs (``format`` = JSON schema) keep the answer parseable, like the Anthropic client. Only the
 standard library is used (one HTTP POST), so it adds no dependency.
 """
@@ -15,9 +16,9 @@ import urllib.request
 from typing import Any
 
 from menu_poc.llm.client import LLMError, LLMOutputError, LLMRetryableError
+from menu_poc.llm.registry import OLLAMA_PREFIX as PREFIX
 from menu_poc.models import LLMUsage
 
-PREFIX = "ollama/"
 DEFAULT_HOST = "http://localhost:11434"
 
 

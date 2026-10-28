@@ -239,6 +239,22 @@ dos funciones de normalización.
 - **Golden set (aclaración):** es la "hoja de respuestas" para medir; el pipeline nunca lo ve.
   Sólo influyó indirectamente al ajustar reglas a mano con el split dev; test nunca.
 
+## Discusión 10 — Aliases, validación temprana, salida por defecto y CSV (2026-10-28)
+
+- `--llm-model` acepta aliases sin distinguir mayúsculas: `haiku`, `sonnet`, `opus`, `ollama`
+  (modelo local de `OLLAMA_MODEL`, por defecto `qwen2.5:7b`); los ids exactos siguen valiendo.
+  Un nombre desconocido falla al cargar la config, con la lista de aliases.
+- La conexión LLM se valida **antes de leer imágenes**: con key presente se hace `models.retrieve`
+  (gratis) para probar que es válida y puede usar el modelo; si no, warning inmediato y la corrida
+  sigue como `ocr`. Para Ollama: servidor alcanzable y modelo descargado.
+- Sin `--output`, la salida va a `tmp/` del proyecto (gitignored). Las rutas del YAML son relativas
+  a la raíz del proyecto y las de la CLI al directorio actual: el comando funciona desde cualquier lado.
+- Salida principal: `items.csv` (una fila por ítem, UTF-8 con BOM para Excel). Se mantiene
+  `results.jsonl` como registro completo anidado (señales, costo, tiempos), que usan `eval` y `--reuse-from`.
+- GitHub Actions: pospuesto.
+- Golden set: el usuario plantea borrarlo para no sumar trabajo manual; recomendación: conservarlo
+  como "silver set" generado por IA sin revisión obligatoria (ver respuesta en la conversación). Pendiente de decisión.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |

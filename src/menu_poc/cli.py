@@ -12,19 +12,20 @@ from typing import Any
 from dotenv import load_dotenv
 
 from menu_poc.cache.store import ArtifactStore
-from menu_poc.config import RunConfig, load_config
+from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
 from menu_poc.evaluation.report import compare_runs, run_report
-from menu_poc.io.writers import write_json, write_jsonl
+from menu_poc.io.writers import read_jsonl, write_items_csv, write_json, write_jsonl
 from menu_poc.llm.client import make_llm_client
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
+from menu_poc.models import ImageResult
 from menu_poc.ocr.rapid import RapidOcrEngine
 from menu_poc.parsing.rules import RuleBasedParser
 from menu_poc.pipeline import Pipeline, merge_previous, new_run_dir, select_images
 from menu_poc.preprocess.image import ImagePreprocessor
 
-DEFAULT_CONFIG = Path("config/default.yaml")
-DEFAULT_GOLDEN = Path("data/golden")
+DEFAULT_CONFIG = PROJECT_ROOT / "config" / "default.yaml"
+DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
 
 
 def build_pipeline(config: RunConfig, llm_client: Any | None = None) -> Pipeline:
@@ -74,15 +75,16 @@ def _cmd_run(args: argparse.Namespace) -> int:
         reuse_from=args.reuse_from,
         only_low_confidence=True if args.only_low_confidence else None,
     )
-    refs = select_images(requested)
-    if not refs:
-        print("No images selected.", file=sys.stderr)
-        return 1
-
+    # Check the LLM first, before reading any image: a bad or missing key is reported at once.
     warnings: list[str] = []
     config, client = resolve_llm(requested, warnings)
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
+
+    refs = select_images(requested)
+    if not refs:
+        print("No images selected.", file=sys.stderr)
+        return 1
     pipeline = build_pipeline(config, client)
     run_dir = new_run_dir(config)  # effective config: reports must show what actually ran
     print(f"Run {run_dir} — {len(refs)} images, mode={config.mode}")
@@ -91,6 +93,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if config.reuse_from is not None:
         write_jsonl(run_dir / "results.jsonl", merge_previous(config, results))
         print(f"Re-ran {len(results)} images; the rest carried over from {config.reuse_from}.")
+    n_rows = write_items_csv(
+        run_dir / "items.csv", read_jsonl(run_dir / "results.jsonl", ImageResult)
+    )
 
     errors = {r.image_id: r.error for r in results if r.error}
     duplicates = {r.image_id: r.duplicate_of for r in results if r.duplicate_of}
@@ -116,6 +121,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     )
     for image_id, error in errors.items():
         print(f"  {image_id}: {error}")
+    print(f"Items: {run_dir / 'items.csv'} ({n_rows} rows)")
     if args.golden.exists():
         report = run_report(run_dir, args.golden)
         (run_dir / "summary.md").write_text(report, encoding="utf-8")
@@ -146,11 +152,13 @@ def _parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="process images (results go to a new run directory)")
     run.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     run.add_argument("--input", type=Path, help="zip file or directory of images")
-    run.add_argument("--output", type=Path, help="directory for run results (default: runs/)")
+    run.add_argument("--output", type=Path, help="directory for run results (default: tmp/)")
     run.add_argument("--artifacts", type=Path, help="stage cache directory (default: artifacts/)")
     run.add_argument("--mode", choices=["ocr", "ocr+llm"])
     run.add_argument("--llm-policy", choices=["fallback", "always"])
-    run.add_argument("--llm-model", help="one model per run, e.g. claude-haiku-5-5")
+    run.add_argument(
+        "--llm-model", help="haiku | sonnet | opus | ollama (or an exact id); one model per run"
+    )
     run.add_argument("--offline", action="store_true", help="only cached LLM answers")
     run.add_argument("--threshold", type=float, help="rules confidence below this -> LLM")
     run.add_argument("--image-ids", help="comma-separated '<restaurant>/<stem>' ids")
@@ -179,7 +187,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    load_dotenv()  # ANTHROPIC_API_KEY etc. from ./.env; real environment variables win
+    load_dotenv(PROJECT_ROOT / ".env")  # API keys; real environment variables win
     args = _parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,
