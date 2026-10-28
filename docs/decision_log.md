@@ -376,6 +376,15 @@ dos funciones de normalización.
 - Se vio enseguida: dos fakes de los tests no cumplían el contrato completo (`fingerprint`,
   `unavailable_reason`) y ahora fallaban al instanciarse; se completaron.
 
+## Discusión 18 — README corto, para lectores no técnicos (2026-10-28)
+
+- Pedido del usuario: README corto, en prosa, entendible por alguien no técnico, con las secciones
+  objetivo, arquitectura y funcionamiento (incluidas las opciones de LLM), cómo ejecutarlo (con
+  Ollama y con Claude) y archivos de salida.
+- El contenido técnico que salía del README (diagrama y tabla de componentes, evaluación,
+  resultados, respuestas a las tres preguntas, estructura del código, uso de IA) pasa sin cambios
+  a `docs/technical_notes.md`, enlazado desde el README.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -392,3 +401,4 @@ dos funciones de normalización.
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Simplificación del CLI (corrida siempre completa) y validación de inputs como fase del pipeline. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Post-procesos del pipeline (evaluación contra el golden set como el primero). |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Interfaces de etapa pasadas de Protocol a clases base abstractas. |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | README reescrito para lectores no técnicos; detalle técnico movido a docs/technical_notes.md. |
