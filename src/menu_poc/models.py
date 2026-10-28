@@ -1,4 +1,4 @@
-"""Data contracts shared by every pipeline stage.
+"""Pydantic models: the data contracts of the pipeline stages and of the evaluation.
 
 Coordinates are pixels in the *preprocessed* image (after EXIF transpose, resize and
 page rotation), with the origin at the top-left corner.
@@ -6,11 +6,66 @@ page rotation), with the origin at the top-left corner.
 
 from __future__ import annotations
 
-from typing import Literal
+from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
-BBox = tuple[float, float, float, float]  # x0, y0, x1, y1 (axis-aligned)
+from menu_poc.constants import (
+    DEFAULT_ARTIFACTS_DIR,
+    DEFAULT_CONFIDENCE_THRESHOLD,
+    DEFAULT_DEDUP_MAX_DISTANCE,
+    DEFAULT_MAX_IMAGE_SIDE,
+    DEFAULT_RUNS_DIR,
+    MATCH_THRESHOLD,
+)
+from menu_poc.typings import BBox, DishOrigin, LLMPolicy, Split
+
+# --- run configuration ----------------------------------------------------------------------------
+
+
+class RunConfig(BaseModel):
+    input_path: Path
+    runs_dir: Path = DEFAULT_RUNS_DIR  # one sub-directory per run
+    artifacts_dir: Path = DEFAULT_ARTIFACTS_DIR  # stage cache, reused across runs
+
+    # OCR + rules always run. The LLM step runs only when a model is configured: an alias
+    # (haiku, sonnet, opus, ollama) or an exact id, stored resolved to the exact id.
+    llm_model: str | None = None
+    llm_policy: LLMPolicy = "fallback"
+    llm_offline: bool = False  # only use cached LLM answers; never call the API
+
+    confidence_threshold: float = Field(DEFAULT_CONFIDENCE_THRESHOLD, ge=0.0, le=1.0)
+    dedup: bool = True  # skip OCR/LLM for duplicate photos (same file or near-identical)
+    dedup_max_distance: int = Field(DEFAULT_DEDUP_MAX_DISTANCE, ge=0)
+    max_image_side: int = Field(DEFAULT_MAX_IMAGE_SIDE, gt=0)
+
+    # Image selection
+    image_ids: list[str] | None = None  # restrict to these "<restaurant>/<file stem>" ids
+    reuse_from: Path | None = None  # previous run dir; with only_low_confidence picks its images
+    only_low_confidence: bool = False
+
+    @field_validator("llm_model")
+    @classmethod
+    def _resolve_model(cls, value: str | None) -> str | None:
+        # Imported here: the LLM engines import these models, so a top-level import is a cycle.
+        from menu_poc.llm.engine import LLMEngine
+
+        return None if value is None else LLMEngine.get_for_alias(value).model
+
+    @model_validator(mode="after")
+    def _check(self) -> RunConfig:
+        if self.only_low_confidence != (self.reuse_from is not None):
+            raise ValueError("only_low_confidence and reuse_from go together")
+        if self.only_low_confidence and not self.uses_llm:
+            raise ValueError("re-running low-confidence images needs an LLM model (llm_model)")
+        return self
+
+    @property
+    def uses_llm(self) -> bool:
+        return self.llm_model is not None
+
+
+# --- pipeline -------------------------------------------------------------------------------------
 
 
 class OcrLine(BaseModel):
@@ -71,7 +126,7 @@ class Dish(BaseModel):
     prices: list[float] = Field(default_factory=list)
     section: str | None = None
     source_line_ids: list[int] = Field(default_factory=list)
-    origin: Literal["rules", "llm"]
+    origin: DishOrigin
 
 
 class ParseResult(BaseModel):
@@ -115,3 +170,115 @@ class ImageResult(BaseModel):
     duplicate_of: str | None = None  # same photo as this image id: dishes copied, nothing run
     duplicate_reason: str | None = None
     error: str | None = None
+
+
+# --- evaluation -----------------------------------------------------------------------------------
+
+
+class GoldenDish(BaseModel):
+    name: str
+    aliases: list[str] = Field(default_factory=list)
+
+    @field_validator("name")
+    @classmethod
+    def _non_empty(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("dish name must not be empty")
+        return value
+
+    @property
+    def variants(self) -> list[str]:
+        """Name plus aliases (any of them counts as recognising the dish)."""
+        return [self.name, *self.aliases]
+
+
+class GoldenImage(BaseModel):
+    image_id: str  # "<restaurant_id>/<file_stem>"
+    split: Split
+    reviewed: bool = False
+    notes: str | None = None
+    dishes: list[GoldenDish] = Field(default_factory=list)
+
+
+class MatchedPair(BaseModel):
+    pred: str
+    gold: str  # canonical gold name
+    variant: str  # name or alias that produced the best score
+    score: float
+
+
+class ImageMatch(BaseModel):
+    tp: int = 0
+    fp: int = 0
+    fn: int = 0
+    duplicates: int = 0
+    matched: list[MatchedPair] = Field(default_factory=list)
+    duplicate_pairs: list[MatchedPair] = Field(default_factory=list)
+    unmatched_gold: list[str] = Field(default_factory=list)
+    false_positives: list[str] = Field(default_factory=list)
+
+
+class ImageMetrics(BaseModel):
+    image_id: str
+    restaurant_id: str
+    labeled: bool
+    split: Split | None = None
+    n_pred: int
+    n_gold: int = 0
+    tp: int = 0
+    fp: int = 0
+    fn: int = 0
+    duplicates: int = 0
+    recall: float | None = None
+    precision: float | None = None
+    cost_usd: float = 0.0
+    llm_used: bool = False
+    llm_cached: bool = False
+    llm_latency_s: float = 0.0
+    time_s: float = 0.0
+    ungrounded_dropped: int = 0
+    duplicate_of: str | None = None  # duplicate photo: excluded from accuracy (counted once)
+    error: str | None = None
+    matched: list[MatchedPair] = Field(default_factory=list)
+    duplicate_pairs: list[MatchedPair] = Field(default_factory=list)
+    unmatched_gold: list[str] = Field(default_factory=list)
+    false_positives: list[str] = Field(default_factory=list)
+
+
+class AccuracyStats(BaseModel):
+    n_images: int = 0
+    n_gold: int = 0
+    tp: int = 0
+    fp: int = 0
+    fn: int = 0
+    duplicates: int = 0
+    micro_recall: float | None = None
+    micro_precision: float | None = None
+    macro_recall: float | None = None
+    macro_precision: float | None = None
+
+
+class RunMetrics(BaseModel):
+    run: str
+    mode: str | None = None
+    llm_model: str | None = None
+    llm_policy: str | None = None
+    threshold: float = MATCH_THRESHOLD
+    only_reviewed: bool = False
+    n_images: int = 0
+    n_labeled: int = 0
+    n_duplicate_images: int = 0  # skipped photos (same menu as another image)
+    unlabeled: list[str] = Field(default_factory=list)
+    accuracy: dict[str, AccuracyStats] = Field(default_factory=dict)  # keys: all, dev, test
+    cost_total_usd: float = 0.0
+    cost_per_image_usd: float = 0.0
+    llm_share: float = 0.0  # share of images where the LLM was used
+    llm_cached_share: float = 0.0  # share of LLM images served from cache (no API call)
+    time_total_s: float = 0.0
+    time_mean_s: float = 0.0
+    llm_latency_total_s: float = 0.0
+    llm_latency_mean_s: float = 0.0  # over images where the LLM was used
+    ungrounded_dropped: int = 0
+    n_errors: int = 0
+    errors: dict[str, str] = Field(default_factory=dict)
+    images: list[ImageMetrics] = Field(default_factory=list)

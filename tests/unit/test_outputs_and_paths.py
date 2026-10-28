@@ -2,9 +2,11 @@
 
 import csv
 
-from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
-from menu_poc.io.writers import ItemRow, write_items_csv
-from menu_poc.models import Dish, ImageResult
+from menu_poc.config import load_config
+from menu_poc.constants import PROJECT_ROOT
+from menu_poc.data_classes import ItemRow
+from menu_poc.io.writers import write_items_csv
+from menu_poc.models import Dish, ImageResult, RunConfig
 
 
 def test_items_csv_has_one_row_per_item(tmp_path):
@@ -20,8 +22,8 @@ def test_items_csv_has_one_row_per_item(tmp_path):
         ImageResult(image_id="r/b", restaurant_id="r", duplicate_of="r/a"),
     ]
     assert write_items_csv(tmp_path / "items.csv", results) == 2
-    with (tmp_path / "items.csv").open(encoding="utf-8-sig") as f:
-        rows = list(csv.DictReader(f))
+    with (tmp_path / "items.csv").open(encoding="utf-8-sig") as stream:
+        rows = list(csv.DictReader(stream))
     assert rows[0]["item"] == "Margarita" and rows[0]["prices"] == "8.5|12"
     assert rows[1]["description"] == "50 cl" and rows[1]["source"] == "llm"
 

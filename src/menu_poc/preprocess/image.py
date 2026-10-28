@@ -10,19 +10,23 @@ from typing import Any
 
 from PIL import Image, ImageOps
 
-VERSION = "1"
+from menu_poc.constants import DEFAULT_MAX_IMAGE_SIDE, PREPROCESS_VERSION
 
 
 class ImagePreprocessor:
     """EXIF transpose, convert to RGB and downscale so the longest side is <= ``max_side``."""
 
-    def __init__(self, max_side: int = 2000) -> None:
+    def __init__(self, max_side: int = DEFAULT_MAX_IMAGE_SIDE) -> None:
         if max_side <= 0:
             raise ValueError("max_side must be positive")
         self.max_side = max_side
 
     def fingerprint(self) -> dict[str, Any]:
-        return {"name": "image_preprocessor", "version": VERSION, "max_side": self.max_side}
+        return {
+            "name": "image_preprocessor",
+            "version": PREPROCESS_VERSION,
+            "max_side": self.max_side,
+        }
 
     def __call__(self, image: Image.Image) -> Image.Image:
         image = ImageOps.exif_transpose(image) or image

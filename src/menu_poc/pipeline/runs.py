@@ -5,10 +5,10 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 
-from menu_poc.config import RunConfig
-from menu_poc.io.dataset import ImageRef, iter_images
+from menu_poc.data_classes import ImageRef
+from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import read_jsonl, write_yaml
-from menu_poc.models import ImageResult
+from menu_poc.models import ImageResult, RunConfig
 
 
 def merge_previous(config: RunConfig, results: list[ImageResult]) -> list[ImageResult]:
@@ -16,10 +16,10 @@ def merge_previous(config: RunConfig, results: list[ImageResult]) -> list[ImageR
     the new run covers the same image set and stays comparable with other runs."""
     if config.reuse_from is None:
         return results
-    redone = {r.image_id for r in results}
+    redone = {result.image_id for result in results}
     previous = read_jsonl(config.reuse_from / "results.jsonl", ImageResult)
-    merged = [r for r in previous if r.image_id not in redone] + results
-    return sorted(merged, key=lambda r: r.image_id)
+    merged = [result for result in previous if result.image_id not in redone] + results
+    return sorted(merged, key=lambda result: result.image_id)
 
 
 def select_images(config: RunConfig) -> list[ImageRef]:
@@ -27,8 +27,12 @@ def select_images(config: RunConfig) -> list[ImageRef]:
     ids = config.image_ids
     if config.reuse_from is not None and config.only_low_confidence:
         previous = read_jsonl(config.reuse_from / "results.jsonl", ImageResult)
-        low = [r.image_id for r in previous if r.rules_confidence < config.confidence_threshold]
-        ids = [i for i in low if ids is None or i in ids]
+        low = [
+            result.image_id
+            for result in previous
+            if result.rules_confidence < config.confidence_threshold
+        ]
+        ids = [image_id for image_id in low if ids is None or image_id in ids]
         if not ids:
             return []
     return list(iter_images(config.input_path, ids))

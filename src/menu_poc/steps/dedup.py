@@ -17,14 +17,13 @@ import io
 import numpy as np
 from PIL import Image, ImageOps
 
-from menu_poc.io.dataset import ImageRef
+from menu_poc.constants import DEFAULT_DEDUP_MAX_DISTANCE, DHASH_SIZE
+from menu_poc.data_classes import ImageContext, ImageRef
 from menu_poc.models import ImageResult
-from menu_poc.steps.base import ImageContext, Step
-
-HASH_SIZE = 16  # 16x16 = 256-bit hash
+from menu_poc.steps.base import Step
 
 
-def dhash(image: Image.Image, size: int = HASH_SIZE) -> np.ndarray:
+def dhash(image: Image.Image, size: int = DHASH_SIZE) -> np.ndarray:
     """Difference hash: sign of the horizontal gradient on a (size+1) x size thumbnail."""
     image.draft("L", (size * 8, size * 8))  # JPEG: decode at reduced scale, much faster
     gray = ImageOps.exif_transpose(image).convert("L").resize((size + 1, size), Image.LANCZOS)
@@ -35,26 +34,26 @@ def dhash(image: Image.Image, size: int = HASH_SIZE) -> np.ndarray:
 class DedupStep(Step):
     name = "dedup"
 
-    def __init__(self, max_distance: int = 10) -> None:
+    def __init__(self, max_distance: int = DEFAULT_DEDUP_MAX_DISTANCE) -> None:
         super().__init__()
         self.max_distance = max_distance
         # Originals seen so far; their results are filled in place by the following steps.
         self._originals: list[tuple[ImageRef, np.ndarray, ImageResult]] = []
 
     def process(self, ctx: ImageContext) -> bool:
-        hash_ = dhash(Image.open(io.BytesIO(ctx.ref.data)))  # lazy open: no full decode
+        image_hash = dhash(Image.open(io.BytesIO(ctx.ref.data)))  # lazy open: no full decode
         for ref, orig_hash, orig_result in self._originals:
             if ctx.ref.sha256 == ref.sha256:
                 reason = "identical file"
             else:
-                distance = int((hash_ != orig_hash).sum())
+                distance = int((image_hash != orig_hash).sum())
                 if distance > self.max_distance:
                     continue
-                reason = f"near-duplicate (distance {distance}/{hash_.size})"
+                reason = f"near-duplicate (distance {distance}/{image_hash.size})"
             result = ctx.result
             result.dishes = orig_result.dishes
             result.rules_confidence = orig_result.rules_confidence
             result.duplicate_of, result.duplicate_reason = ref.image_id, reason
             return False  # nothing else to do for this photo
-        self._originals.append((ctx.ref, hash_, ctx.result))
+        self._originals.append((ctx.ref, image_hash, ctx.result))
         return True

@@ -9,29 +9,24 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import ClassVar
 
-from menu_poc.io.dataset import ImageRef
-from menu_poc.models import ImageResult, OcrResult, ParseResult, StructureResult
+from menu_poc.data_classes import ImageContext
+from menu_poc.typings import ValueT
 
 log = logging.getLogger(__name__)
 
 
-@dataclass
-class ImageContext:
-    """What the steps know about one image. Steps fill it in place, in chain order."""
+class MissingInputError(RuntimeError):
+    """A step ran without the output of an earlier step it depends on."""
 
-    ref: ImageRef
-    result: ImageResult
-    ocr: OcrResult | None = None
-    ocr_key: str | None = None  # cache key of the OCR output, reused by the LLM cache key
-    parsed: ParseResult | None = None
-    structured: StructureResult | None = None
 
-    @classmethod
-    def for_image(cls, ref: ImageRef) -> ImageContext:
-        return cls(ref, ImageResult(image_id=ref.image_id, restaurant_id=ref.restaurant_id))
+def require(value: ValueT | None, what: str) -> ValueT:
+    """The output of an earlier step. The builder's fixed order guarantees it, so a missing one
+    is a bug; it fails this image only, like any other step error."""
+    if value is None:
+        raise MissingInputError(f"{what} is missing: the steps ran out of order")
+    return value
 
 
 class Step(ABC):

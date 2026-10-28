@@ -16,80 +16,12 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, Field
 
-from menu_poc.evaluation.golden import GoldenImage, Split, load_golden
-from menu_poc.evaluation.matching import DEFAULT_THRESHOLD, MatchedPair, match_dishes
+from menu_poc.constants import MATCH_THRESHOLD
+from menu_poc.evaluation.golden import load_golden
+from menu_poc.evaluation.matching import match_dishes
 from menu_poc.io.writers import read_jsonl, write_json
-from menu_poc.models import ImageResult
-
-SPLITS: tuple[str, ...] = ("all", "dev", "test")
-
-
-class ImageMetrics(BaseModel):
-    image_id: str
-    restaurant_id: str
-    labeled: bool
-    split: Split | None = None
-    n_pred: int
-    n_gold: int = 0
-    tp: int = 0
-    fp: int = 0
-    fn: int = 0
-    duplicates: int = 0
-    recall: float | None = None
-    precision: float | None = None
-    cost_usd: float = 0.0
-    llm_used: bool = False
-    llm_cached: bool = False
-    llm_latency_s: float = 0.0
-    time_s: float = 0.0
-    ungrounded_dropped: int = 0
-    duplicate_of: str | None = None  # duplicate photo: excluded from accuracy (counted once)
-    error: str | None = None
-    matched: list[MatchedPair] = Field(default_factory=list)
-    duplicate_pairs: list[MatchedPair] = Field(default_factory=list)
-    unmatched_gold: list[str] = Field(default_factory=list)
-    false_positives: list[str] = Field(default_factory=list)
-
-
-class AccuracyStats(BaseModel):
-    n_images: int = 0
-    n_gold: int = 0
-    tp: int = 0
-    fp: int = 0
-    fn: int = 0
-    duplicates: int = 0
-    micro_recall: float | None = None
-    micro_precision: float | None = None
-    macro_recall: float | None = None
-    macro_precision: float | None = None
-
-
-class RunMetrics(BaseModel):
-    run: str
-    mode: str | None = None
-    llm_model: str | None = None
-    llm_policy: str | None = None
-    threshold: float = DEFAULT_THRESHOLD
-    only_reviewed: bool = False
-    n_images: int = 0
-    n_labeled: int = 0
-    n_duplicate_images: int = 0  # skipped photos (same menu as another image)
-    unlabeled: list[str] = Field(default_factory=list)
-    accuracy: dict[str, AccuracyStats] = Field(default_factory=dict)  # keys: all, dev, test
-    cost_total_usd: float = 0.0
-    cost_per_image_usd: float = 0.0
-    llm_share: float = 0.0  # share of images where the LLM was used
-    llm_cached_share: float = 0.0  # share of LLM images served from cache (no API call)
-    time_total_s: float = 0.0
-    time_mean_s: float = 0.0
-    llm_latency_total_s: float = 0.0
-    llm_latency_mean_s: float = 0.0  # over images where the LLM was used
-    ungrounded_dropped: int = 0
-    n_errors: int = 0
-    errors: dict[str, str] = Field(default_factory=dict)
-    images: list[ImageMetrics] = Field(default_factory=list)
+from menu_poc.models import AccuracyStats, GoldenImage, ImageMetrics, ImageResult, RunMetrics
 
 
 def _ratio(num: float, den: float) -> float | None:
@@ -101,15 +33,15 @@ def _mean(values: list[float]) -> float | None:
 
 
 def image_time(result: ImageResult) -> float:
-    t = result.timings_s
-    return t["total"] if "total" in t else sum(t.values())
+    timings = result.timings_s
+    return timings["total"] if "total" in timings else sum(timings.values())
 
 
 def evaluate_image(
-    result: ImageResult, golden: GoldenImage | None, threshold: float = DEFAULT_THRESHOLD
+    result: ImageResult, golden: GoldenImage | None, threshold: float = MATCH_THRESHOLD
 ) -> ImageMetrics:
     usage = result.llm_usage
-    m = ImageMetrics(
+    metrics = ImageMetrics(
         image_id=result.image_id,
         restaurant_id=result.restaurant_id,
         labeled=golden is not None,
@@ -124,31 +56,35 @@ def evaluate_image(
         error=result.error,
     )
     if golden is None:
-        return m
-    match = match_dishes([d.name for d in result.dishes], golden.dishes, threshold)
-    m.split = golden.split
-    m.n_gold = len(golden.dishes)
-    m.tp, m.fp, m.fn, m.duplicates = match.tp, match.fp, match.fn, match.duplicates
-    m.recall = _ratio(match.tp, m.n_gold)
-    m.precision = _ratio(match.tp, match.tp + match.fp)
-    m.matched, m.duplicate_pairs = match.matched, match.duplicate_pairs
-    m.unmatched_gold, m.false_positives = match.unmatched_gold, match.false_positives
-    return m
+        return metrics
+    match = match_dishes([dish.name for dish in result.dishes], golden.dishes, threshold)
+    metrics.split = golden.split
+    metrics.n_gold = len(golden.dishes)
+    metrics.tp, metrics.fp, metrics.fn = match.tp, match.fp, match.fn
+    metrics.duplicates = match.duplicates
+    metrics.recall = _ratio(match.tp, metrics.n_gold)
+    metrics.precision = _ratio(match.tp, match.tp + match.fp)
+    metrics.matched, metrics.duplicate_pairs = match.matched, match.duplicate_pairs
+    metrics.unmatched_gold = match.unmatched_gold
+    metrics.false_positives = match.false_positives
+    return metrics
 
 
 def accuracy_stats(images: list[ImageMetrics]) -> AccuracyStats:
-    s = AccuracyStats(n_images=len(images))
-    for m in images:
-        s.n_gold += m.n_gold
-        s.tp += m.tp
-        s.fp += m.fp
-        s.fn += m.fn
-        s.duplicates += m.duplicates
-    s.micro_recall = _ratio(s.tp, s.n_gold)
-    s.micro_precision = _ratio(s.tp, s.tp + s.fp)
-    s.macro_recall = _mean([m.recall for m in images if m.recall is not None])
-    s.macro_precision = _mean([m.precision for m in images if m.precision is not None])
-    return s
+    stats = AccuracyStats(n_images=len(images))
+    for image in images:
+        stats.n_gold += image.n_gold
+        stats.tp += image.tp
+        stats.fp += image.fp
+        stats.fn += image.fn
+        stats.duplicates += image.duplicates
+    stats.micro_recall = _ratio(stats.tp, stats.n_gold)
+    stats.micro_precision = _ratio(stats.tp, stats.tp + stats.fp)
+    stats.macro_recall = _mean([image.recall for image in images if image.recall is not None])
+    stats.macro_precision = _mean(
+        [image.precision for image in images if image.precision is not None]
+    )
+    return stats
 
 
 def aggregate(
@@ -156,19 +92,19 @@ def aggregate(
     results: list[ImageResult],
     golden: dict[str, GoldenImage],
     config: dict[str, Any] | None = None,
-    threshold: float = DEFAULT_THRESHOLD,
+    threshold: float = MATCH_THRESHOLD,
     only_reviewed: bool = False,
 ) -> RunMetrics:
     """Compute run metrics from results and an already loaded golden set."""
     config = config or {}
-    images = [evaluate_image(r, golden.get(r.image_id), threshold) for r in results]
+    images = [evaluate_image(result, golden.get(result.image_id), threshold) for result in results]
     # Duplicate photos would weigh their menu twice: each menu is scored once.
-    labeled = [m for m in images if m.labeled and m.duplicate_of is None]
-    llm_images = [m for m in images if m.llm_used]
-    n = len(images)
-    cost = sum(m.cost_usd for m in images)
-    time_total = sum(m.time_s for m in images)
-    llm_latency = sum(m.llm_latency_s for m in images)
+    labeled = [image for image in images if image.labeled and image.duplicate_of is None]
+    llm_images = [image for image in images if image.llm_used]
+    n_images = len(images)
+    cost = sum(image.cost_usd for image in images)
+    time_total = sum(image.time_s for image in images)
+    llm_latency = sum(image.llm_latency_s for image in images)
     return RunMetrics(
         run=run,
         # Older runs stored a "mode"; newer ones use the LLM step iff an LLM model is set.
@@ -177,28 +113,28 @@ def aggregate(
         llm_policy=config.get("llm_policy"),
         threshold=threshold,
         only_reviewed=only_reviewed,
-        n_images=n,
+        n_images=n_images,
         n_labeled=len(labeled),
-        n_duplicate_images=sum(m.duplicate_of is not None for m in images),
-        unlabeled=[m.image_id for m in images if not m.labeled],
+        n_duplicate_images=sum(image.duplicate_of is not None for image in images),
+        unlabeled=[image.image_id for image in images if not image.labeled],
         accuracy={
             "all": accuracy_stats(labeled),
-            "dev": accuracy_stats([m for m in labeled if m.split == "dev"]),
-            "test": accuracy_stats([m for m in labeled if m.split == "test"]),
+            "dev": accuracy_stats([image for image in labeled if image.split == "dev"]),
+            "test": accuracy_stats([image for image in labeled if image.split == "test"]),
         },
         cost_total_usd=cost,
-        cost_per_image_usd=cost / n if n else 0.0,
-        llm_share=len(llm_images) / n if n else 0.0,
+        cost_per_image_usd=cost / n_images if n_images else 0.0,
+        llm_share=len(llm_images) / n_images if n_images else 0.0,
         llm_cached_share=(
-            sum(m.llm_cached for m in llm_images) / len(llm_images) if llm_images else 0.0
+            sum(image.llm_cached for image in llm_images) / len(llm_images) if llm_images else 0.0
         ),
         time_total_s=time_total,
-        time_mean_s=time_total / n if n else 0.0,
+        time_mean_s=time_total / n_images if n_images else 0.0,
         llm_latency_total_s=llm_latency,
         llm_latency_mean_s=llm_latency / len(llm_images) if llm_images else 0.0,
-        ungrounded_dropped=sum(m.ungrounded_dropped for m in images),
-        n_errors=sum(m.error is not None for m in images),
-        errors={m.image_id: m.error for m in images if m.error is not None},
+        ungrounded_dropped=sum(image.ungrounded_dropped for image in images),
+        n_errors=sum(image.error is not None for image in images),
+        errors={image.image_id: image.error for image in images if image.error is not None},
         images=images,
     )
 
@@ -215,7 +151,7 @@ def evaluate_run(
     golden_dir: Path,
     *,
     only_reviewed: bool = False,
-    threshold: float = DEFAULT_THRESHOLD,
+    threshold: float = MATCH_THRESHOLD,
     save: bool = True,
 ) -> RunMetrics:
     """Evaluate ``run_dir/results.jsonl`` against the golden set; writes ``metrics.json``."""

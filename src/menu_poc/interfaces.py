@@ -1,4 +1,4 @@
-"""Stage interfaces. Each stage is swappable: a new OCR engine, parser or LLM is one new class.
+"""Stage interfaces (Protocols): a new OCR engine, parser or LLM is one new class.
 
 Every stage exposes a ``fingerprint()``: the settings that change its output. It is part of the
 artifact cache key, so changing an engine version, a parameter or a prompt invalidates the cache.
@@ -10,7 +10,6 @@ from typing import Any, Protocol
 
 from PIL import Image
 
-from menu_poc.llm.engine import LLMEngine  # noqa: F401  (re-exported: stage interfaces live here)
 from menu_poc.models import (
     Dish,
     OcrResult,

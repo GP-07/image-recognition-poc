@@ -6,8 +6,7 @@ import pytest
 from PIL import Image
 
 from menu_poc.cache.store import ArtifactStore
-from menu_poc.config import RunConfig
-from menu_poc.io.dataset import ImageRef
+from menu_poc.data_classes import ImageRef
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.models import (
     Dish,
@@ -15,6 +14,7 @@ from menu_poc.models import (
     OcrLine,
     OcrResult,
     ParseResult,
+    RunConfig,
     StructureResult,
 )
 from menu_poc.pipeline import PipelineBuilder, PipelineBuildError
@@ -118,7 +118,7 @@ def test_verify_step_replaces_rules_with_grounded_items():
         dishes=[real, invented], usage=LLMUsage(model="m"), prompt_version="v"
     )
     VerifyStep(GroundingVerifier()).process(ctx)
-    assert [d.name for d in ctx.result.dishes] == ["Lamb curry"] and ctx.result.llm_used
+    assert [dish.name for dish in ctx.result.dishes] == ["Lamb curry"] and ctx.result.llm_used
     assert ctx.result.ungrounded_dropped == ["Pizza Hawaiana"]
 
 
@@ -157,18 +157,18 @@ def _pieces(tmp_path):
 
 
 def test_build_order_does_not_depend_on_insertion_order(tmp_path):
-    p = _pieces(tmp_path)
+    pieces = _pieces(tmp_path)
     builder = PipelineBuilder()
     for name in ["llm", "rules", "dedup", "ocr"]:  # deliberately scrambled
-        builder.add(p[name])
+        builder.add(pieces[name])
     pipeline = builder.build()
     assert pipeline.step_names == ["dedup", "ocr", "rules", "llm", "verify"]
-    assert p["ocr"].next is p["rules"] and pipeline.steps[-1].next is None
+    assert pieces["ocr"].next is pieces["rules"] and pipeline.steps[-1].next is None
 
 
 def test_llm_output_is_always_verified(tmp_path):
-    p = _pieces(tmp_path)
-    pipeline = PipelineBuilder().add(p["ocr"]).add(p["rules"]).add(p["llm"]).build()
+    pieces = _pieces(tmp_path)
+    pipeline = PipelineBuilder().add(pieces["ocr"]).add(pieces["rules"]).add(pieces["llm"]).build()
     assert isinstance(pipeline.steps[-1], VerifyStep)
 
 
@@ -180,10 +180,10 @@ def test_llm_output_is_always_verified(tmp_path):
     ],
 )
 def test_invalid_pipelines_are_rejected(tmp_path, names, message):
-    p = _pieces(tmp_path)
+    pieces = _pieces(tmp_path)
     builder = PipelineBuilder()
     for name in names:
-        builder.add(p[name])
+        builder.add(pieces[name])
     with pytest.raises(PipelineBuildError, match=message):
         builder.build()
 
@@ -197,8 +197,8 @@ def test_from_config_includes_only_the_requested_pieces(tmp_path):
 
 
 def test_pipeline_process_returns_a_result_with_total_time(tmp_path):
-    p = _pieces(tmp_path)
-    pipeline = PipelineBuilder().add(p["ocr"]).add(p["rules"]).build()
+    pieces = _pieces(tmp_path)
+    pipeline = PipelineBuilder().add(pieces["ocr"]).add(pieces["rules"]).build()
     result = pipeline.process(_ref())
     assert result.dishes[0].name == "Lamb curry" and "total" in result.timings_s
 

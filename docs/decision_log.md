@@ -297,6 +297,29 @@ dos funciones de normalización.
   imagen puntual (archivo corrupto) sigue aislado: queda como error de esa imagen y la corrida sigue.
 - Reportes: el modo se deriva de `llm_model`; las corridas viejas conservan su `mode` guardado.
 
+## Discusión 14 — Estilo: archivos por categoría, sin asserts, sin nombres de una letra (2026-10-28)
+
+- Pedido del usuario: nada de `assert` en código productivo, nada de variables de una sola letra, y
+  separar en archivos los modelos, dataclasses, typings y constantes (como `models.py` /
+  `interfaces.py` del primer día).
+- Cuatro módulos en la raíz del paquete, con dependencias en una sola dirección
+  (`constants` ← `typings` ← `models` ← `data_classes`):
+  - `constants.py`: todas las constantes (umbrales, versiones de caché, regex, precios por modelo,
+    schema JSON del LLM, rutas por defecto), agrupadas por componente;
+  - `typings.py`: aliases de tipos (`BBox`, `DishOrigin`, `LLMPolicy`, `Split`, `Candidate`...) y
+    TypeVars; los Protocols siguen en `interfaces.py`;
+  - `models.py`: todos los modelos pydantic, incluidos `RunConfig` y los de evaluación;
+  - `data_classes.py` (no `dataclasses.py`, para no tapar el módulo estándar): `ImageRef`,
+    `ImageContext`, `ItemRow`, `OcrItem`, `LineInfo`, `DishDraft`, `PriceMatch`, `ParseStats`,
+    `ModelPrice`.
+- `RunConfig` resuelve el alias del modelo con `LLMEngine`, que a su vez importa `models`: ese import
+  va dentro del validador para no formar un ciclo.
+- Asserts: los pasos leen la salida de pasos anteriores con `require(valor, "qué")`, que lanza
+  `MissingInputError`. El builder garantiza el orden, así que sería un bug; igual que cualquier
+  error de un paso, falla sólo esa imagen.
+- Se mantiene `_` como descarte convencional (no es una variable que se lea).
+- Verificado: `items.csv` byte a byte idéntico al de antes del refactor, mismas métricas, 212 tests.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -309,3 +332,4 @@ dos funciones de normalización.
 | 2026-10-28 | RapidOCR 3.10 (modelos PP-OCRv6 det/rec small, ONNX Runtime) | Motor OCR local en CPU (modelos de deep learning preentrenados, sin entrenamiento propio). |
 | 2026-10-28 | Ollama (modelos abiertos locales, ej. Qwen2.5 7B) — soportado, no ejecutado | Alternativa gratuita y local al LLM de Claude (no instalado en esta máquina). |
 | 2026-10-28 | Subagente de Claude Code (Opus 5.5, visión) | Re-etiquetado del golden set con la nueva política (todos los ítems pedibles). |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Refactor de estilo: constantes, typings, modelos y dataclasses en archivos propios; sin asserts ni variables de una letra. |

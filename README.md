@@ -198,7 +198,11 @@ can help with semantic equivalences, calibrated against human labels — never a
 
 ```
 src/menu_poc/
-  models.py, interfaces.py, config.py   contracts (pydantic + Protocols), run config
+  models.py                             pydantic models (stage contracts, RunConfig, metrics)
+  data_classes.py                       in-memory records (ImageRef, ImageContext, ItemRow...)
+  typings.py, interfaces.py             type aliases; stage Protocols
+  constants.py                          every constant: thresholds, versions, regexes, prices
+  config.py                             YAML + CLI overrides -> RunConfig
   steps/                                one module per step: dedup, ocr, rules, llm, verify
   pipeline/                             PipelineBuilder (fixed order + checks), Pipeline, run helpers
   cli.py                                `menu-poc` command

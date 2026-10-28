@@ -5,10 +5,10 @@ import pytest
 from PIL import Image
 
 from menu_poc.cache.store import ArtifactStore, make_key
-from menu_poc.config import RunConfig, load_config
+from menu_poc.config import load_config
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import read_jsonl, write_jsonl
-from menu_poc.models import Dish, ImageResult, OcrLine
+from menu_poc.models import Dish, ImageResult, OcrLine, RunConfig
 
 
 def _jpeg_bytes() -> bytes:
@@ -37,21 +37,21 @@ def test_artifact_store_roundtrip(tmp_path):
 
 def test_iter_images_from_zip_skips_macosx_and_filters(tmp_path):
     zpath = tmp_path / "menus.zip"
-    with zipfile.ZipFile(zpath, "w") as zf:
-        zf.writestr("google_images/r1/a.jpg", _jpeg_bytes())
-        zf.writestr("google_images/r2/b.JPG", _jpeg_bytes())
-        zf.writestr("__MACOSX/google_images/r1/._a.jpg", b"junk")
-        zf.writestr("google_images/r1/notes.txt", b"x")
+    with zipfile.ZipFile(zpath, "w") as archive:
+        archive.writestr("google_images/r1/a.jpg", _jpeg_bytes())
+        archive.writestr("google_images/r2/b.JPG", _jpeg_bytes())
+        archive.writestr("__MACOSX/google_images/r1/._a.jpg", b"junk")
+        archive.writestr("google_images/r1/notes.txt", b"x")
     refs = list(iter_images(zpath))
-    assert [r.image_id for r in refs] == ["r1/a", "r2/b"]
+    assert [ref.image_id for ref in refs] == ["r1/a", "r2/b"]
     assert refs[0].open().size == (8, 8)
-    assert [r.image_id for r in iter_images(zpath, ["r2/b"])] == ["r2/b"]
+    assert [ref.image_id for ref in iter_images(zpath, ["r2/b"])] == ["r2/b"]
 
 
 def test_iter_images_from_dir(tmp_path):
     (tmp_path / "r1").mkdir()
     (tmp_path / "r1" / "a.jpg").write_bytes(_jpeg_bytes())
-    assert [r.restaurant_id for r in iter_images(tmp_path)] == ["r1"]
+    assert [ref.restaurant_id for ref in iter_images(tmp_path)] == ["r1"]
 
 
 def test_iter_images_rejects_missing_input(tmp_path):

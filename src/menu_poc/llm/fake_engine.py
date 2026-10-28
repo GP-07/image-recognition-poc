@@ -4,14 +4,12 @@ from __future__ import annotations
 
 import json
 import time
-from collections.abc import Callable, Mapping
 from typing import Any
 
 from menu_poc.llm.engine import LLMEngine, LLMError, prompt_key
 from menu_poc.llm.text import estimate_tokens
 from menu_poc.models import LLMUsage
-
-FakeResponses = Mapping[str, dict[str, Any]] | Callable[[str, str, dict[str, Any]], dict[str, Any]]
+from menu_poc.typings import FakeResponses
 
 
 class FakeEngine(LLMEngine):

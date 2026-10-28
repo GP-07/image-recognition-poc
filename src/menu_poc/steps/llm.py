@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from menu_poc.cache.store import ArtifactStore, make_key
-from menu_poc.config import LLMPolicy
+from menu_poc.constants import DEFAULT_CONFIDENCE_THRESHOLD
+from menu_poc.data_classes import ImageContext
 from menu_poc.interfaces import Structurer
 from menu_poc.models import StructureResult
-from menu_poc.steps.base import ImageContext, Step
+from menu_poc.steps.base import Step, require
+from menu_poc.typings import LLMPolicy
 
 
 class LlmStep(Step):
@@ -17,7 +19,7 @@ class LlmStep(Step):
         structurer: Structurer,
         store: ArtifactStore,
         policy: LLMPolicy = "fallback",
-        threshold: float = 0.6,
+        threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
         offline: bool = False,
     ) -> None:
         super().__init__()
@@ -29,12 +31,13 @@ class LlmStep(Step):
 
     def needed(self, ctx: ImageContext) -> bool:
         """``always``: every image; ``fallback``: only when the rules are not confident."""
-        assert ctx.parsed is not None
-        return self.policy == "always" or ctx.parsed.confidence < self.threshold
+        parsed = require(ctx.parsed, "rules output")
+        return self.policy == "always" or parsed.confidence < self.threshold
 
     def process(self, ctx: ImageContext) -> bool:
         if not self.needed(ctx):
             return False  # the rules output is the answer
+        ocr = require(ctx.ocr, "OCR output")
         key = make_key("llm", ctx.ocr_key, self.structurer.fingerprint())
         cached = self.store.get("llm", key)
         if cached is not None:
@@ -45,7 +48,7 @@ class LlmStep(Step):
             return False
         else:
             try:
-                structured = self.structurer.structure(ctx.ocr)
+                structured = self.structurer.structure(ocr)
             except Exception as exc:
                 # A billed but unusable answer (refusal, truncation) still counts as cost.
                 ctx.result.llm_usage = getattr(exc, "usage", None)

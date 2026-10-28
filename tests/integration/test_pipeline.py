@@ -8,7 +8,6 @@ import pytest
 from PIL import Image
 
 from menu_poc.cache.store import ArtifactStore
-from menu_poc.config import RunConfig
 from menu_poc.io.writers import read_jsonl, write_jsonl
 from menu_poc.models import (
     Dish,
@@ -17,6 +16,7 @@ from menu_poc.models import (
     OcrLine,
     OcrResult,
     ParseResult,
+    RunConfig,
     StructureResult,
     VerificationResult,
 )
@@ -76,8 +76,8 @@ class FakeStructurer:
 
 class FakeVerifier:
     def verify(self, dishes, ocr):
-        kept = [d for d in dishes if d.name != "Invented"]
-        dropped = [d for d in dishes if d.name == "Invented"]
+        kept = [dish for dish in dishes if dish.name != "Invented"]
+        dropped = [dish for dish in dishes if dish.name == "Invented"]
         return VerificationResult(kept=kept, dropped=dropped)
 
 
@@ -89,11 +89,11 @@ def _noise(seed: int, size: int = 64) -> Image.Image:
 def _zip(tmp_path, names, identical=False):
     """One PNG per name; distinct random content unless ``identical``."""
     path = tmp_path / "in.zip"
-    with zipfile.ZipFile(path, "w") as zf:
-        for i, name in enumerate(names):
+    with zipfile.ZipFile(path, "w") as archive:
+        for seed, name in enumerate(names):
             buf = io.BytesIO()
-            _noise(0 if identical else i).save(buf, "PNG")
-            zf.writestr(f"imgs/r1/{name}.png", buf.getvalue())
+            _noise(0 if identical else seed).save(buf, "PNG")
+            archive.writestr(f"imgs/r1/{name}.png", buf.getvalue())
     return path
 
 
@@ -116,7 +116,7 @@ def _pipeline(tmp_path, ocr=None, structurer=None, **cfg):
 
 
 def _by_id(results):
-    return {r.image_id: r for r in results}
+    return {result.image_id: result for result in results}
 
 
 def test_ocr_mode_never_calls_llm(tmp_path):
@@ -124,7 +124,7 @@ def test_ocr_mode_never_calls_llm(tmp_path):
     pipe, config = _pipeline(tmp_path, structurer=structurer)
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert structurer.calls == 0
-    assert all(not r.llm_used for r in results.values())
+    assert all(not result.llm_used for result in results.values())
     assert results["r1/low"].dishes[0].origin == "rules"
 
 
@@ -133,7 +133,7 @@ def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert not results["r1/high"].llm_used
     low = results["r1/low"]
-    assert low.llm_used and [d.name for d in low.dishes] == ["Lamb curry"]
+    assert low.llm_used and [dish.name for dish in low.dishes] == ["Lamb curry"]
     assert low.ungrounded_dropped == ["Invented"]
     assert low.llm_usage.cost_usd == pytest.approx(0.001)
 
@@ -141,7 +141,7 @@ def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_
 def test_always_policy_escalates_every_image(tmp_path):
     pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="always")
     results = pipe.run(select_images(config), tmp_path / "run")
-    assert all(r.llm_used for r in results)
+    assert all(result.llm_used for result in results)
 
 
 def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
@@ -156,7 +156,7 @@ def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
     )
     results = second.run(select_images(cfg2), tmp_path / "run2")
     assert ocr.calls == 2 and same.calls == 0
-    assert all(r.llm_usage.cached for r in results)
+    assert all(result.llm_usage.cached for result in results)
 
     other = FakeStructurer(model="m2")
     third, cfg3 = _pipeline(
@@ -169,8 +169,8 @@ def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
 def test_offline_cache_miss_keeps_rules_output(tmp_path):
     pipe, config = _pipeline(tmp_path, llm_model="haiku", llm_policy="always", llm_offline=True)
     results = pipe.run(select_images(config), tmp_path / "run")
-    assert all(not r.llm_used and r.dishes[0].origin == "rules" for r in results)
-    assert all("offline" in r.error for r in results)
+    assert all(not result.llm_used and result.dishes[0].origin == "rules" for result in results)
+    assert all("offline" in result.error for result in results)
 
 
 def test_llm_failure_keeps_rules_output(tmp_path):
@@ -209,7 +209,7 @@ def test_select_only_low_confidence_from_previous_run(tmp_path):
     config = RunConfig(
         input_path=zpath, llm_model="haiku", reuse_from=prev, only_low_confidence=True
     )
-    assert [r.image_id for r in select_images(config)] == ["r1/low"]
+    assert [ref.image_id for ref in select_images(config)] == ["r1/low"]
 
 
 def test_new_run_dir_writes_config(tmp_path):
@@ -273,7 +273,8 @@ def test_duplicate_photos_are_skipped_before_ocr(tmp_path):
     dup = results["r1/a_small"]
     assert dup.duplicate_of == "r1/b_big"  # the larger image is kept as the original
     assert dup.dishes == results["r1/b_big"].dishes and "near-duplicate" in dup.duplicate_reason
-    assert [r.image_id for r in read_jsonl(tmp_path / "run" / "results.jsonl", ImageResult)] == [
+    saved = read_jsonl(tmp_path / "run" / "results.jsonl", ImageResult)
+    assert [result.image_id for result in saved] == [
         "r1/a_small",
         "r1/b_big",
         "r1/c_other",

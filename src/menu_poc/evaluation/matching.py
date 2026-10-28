@@ -13,37 +13,35 @@ Rules:
 
 from __future__ import annotations
 
-import re
 import unicodedata
 
 import numpy as np
-from pydantic import BaseModel, Field
 from rapidfuzz import fuzz
 from scipy.optimize import linear_sum_assignment
 
-from menu_poc.evaluation.golden import GoldenDish
-
-DEFAULT_THRESHOLD = 85.0
-
-_NUMBERING = re.compile(r"^\s*(?:n[ºo°]\s*)?\d{1,3}\s*[.)\-:]\s*|^\s*\d{1,3}\s+(?=\D)")
-_PRICE = re.compile(r"\d+(?:[.,]\d{1,2})?\s*(?:€|eur\b|euros?\b)|(?:€|\$)\s*\d+(?:[.,]\d{1,2})?")
-# Only decimal numbers: "lamb curry 12,50" is a price, but "combo 2" is part of the name.
-_TRAILING_NUMBER = re.compile(r"\s\d+[.,]\d{1,2}\s*$")
-_LEADERS = re.compile(r"[.·…_\-]{2,}")
-_NON_WORD = re.compile(r"[^\w\s]")
-_SPACES = re.compile(r"\s+")
+from menu_poc.constants import (
+    MATCH_LEADERS_RE,
+    MATCH_NUMBERING_RE,
+    MATCH_PRICE_RE,
+    MATCH_THRESHOLD,
+    NON_WORD_RE,
+    SPACES_RE,
+    TIE_BREAK_SCALE,
+    TRAILING_NUMBER_RE,
+)
+from menu_poc.models import GoldenDish, ImageMatch, MatchedPair
 
 
 def normalize(text: str) -> str:
     """Lowercase, strip accents, numbering, dotted leaders, prices and punctuation."""
     text = unicodedata.normalize("NFKD", text.lower())
-    text = "".join(c for c in text if not unicodedata.combining(c))
-    text = _NUMBERING.sub(" ", text)
-    text = _LEADERS.sub(" ", text)
-    text = _PRICE.sub(" ", text)
-    text = _TRAILING_NUMBER.sub(" ", text)  # "lamb curry 12,50" (price without currency)
-    text = _NON_WORD.sub(" ", text).replace("_", " ")
-    return _SPACES.sub(" ", text).strip()
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = MATCH_NUMBERING_RE.sub(" ", text)
+    text = MATCH_LEADERS_RE.sub(" ", text)
+    text = MATCH_PRICE_RE.sub(" ", text)
+    text = TRAILING_NUMBER_RE.sub(" ", text)  # "lamb curry 12,50" (price without currency)
+    text = NON_WORD_RE.sub(" ", text).replace("_", " ")
+    return SPACES_RE.sub(" ", text).strip()
 
 
 def similarity(pred: str, gold: str) -> float:
@@ -64,24 +62,6 @@ def similarity(pred: str, gold: str) -> float:
     return float(score)
 
 
-class MatchedPair(BaseModel):
-    pred: str
-    gold: str  # canonical gold name
-    variant: str  # name or alias that produced the best score
-    score: float
-
-
-class ImageMatch(BaseModel):
-    tp: int = 0
-    fp: int = 0
-    fn: int = 0
-    duplicates: int = 0
-    matched: list[MatchedPair] = Field(default_factory=list)
-    duplicate_pairs: list[MatchedPair] = Field(default_factory=list)
-    unmatched_gold: list[str] = Field(default_factory=list)
-    false_positives: list[str] = Field(default_factory=list)
-
-
 def _best_variant(pred_norm: str, dish: GoldenDish) -> tuple[float, str]:
     best = (0.0, dish.name)
     for variant in dish.variants:
@@ -92,57 +72,69 @@ def _best_variant(pred_norm: str, dish: GoldenDish) -> tuple[float, str]:
 
 
 def match_dishes(
-    predicted: list[str], gold: list[GoldenDish], threshold: float = DEFAULT_THRESHOLD
+    predicted: list[str], gold: list[GoldenDish], threshold: float = MATCH_THRESHOLD
 ) -> ImageMatch:
     """Match predicted names to gold dishes of one image (see module docstring)."""
-    pred_norm = [normalize(p) for p in predicted]
+    pred_norm = [normalize(name) for name in predicted]
     first_seen: dict[str, int] = {}
     repeats: set[int] = set()
-    for i, p in enumerate(pred_norm):
-        if p and p in first_seen:
-            repeats.add(i)
-        first_seen.setdefault(p, i)
+    for pred_index, name in enumerate(pred_norm):
+        if name and name in first_seen:
+            repeats.add(pred_index)
+        first_seen.setdefault(name, pred_index)
 
     scores: dict[tuple[int, int], tuple[float, str]] = {}
     weight = np.zeros((len(predicted), len(gold)))
-    for i, p in enumerate(pred_norm):
-        for j, dish in enumerate(gold):
-            score, variant = _best_variant(p, dish)
-            scores[i, j] = (score, variant)
-            if score >= threshold and i not in repeats:
+    for pred_index, name in enumerate(pred_norm):
+        for gold_index, dish in enumerate(gold):
+            score, variant = _best_variant(name, dish)
+            scores[pred_index, gold_index] = (score, variant)
+            if score >= threshold and pred_index not in repeats:
                 # Plain edit similarity as a small tie-breaker between equal scores.
-                weight[i, j] = score + fuzz.ratio(p, normalize(variant)) / 1000
+                tie_break = fuzz.ratio(name, normalize(variant)) / TIE_BREAK_SCALE
+                weight[pred_index, gold_index] = score + tie_break
 
     out = ImageMatch()
     used_pred: set[int] = set()
     used_gold: set[int] = set()
     if weight.size:
         rows, cols = linear_sum_assignment(weight, maximize=True)
-        for i, j in sorted(zip(rows.tolist(), cols.tolist(), strict=True)):
-            if weight[i, j] <= 0:
+        for pred_index, gold_index in sorted(zip(rows.tolist(), cols.tolist(), strict=True)):
+            if weight[pred_index, gold_index] <= 0:
                 continue
-            used_pred.add(i)
-            used_gold.add(j)
-            score, variant = scores[i, j]
+            used_pred.add(pred_index)
+            used_gold.add(gold_index)
+            score, variant = scores[pred_index, gold_index]
             out.matched.append(
-                MatchedPair(pred=predicted[i], gold=gold[j].name, variant=variant, score=score)
+                MatchedPair(
+                    pred=predicted[pred_index],
+                    gold=gold[gold_index].name,
+                    variant=variant,
+                    score=score,
+                )
             )
 
     # Leftovers, including repeats of a matched prediction, become duplicates when they match an
     # already matched gold dish, and false positives otherwise.
-    for i, name in enumerate(predicted):
-        if i in used_pred:
+    for pred_index, name in enumerate(predicted):
+        if pred_index in used_pred:
             continue
-        hits = [(scores[i, j], j) for j in used_gold if scores[i, j][0] >= threshold]
+        hits = [
+            (scores[pred_index, gold_index], gold_index)
+            for gold_index in used_gold
+            if scores[pred_index, gold_index][0] >= threshold
+        ]
         if hits:
-            (score, variant), j = max(hits, key=lambda h: h[0][0])
+            (score, variant), gold_index = max(hits, key=lambda hit: hit[0][0])
             out.duplicate_pairs.append(
-                MatchedPair(pred=name, gold=gold[j].name, variant=variant, score=score)
+                MatchedPair(pred=name, gold=gold[gold_index].name, variant=variant, score=score)
             )
         else:
             out.false_positives.append(name)
 
-    out.unmatched_gold = [d.name for j, d in enumerate(gold) if j not in used_gold]
+    out.unmatched_gold = [
+        dish.name for gold_index, dish in enumerate(gold) if gold_index not in used_gold
+    ]
     out.tp = len(out.matched)
     out.fp = len(out.false_positives)
     out.fn = len(out.unmatched_gold)

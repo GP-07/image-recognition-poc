@@ -10,21 +10,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
+from menu_poc.config import load_config
+from menu_poc.constants import DEFAULT_CONFIG_PATH, DEFAULT_GOLDEN_DIR, LLM_HELP, PROJECT_ROOT
 from menu_poc.evaluation.report import compare_runs, run_report
 from menu_poc.io.writers import read_jsonl, write_items_csv, write_json, write_jsonl
 from menu_poc.llm.engine import LLMEngine
-from menu_poc.models import ImageResult
+from menu_poc.models import ImageResult, RunConfig
 from menu_poc.pipeline import PipelineBuilder, merge_previous, new_run_dir, select_images
-
-DEFAULT_CONFIG = PROJECT_ROOT / "config" / "default.yaml"
-DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
-
-
-LLM_HELP = (
-    "Add --llm-model haiku|sonnet|opus (needs ANTHROPIC_API_KEY in .env) or --llm-model ollama "
-    "(free, local) to let an LLM handle the pages the rules are not confident about."
-)
 
 
 def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLMEngine | None]:
@@ -42,7 +34,7 @@ def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLME
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
-    if args.config != DEFAULT_CONFIG and not args.config.exists():
+    if args.config != DEFAULT_CONFIG_PATH and not args.config.exists():
         print(f"Config file not found: {args.config}", file=sys.stderr)
         return 2
     requested = load_config(
@@ -85,8 +77,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
         run_dir / "items.csv", read_jsonl(run_dir / "results.jsonl", ImageResult)
     )
 
-    errors = {r.image_id: r.error for r in results if r.error}
-    duplicates = {r.image_id: r.duplicate_of for r in results if r.duplicate_of}
+    errors = {result.image_id: result.error for result in results if result.error}
+    duplicates = {result.image_id: result.duplicate_of for result in results if result.duplicate_of}
+    n_dishes = sum(len(result.dishes) for result in results)
     write_json(
         run_dir / "manifest.json",
         {
@@ -96,14 +89,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
             "requested_llm_model": requested.llm_model,
             "llm_model": config.llm_model,  # None: OCR + rules only (see warnings)
             "n_images": len(results),
-            "n_dishes": sum(len(r.dishes) for r in results),
+            "n_dishes": n_dishes,
             "duplicates": duplicates,
             "warnings": warnings,
             "errors": errors,
         },
     )
     print(
-        f"Done: {sum(len(r.dishes) for r in results)} dishes, {len(duplicates)} duplicate photos "
+        f"Done: {n_dishes} dishes, {len(duplicates)} duplicate photos "
         f"skipped, {len(errors)} images with errors, {len(warnings)} warnings."
     )
     for image_id, error in errors.items():
@@ -137,7 +130,7 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="process images (results go to a new run directory)")
-    run.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
+    run.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
     run.add_argument("--input", type=Path, help="zip file or directory of images")
     run.add_argument("--output", type=Path, help="directory for run results (default: tmp/)")
     run.add_argument("--artifacts", type=Path, help="stage cache directory (default: artifacts/)")
@@ -154,18 +147,18 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="with --reuse-from: only images whose rules confidence was below the threshold",
     )
-    run.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
+    run.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN_DIR)
     run.set_defaults(func=_cmd_run)
 
     ev = sub.add_parser("eval", help="evaluate a run against the golden set")
     ev.add_argument("run", type=Path)
-    ev.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
+    ev.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN_DIR)
     ev.add_argument("--only-reviewed", action="store_true")
     ev.set_defaults(func=_cmd_eval)
 
     cmp_ = sub.add_parser("compare", help="compare several runs")
     cmp_.add_argument("runs", type=Path, nargs="+")
-    cmp_.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN)
+    cmp_.add_argument("--golden", type=Path, default=DEFAULT_GOLDEN_DIR)
     cmp_.add_argument("--only-reviewed", action="store_true")
     cmp_.add_argument("--out", type=Path)
     cmp_.set_defaults(func=_cmd_compare)

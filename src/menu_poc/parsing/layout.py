@@ -8,22 +8,18 @@ from __future__ import annotations
 
 from statistics import median
 
+from menu_poc.constants import BLOCK_OVERLAP, GUTTER_MAX_COVER, GUTTER_MIN_WIDTH, ROW_OVERLAP
 from menu_poc.models import OcrLine
-
-ROW_OVERLAP = 0.5  # min vertical overlap, as a share of the shorter box, to share a row
-GUTTER_MIN_WIDTH = 1.0  # min gutter width between columns, in median line heights
-BLOCK_OVERLAP = 0.2  # row overlap from which a line between two others separates them
-GUTTER_MAX_COVER = 0.02  # an x position is a gutter when <= this share of lines cover it
 
 
 def median_height(lines: list[OcrLine]) -> float:
     return median(line.height for line in lines) if lines else 0.0
 
 
-def v_overlap(a: OcrLine, b: OcrLine) -> float:
+def v_overlap(first: OcrLine, second: OcrLine) -> float:
     """Vertical overlap of two boxes as a share of the shorter one (0..1)."""
-    inter = min(a.y1, b.y1) - max(a.y0, b.y0)
-    shorter = min(a.height, b.height)
+    inter = min(first.y1, second.y1) - max(first.y0, second.y0)
+    shorter = min(first.height, second.height)
     return max(0.0, inter) / shorter if shorter > 0 else 0.0
 
 
@@ -47,20 +43,20 @@ def find_gutters(lines: list[OcrLine], width: float) -> list[tuple[float, float]
     bins = int(width) + 1
     cover = [0] * bins
     for line in lines:
-        for x in range(max(0, int(line.x0)), min(bins, int(line.x1) + 1)):
-            cover[x] += 1
+        for position in range(max(0, int(line.x0)), min(bins, int(line.x1) + 1)):
+            cover[position] += 1
     limit = max(1, GUTTER_MAX_COVER * len(lines))
     min_width = GUTTER_MIN_WIDTH * median_height(lines)
     left = min(line.x0 for line in lines)
     right = max(line.x1 for line in lines)
 
     gutters, start = [], None
-    for x in range(int(left), int(right) + 1):
-        if cover[x] <= limit:
-            start = x if start is None else start
+    for position in range(int(left), int(right) + 1):
+        if cover[position] <= limit:
+            start = position if start is None else start
         elif start is not None:
-            if x - start >= min_width:
-                gutters.append((float(start), float(x)))
+            if position - start >= min_width:
+                gutters.append((float(start), float(position)))
             start = None
     return gutters
 
@@ -73,7 +69,7 @@ def group_columns(lines: list[OcrLine], width: float | None = None) -> list[list
     if not lines:
         return []
     width = width if width is not None else max(line.x1 for line in lines) + 1
-    cuts = [(a + b) / 2 for a, b in find_gutters(lines, width)]
+    cuts = [(start + end) / 2 for start, end in find_gutters(lines, width)]
     columns: list[list[OcrLine]] = [[] for _ in range(len(cuts) + 1)]
     for line in lines:
         index = sum(1 for cut in cuts if line.x0 + 1 > cut)

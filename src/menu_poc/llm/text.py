@@ -8,31 +8,28 @@
 from __future__ import annotations
 
 import math
-import re
 import statistics
 import unicodedata
 
+from menu_poc.constants import CHARS_PER_TOKEN, GROUNDING_NUMBERING_RE, NON_ALNUM_RE
 from menu_poc.models import OcrLine, OcrResult
-
-_NUMBERING = re.compile(r"^\s*(?:\d{1,3}|[a-z])\s*[.)\-:]\s*|^\s*\d{1,3}\s+(?=[^\W\d])")
-_NON_ALNUM = re.compile(r"[\W_]+")  # Unicode-aware: keeps Greek, Cyrillic, CJK, Devanagari...
 
 
 def strip_accents(text: str) -> str:
     decomposed = unicodedata.normalize("NFKD", text)
-    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    return "".join(char for char in decomposed if not unicodedata.combining(char))
 
 
 def normalize(text: str) -> str:
     """Lowercase, strip accents, leading numbering ("12.", "a)", "46 ") and punctuation."""
     text = strip_accents(text).lower()
-    text = _NUMBERING.sub("", text, count=1)
-    return _NON_ALNUM.sub(" ", text).strip()
+    text = GROUNDING_NUMBERING_RE.sub("", text, count=1)
+    return NON_ALNUM_RE.sub(" ", text).strip()
 
 
 def estimate_tokens(text: str) -> int:
     """Rough token count (characters / 4); good enough for cost estimates."""
-    return math.ceil(len(text) / 4)
+    return math.ceil(len(text) / CHARS_PER_TOKEN)
 
 
 def reading_order(lines: list[OcrLine], row_tolerance: float = 0.5) -> list[OcrLine]:
@@ -77,8 +74,8 @@ def render_lines(ocr: OcrResult) -> str:
     height = max(ocr.height, 1)
     rows = []
     for line in reading_order(ocr.lines):
-        x = round(100 * line.x0 / width)
-        y = round(100 * line.y_center / height)
+        left = round(100 * line.x0 / width)
+        middle = round(100 * line.y_center / height)
         text = " ".join(line.text.split())
-        rows.append(f"[{line.id}] ({x},{y}) {text}")
+        rows.append(f"[{line.id}] ({left},{middle}) {text}")
     return "\n".join(rows)

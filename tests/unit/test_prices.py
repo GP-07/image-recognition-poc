@@ -24,7 +24,7 @@ from menu_poc.parsing.prices import find_prices, is_price_only, looks_like_phone
     ],
 )
 def test_finds_prices(text, expected):
-    assert [m.value for m in find_prices(text)] == expected
+    assert [match.value for match in find_prices(text)] == expected
 
 
 @pytest.mark.parametrize(

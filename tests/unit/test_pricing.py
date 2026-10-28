@@ -1,6 +1,7 @@
 import pytest
 
-from menu_poc.llm.pricing import PRICES, UnknownModelError, cost_usd
+from menu_poc.constants import MODEL_PRICES_PER_MTOK
+from menu_poc.llm.pricing import UnknownModelError, cost_usd
 
 
 def test_haiku_cost_per_million():
@@ -16,7 +17,9 @@ def test_typical_page_cost():
 
 
 def test_known_models():
-    assert {"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"} <= set(PRICES)
+    assert {"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"} <= set(
+        MODEL_PRICES_PER_MTOK
+    )
 
 
 def test_unknown_model_is_a_clear_error():

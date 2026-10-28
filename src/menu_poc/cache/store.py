@@ -43,7 +43,7 @@ class ArtifactStore:
         path.parent.mkdir(parents=True, exist_ok=True)
         # Write to a temp file and rename, so an interrupted run never leaves a half-written entry.
         fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=1)
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(data, stream, ensure_ascii=False, indent=1)
         os.replace(tmp, path)
         return path

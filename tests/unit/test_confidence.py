@@ -1,4 +1,5 @@
-from menu_poc.parsing.confidence import ParseStats, score
+from menu_poc.data_classes import ParseStats
+from menu_poc.parsing.confidence import score
 
 
 def _stats(**overrides):
@@ -38,9 +39,9 @@ def test_few_dishes_on_a_busy_page_scores_low():
 
 
 def test_score_is_bounded_and_monotonic_in_attachment():
-    values = [score(_stats(attached_prices=n))[0] for n in range(0, 21, 5)]
+    values = [score(_stats(attached_prices=attached))[0] for attached in range(0, 21, 5)]
     assert values == sorted(values)
-    assert all(0.0 <= v <= 1.0 for v in values)
+    assert all(0.0 <= value <= 1.0 for value in values)
 
 
 def test_leftover_prices_estimate_missed_dishes():

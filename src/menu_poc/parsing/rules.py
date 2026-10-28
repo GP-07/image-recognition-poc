@@ -22,91 +22,49 @@ Steps for one page:
 
 from __future__ import annotations
 
-import re
 from collections import Counter
-from dataclasses import dataclass, field
 from statistics import mean
 from typing import Any
 
+from menu_poc.constants import (
+    BULLET_RE,
+    BULLETS,
+    CAPS_SHARE,
+    CONTINUATION_MIN_WORDS,
+    DECORATION_REPEATS,
+    DESC_MAX_GAP,
+    DESC_MAX_LINES,
+    DESCRIPTIVE_WORDS,
+    DIET_CODE_RE,
+    DISH_NUMBERING_RE,
+    FRAGMENT_LETTERS,
+    HEADER_HEIGHT,
+    HEADER_MAX_CHARS,
+    HEADER_MAX_WORDS,
+    HOURS_RE,
+    LEADING_JUNK_RE,
+    MAX_NAME_CHARS,
+    MIN_LETTERS,
+    MIN_OCR_CONF,
+    NOISE_RE,
+    NON_ALNUM_ASCII_RE,
+    NUMBERED_OVERLAP,
+    ORPHAN_LOOKBACK,
+    PRICE_COLUMN_SHARE,
+    RULES_VERSION,
+    SIZE_RE,
+    TALL_HEADER_MAX_WORDS,
+    TRAILING_JUNK_RE,
+)
+from menu_poc.data_classes import DishDraft, LineInfo, ParseStats
 from menu_poc.models import Dish, OcrLine, OcrResult, ParseResult
 from menu_poc.parsing import confidence
 from menu_poc.parsing.layout import group_columns, left_neighbor, median_height
-from menu_poc.parsing.prices import (
-    PriceMatch,
-    find_prices,
-    is_price_only,
-    looks_like_phone,
-    strip_prices,
-)
-
-VERSION = "3"
-MIN_OCR_CONF = 0.6  # lines read with less confidence are treated as noise
-HEADER_MAX_WORDS = 5
-HEADER_MAX_CHARS = 40
-CAPS_SHARE = 0.8  # share of uppercase letters for a line to read as ALL CAPS
-HEADER_HEIGHT = 1.3  # a line this many median heights tall reads as a header
-TALL_HEADER_MAX_WORDS = 3
-DESC_MAX_GAP = 1.2  # max vertical gap (median heights) between a dish line and its description
-DESC_MAX_LINES = 6
-MAX_NAME_CHARS = 70
-FRAGMENT_LETTERS = 4  # a name with this many letters or fewer is likely cut or misread
-NUMBERED_OVERLAP = 0.3  # row overlap enough to give a price to a numbered dish name
-DESCRIPTIVE_WORDS = 6  # a priced line this long reads as a description, not a name
-DECORATION_REPEATS = 3  # a header text repeated this often is a logo or slogan, not a section
-PRICE_COLUMN_SHARE = 0.7  # a column with this share of price-only lines is a price column
-ORPHAN_LOOKBACK = 3  # recent dishes an orphan price may belong to
-CONTINUATION_MIN_WORDS = 4  # a lowercase line this long continues the sentence above
-
-_NUMBERING_RE = re.compile(r"^\s*[.·•]?\s*(\d{1,3})\s*(?:[.)\-:]\s*|\s+(?=[A-ZÀ-Ý]))")
-_LEADING_JUNK_RE = re.compile(r"^[\s.,:;·•\-_*|/]+")
-_TRAILING_JUNK_RE = re.compile(r"[\s.,:;·•\-_*|/(]+$")
-_NOISE_RE = re.compile(
-    r"www\.|https?://|\S+@\S+|\.(?:com|es|cat|net)\b"  # web, email
-    r"|\biva\b|i\.v\.a|impuestos|\btax(es)?\b"  # VAT notes
-    r"|al[·.]?l?[eè]rg[eè]n|allergen|alérgen"  # allergen legends
-    r"|whats?app|instagram|facebook|wi-?fi|domicilio|delivery|pedidos?\b"
-    r"|horario|abierto|obert|opening|\bhours\b|tarjeta|efectivo|cheques?",
-    re.IGNORECASE,
-)
-# A "name" that is only a size label belongs to a size table, not to a dish.
-_SIZE_RE = re.compile(
-    r"^(?:peque[ñn]as?|medianas?|grandes?|familiar|small|medium|large|petita|mitjana|gran"
-    r"|individual|media|entera|1/2|tapa|raci[oó]n|ració)$",
-    re.IGNORECASE,
-)
-_HOURS_RE = re.compile(r"\d{1,2}\s*[:h]\s*\d{2}\s*(?:-|–|a|to|h)\s*\d{1,2}\s*[:h]?\s*\d{0,2}", re.I)
-# Diet / allergen codes read as a box of their own next to the name: "O.V.F.S.", "s.a.", "KSG".
-_CODE_RE = re.compile(r"^(?:[A-Za-z]\s?\.\s?){2,}[A-Za-z]?\.?$|^[B-DF-HJ-NP-TV-XZ]{2,5}$")
-# A bulleted list item ("· MARGARITA") is a dish name like a numbered one; "·PLATOS SECOS·" is not.
-_BULLETS = "·•▪●◦"
-_BULLET_RE = re.compile(rf"^\s*[{_BULLETS}]\s*[A-ZÀ-Ý]")
-
-
-@dataclass
-class _Info:
-    line: OcrLine
-    prices: list[PriceMatch]
-    price_only: bool
-    noise: bool
-    numbered: bool
-    column: int = 0
-    consumed: bool = False  # price-only line whose prices went to a row partner
-    attached: list[float] = field(default_factory=list)  # prices from same-row price-only lines
-    attached_ids: list[int] = field(default_factory=list)
-
-
-@dataclass
-class _Draft:
-    head: _Info
-    prices: list[float]
-    line_ids: list[int]
-    desc: list[str] = field(default_factory=list)
-    section: str | None = None
-    last: OcrLine | None = None
+from menu_poc.parsing.prices import find_prices, is_price_only, looks_like_phone, strip_prices
 
 
 def _letters(text: str) -> int:
-    return sum(ch.isalpha() for ch in text)
+    return sum(char.isalpha() for char in text)
 
 
 def is_noise(line: OcrLine) -> bool:
@@ -114,29 +72,29 @@ def is_noise(line: OcrLine) -> bool:
     text = line.text.strip()
     if line.confidence < MIN_OCR_CONF:
         return True
-    if _NOISE_RE.search(text) or _HOURS_RE.search(text) or looks_like_phone(text):
+    if NOISE_RE.search(text) or HOURS_RE.search(text) or looks_like_phone(text):
         return True
-    if _CODE_RE.match(text):
+    if DIET_CODE_RE.match(text):
         return True
-    return _letters(text) < 3 and not find_prices(text)
+    return _letters(text) < MIN_LETTERS and not find_prices(text)
 
 
 def clean_name(text: str) -> tuple[str, str | None]:
     """Dish name from a line: drop numbering, prices, leaders; split ``Name: ingredients``."""
     text = strip_prices(text)
-    text = _NUMBERING_RE.sub("", text, count=1)
-    text = _LEADING_JUNK_RE.sub("", text)
+    text = DISH_NUMBERING_RE.sub("", text, count=1)
+    text = LEADING_JUNK_RE.sub("", text)
     rest = None
     if ":" in text:
         head, tail = text.split(":", 1)
-        if _letters(head) >= 3 and _letters(tail) >= 3:
+        if _letters(head) >= MIN_LETTERS and _letters(tail) >= MIN_LETTERS:
             text, rest = head, tail.strip()
-    return _TRAILING_JUNK_RE.sub("", text).strip(), rest
+    return TRAILING_JUNK_RE.sub("", text).strip(), rest
 
 
 def _is_size_price(text: str) -> bool:
     """``"MEDIANA 13,95€"``: a size label with its price, part of a size table."""
-    return bool(find_prices(text)) and bool(_SIZE_RE.match(clean_name(text)[0]))
+    return bool(find_prices(text)) and bool(SIZE_RE.match(clean_name(text)[0]))
 
 
 def _is_note(text: str) -> bool:
@@ -146,10 +104,10 @@ def _is_note(text: str) -> bool:
 
 def _is_enumerated(text: str) -> bool:
     """Numbered (``46. LAMB CURRY``) or bulleted (``· MARGARITA``) list item."""
-    if _letters(text) < 3:
+    if _letters(text) < MIN_LETTERS:
         return False
-    bulleted = bool(_BULLET_RE.match(text)) and not text.rstrip().endswith(tuple(_BULLETS))
-    return bulleted or bool(_NUMBERING_RE.match(text))
+    bulleted = bool(BULLET_RE.match(text)) and not text.rstrip().endswith(tuple(BULLETS))
+    return bulleted or bool(DISH_NUMBERING_RE.match(text))
 
 
 def _continuation(text: str) -> bool:
@@ -178,18 +136,18 @@ def _suspicious_name(name: str) -> bool:
 
 
 def _norm(text: str) -> str:
-    return re.sub(r"[^a-z0-9]", "", text.lower())
+    return NON_ALNUM_ASCII_RE.sub("", text.lower())
 
 
 def _caps_ratio(text: str) -> float:
-    letters = [ch for ch in text if ch.isalpha()]
-    return sum(ch.isupper() for ch in letters) / len(letters) if letters else 0.0
+    letters = [char for char in text if char.isalpha()]
+    return sum(char.isupper() for char in letters) / len(letters) if letters else 0.0
 
 
-def _is_header(info: _Info, med_h: float) -> bool:
+def _is_header(info: LineInfo, med_h: float) -> bool:
     text = info.line.text.strip()
-    letters = [ch for ch in text if ch.isalpha()]
-    if info.prices or info.attached or info.numbered or len(letters) < 3:
+    letters = [char for char in text if char.isalpha()]
+    if info.prices or info.attached or info.numbered or len(letters) < MIN_LETTERS:
         return False
     if len(text) > HEADER_MAX_CHARS or len(text.split()) > HEADER_MAX_WORDS:
         return False
@@ -208,11 +166,11 @@ class RuleBasedParser:
     """``Parser`` that finds dishes with price / numbering / typography heuristics."""
 
     def fingerprint(self) -> dict[str, Any]:
-        return {"name": "rules", "version": VERSION}
+        return {"name": "rules", "version": RULES_VERSION}
 
     def parse(self, ocr: OcrResult) -> ParseResult:
         infos = {
-            line.id: _Info(
+            line.id: LineInfo(
                 line=line,
                 prices=find_prices(line.text),
                 price_only=(
@@ -225,30 +183,31 @@ class RuleBasedParser:
             )
             for line in ocr.lines
         }
-        content = [i for i in infos.values() if not i.noise]
-        med_h = median_height([i.line for i in content]) or 1.0
-        price_tokens = sum(len(i.prices) for i in content)
+        content = [info for info in infos.values() if not info.noise]
+        med_h = median_height([info.line for info in content]) or 1.0
+        price_tokens = sum(len(info.prices) for info in content)
 
-        columns = group_columns([i.line for i in content], ocr.width)
-        for index, col in enumerate(columns):
-            for line in col:
+        columns = group_columns([info.line for info in content], ocr.width)
+        for index, column in enumerate(columns):
+            for line in column:
                 infos[line.id].column = index
         self._attach_row_prices(content, columns)
-        order = [infos[line.id] for col in columns for line in col]
+        order = [infos[line.id] for column in columns for line in column]
 
         drafts, used, orphan_prices, headers = self._walk(order, med_h)
-        dishes = [d for d in (self._finish(draft) for draft in drafts) if d is not None]
+        finished = (self._finish(draft) for draft in drafts)
+        dishes = [dish for dish in finished if dish is not None]
 
-        attached = sum(len(d.prices) for d in dishes)
-        stats = confidence.ParseStats(
+        attached = sum(len(dish.prices) for dish in dishes)
+        stats = ParseStats(
             content_lines=len(content),
             used_lines=len(used),
             price_tokens=price_tokens,
             attached_prices=min(attached, price_tokens),
             dishes=len(dishes),
-            priced_dishes=sum(1 for d in dishes if d.prices),
-            mean_ocr_conf=mean(i.line.confidence for i in content) if content else 0.0,
-            suspicious_names=sum(_suspicious_name(d.name) for d in dishes),
+            priced_dishes=sum(1 for dish in dishes if dish.prices),
+            mean_ocr_conf=mean(info.line.confidence for info in content) if content else 0.0,
+            suspicious_names=sum(_suspicious_name(dish.name) for dish in dishes),
             headers=headers,
         )
         value, signals = confidence.score(stats)
@@ -256,31 +215,33 @@ class RuleBasedParser:
         return ParseResult(dishes=dishes, confidence=value, signals=signals)
 
     @staticmethod
-    def _attach_row_prices(content: list[_Info], columns: list[list[OcrLine]]) -> None:
+    def _attach_row_prices(content: list[LineInfo], columns: list[list[OcrLine]]) -> None:
         """Give each price-only line's prices to the text line on its row, to the left.
 
         The partner must be in the price's column, or in the column just left of it when the
         price's column is a column of prices (names and prices split by a wide gap).
         """
-        by_id = {i.line.id: i for i in content}
+        by_id = {info.line.id: info for info in content}
         price_columns = {
             index
-            for index, col in enumerate(columns)
-            if sum(by_id[ln.id].price_only for ln in col) >= PRICE_COLUMN_SHARE * len(col)
+            for index, column in enumerate(columns)
+            if sum(by_id[line.id].price_only for line in column) >= PRICE_COLUMN_SHARE * len(column)
         }
         texts = [
-            i.line
-            for i in content
-            if not i.price_only and _letters(i.line.text) >= 3 and not _is_note(i.line.text)
+            info.line
+            for info in content
+            if not info.price_only
+            and _letters(info.line.text) >= MIN_LETTERS
+            and not _is_note(info.line.text)
         ]
-        for info in sorted(content, key=lambda i: i.line.x0):
+        for info in sorted(content, key=lambda info: info.line.x0):
             if not info.price_only:
                 continue
             allowed = {info.column}
             if info.column in price_columns:
                 allowed.add(info.column - 1)
-            near = [ln for ln in texts if by_id[ln.id].column in allowed]
-            numbered = [ln for ln in near if by_id[ln.id].numbered]
+            near = [line for line in texts if by_id[line.id].column in allowed]
+            numbered = [line for line in near if by_id[line.id].numbered]
             # A numbered name partly on the row beats a description fully on it (tilted photos).
             target = left_neighbor(
                 info.line, numbered, NUMBERED_OVERLAP, obstacles=texts
@@ -288,36 +249,38 @@ class RuleBasedParser:
             if target is None:
                 continue
             owner = by_id[target.id]
-            owner.attached.extend(p.value for p in info.prices)
+            owner.attached.extend(price.value for price in info.prices)
             owner.attached_ids.append(info.line.id)
             info.consumed = True
 
-    def _walk(self, order: list[_Info], med_h: float) -> tuple[list[_Draft], set[int], int, int]:
-        drafts: list[_Draft] = []
+    def _walk(
+        self, order: list[LineInfo], med_h: float
+    ) -> tuple[list[DishDraft], set[int], int, int]:
+        drafts: list[DishDraft] = []
         headers = 0
         used: set[int] = set()
         section: str | None = None
-        current: _Draft | None = None
+        current: DishDraft | None = None
         orphan_prices = 0
-        pending: _Draft | None = None  # last header, in case it turns out to be a dish name
+        pending: DishDraft | None = None  # last header, in case it turns out to be a dish name
         carry: list[float] = []  # price read on a description's last line, for the next name
         decorations = Counter(
-            _norm(clean_name(i.line.text)[0]) for i in order if _is_header(i, med_h)
+            _norm(clean_name(info.line.text)[0]) for info in order if _is_header(info, med_h)
         )
 
         for info in order:
             line = info.line
             if info.consumed:
                 continue
-            all_prices = [p.value for p in info.prices] + info.attached
+            all_prices = [price.value for price in info.prices] + info.attached
             carried, carry = carry, []
             if info.price_only:
                 # Price under its dish (name, description, then price): a recent priceless dish.
                 owner = next(
                     (
-                        d
-                        for d in reversed(drafts[-ORPHAN_LOOKBACK:])
-                        if not d.prices and self._near(d, info, med_h)
+                        draft
+                        for draft in reversed(drafts[-ORPHAN_LOOKBACK:])
+                        if not draft.prices and self._near(draft, info, med_h)
                     ),
                     None,
                 )
@@ -375,7 +338,7 @@ class RuleBasedParser:
                 continue
             pending = None if (all_prices or info.numbered) else pending
             if all_prices or info.numbered:
-                current = _Draft(
+                current = DishDraft(
                     head=info,
                     prices=all_prices,
                     line_ids=[line.id, *info.attached_ids],
@@ -389,7 +352,7 @@ class RuleBasedParser:
                 headers += 1
                 title = clean_name(line.text)[0]
                 if title and decorations[_norm(title)] < DECORATION_REPEATS:
-                    pending = _Draft(head=info, prices=[], line_ids=[line.id], section=section)
+                    pending = DishDraft(head=info, prices=[], line_ids=[line.id], section=section)
                     pending.last = line
                     section = title
                 current = None
@@ -406,7 +369,7 @@ class RuleBasedParser:
                 # "TORI KAISU.." after "EBI TEMPURA / Langostinos rebozados": styled like the
                 # dish name above and not a title (ends in leaders), so a new dish whose price
                 # was lost (cut by the photo edge, unreadable).
-                current = _Draft(head=info, prices=[], line_ids=[line.id], section=section)
+                current = DishDraft(head=info, prices=[], line_ids=[line.id], section=section)
                 current.last = line
                 drafts.append(current)
                 used.add(line.id)
@@ -422,7 +385,7 @@ class RuleBasedParser:
         return drafts, used, orphan_prices, headers
 
     @staticmethod
-    def _near(draft: _Draft, info: _Info, med_h: float) -> bool:
+    def _near(draft: DishDraft, info: LineInfo, med_h: float) -> bool:
         """``info`` sits right below the draft's last line, horizontally within its block."""
         head, last = draft.head.line, draft.last or draft.head.line
         gap = info.line.y0 - last.y1
@@ -433,7 +396,7 @@ class RuleBasedParser:
         )
 
     @staticmethod
-    def _sibling(draft: _Draft, info: _Info, med_h: float) -> bool:
+    def _sibling(draft: DishDraft, info: LineInfo, med_h: float) -> bool:
         """``info`` looks like the open dish's name: short ALL CAPS line at the same indent."""
         head, text = draft.head.line, info.line.text
         return (
@@ -445,12 +408,12 @@ class RuleBasedParser:
         )
 
     @staticmethod
-    def _finish(draft: _Draft) -> Dish | None:
+    def _finish(draft: DishDraft) -> Dish | None:
         name, rest = clean_name(draft.head.line.text)
-        if _letters(name) < 3 or len(name) > MAX_NAME_CHARS:
+        if _letters(name) < MIN_LETTERS or len(name) > MAX_NAME_CHARS:
             return None
         parts = ([rest] if rest else []) + draft.desc
-        description = " ".join(p for p in parts if p) or None
+        description = " ".join(part for part in parts if part) or None
         return Dish(
             name=name,
             description=description,

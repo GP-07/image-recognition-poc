@@ -1,7 +1,7 @@
 import pytest
 
-from menu_poc.evaluation.golden import GoldenDish
 from menu_poc.evaluation.matching import match_dishes, normalize, similarity
+from menu_poc.models import GoldenDish
 
 GOLD = [
     GoldenDish(name="Lamb Curry", aliases=["Xai al curry tradicional", "Cordero al curry"]),
@@ -31,34 +31,34 @@ def test_similarity_rewards_extra_words_but_not_truncation():
 
 
 def test_alias_match():
-    m = match_dishes(["Cordero al curry"], GOLD)
-    assert (m.tp, m.fp, m.fn) == (1, 0, 2)
-    assert m.matched[0].gold == "Lamb Curry"
-    assert m.matched[0].variant == "Cordero al curry"
+    match = match_dishes(["Cordero al curry"], GOLD)
+    assert (match.tp, match.fp, match.fn) == (1, 0, 2)
+    assert match.matched[0].gold == "Lamb Curry"
+    assert match.matched[0].variant == "Cordero al curry"
 
 
 def test_translation_is_duplicate_not_false_positive():
-    m = match_dishes(["46. LAMB CURRY", "Xai al curry tradicional", "Cordero al curry"], GOLD)
-    assert (m.tp, m.fp, m.duplicates) == (1, 0, 2)
-    assert {p.gold for p in m.duplicate_pairs} == {"Lamb Curry"}
+    match = match_dishes(["46. LAMB CURRY", "Xai al curry tradicional", "Cordero al curry"], GOLD)
+    assert (match.tp, match.fp, match.duplicates) == (1, 0, 2)
+    assert {pair.gold for pair in match.duplicate_pairs} == {"Lamb Curry"}
 
 
 def test_ocr_noisy_name_still_matches():
-    m = match_dishes(["Patatas Brabas", "Tiramisu ..... 5,50€", "Lamb Cury"], GOLD)
-    assert (m.tp, m.fp, m.fn) == (3, 0, 0)
+    match = match_dishes(["Patatas Brabas", "Tiramisu ..... 5,50€", "Lamb Cury"], GOLD)
+    assert (match.tp, match.fp, match.fn) == (3, 0, 0)
 
 
 def test_unrelated_name_is_false_positive():
-    m = match_dishes(["Ensalada mixta", "Telefono 93 123 45 67"], GOLD)
-    assert (m.tp, m.fp, m.fn) == (0, 2, 3)
-    assert m.false_positives == ["Ensalada mixta", "Telefono 93 123 45 67"]
-    assert m.unmatched_gold == ["Lamb Curry", "Patatas Bravas", "Tiramisú"]
+    match = match_dishes(["Ensalada mixta", "Telefono 93 123 45 67"], GOLD)
+    assert (match.tp, match.fp, match.fn) == (0, 2, 3)
+    assert match.false_positives == ["Ensalada mixta", "Telefono 93 123 45 67"]
+    assert match.unmatched_gold == ["Lamb Curry", "Patatas Bravas", "Tiramisú"]
 
 
 def test_one_to_one_greedy_by_best_score():
     gold = [GoldenDish(name="Chicken Curry"), GoldenDish(name="Lamb Curry")]
-    m = match_dishes(["Lamb Curry", "Chicken Curry"], gold)
-    assert {(p.pred, p.gold) for p in m.matched} == {
+    match = match_dishes(["Lamb Curry", "Chicken Curry"], gold)
+    assert {(pair.pred, pair.gold) for pair in match.matched} == {
         ("Lamb Curry", "Lamb Curry"),
         ("Chicken Curry", "Chicken Curry"),
     }

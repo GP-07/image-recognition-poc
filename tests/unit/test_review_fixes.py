@@ -6,15 +6,13 @@ import zipfile
 import pytest
 from PIL import Image
 
-from menu_poc.config import RunConfig
-from menu_poc.evaluation.golden import GoldenDish
 from menu_poc.evaluation.matching import match_dishes, normalize
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_jsonl
 from menu_poc.llm.fake_engine import FakeEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
-from menu_poc.models import Dish, ImageResult, OcrLine, OcrResult
+from menu_poc.models import Dish, GoldenDish, ImageResult, OcrLine, OcrResult, RunConfig
 from menu_poc.pipeline import merge_previous
 
 
@@ -50,14 +48,14 @@ def test_numbered_names_stay_distinct():
 
 def test_root_level_images_can_be_selected(tmp_path):
     (tmp_path / "root.png").write_bytes(_png())
-    assert [r.image_id for r in iter_images(tmp_path, ["unknown/root"])] == ["unknown/root"]
+    assert [ref.image_id for ref in iter_images(tmp_path, ["unknown/root"])] == ["unknown/root"]
 
 
 def test_duplicate_image_ids_are_rejected(tmp_path):
     path = tmp_path / "in.zip"
-    with zipfile.ZipFile(path, "w") as zf:
-        zf.writestr("r1/x.jpg", _png())
-        zf.writestr("r1/x.png", _png())
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("r1/x.jpg", _png())
+        archive.writestr("r1/x.png", _png())
     with pytest.raises(ValueError, match="Duplicate image id"):
         list(iter_images(path))
 
@@ -81,8 +79,8 @@ def test_merge_previous_keeps_the_full_image_set(tmp_path):
     write_jsonl(
         prev / "results.jsonl",
         [
-            ImageResult(image_id=i, restaurant_id="r", rules_confidence=c)
-            for i, c in [("r/a", 0.9), ("r/b", 0.1)]
+            ImageResult(image_id=image_id, restaurant_id="r", rules_confidence=confidence)
+            for image_id, confidence in [("r/a", 0.9), ("r/b", 0.1)]
         ],
     )
     config = RunConfig(
@@ -90,7 +88,10 @@ def test_merge_previous_keeps_the_full_image_set(tmp_path):
     )
     redone = [ImageResult(image_id="r/b", restaurant_id="r", llm_used=True)]
     merged = merge_previous(config, redone)
-    assert [(r.image_id, r.llm_used) for r in merged] == [("r/a", False), ("r/b", True)]
+    assert [(result.image_id, result.llm_used) for result in merged] == [
+        ("r/a", False),
+        ("r/b", True),
+    ]
 
 
 def test_config_rejects_useless_combinations():

@@ -5,9 +5,10 @@ from __future__ import annotations
 import time
 
 from menu_poc.cache.store import ArtifactStore, make_key
+from menu_poc.data_classes import ImageContext
 from menu_poc.interfaces import OcrEngine, Preprocessor
 from menu_poc.models import OcrResult
-from menu_poc.steps.base import ImageContext, Step
+from menu_poc.steps.base import Step
 
 
 class OcrStep(Step):

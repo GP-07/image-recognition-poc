@@ -9,10 +9,10 @@ from pathlib import Path
 
 from PIL import Image
 
-from menu_poc.io.dataset import ImageRef
+from menu_poc.data_classes import ImageContext, ImageRef
 from menu_poc.io.writers import write_jsonl
 from menu_poc.models import ImageResult
-from menu_poc.steps.base import ImageContext, Step
+from menu_poc.steps.base import Step
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +54,6 @@ class Pipeline:
             log.info("processing %s", ref.image_id)
             done[ref.image_id] = self.process(ref)
             # Rewrite after every image so an interrupted run keeps its progress.
-            write_jsonl(
-                run_dir / "results.jsonl", [done[r.image_id] for r in refs if r.image_id in done]
-            )
+            finished = [done[ref.image_id] for ref in refs if ref.image_id in done]
+            write_jsonl(run_dir / "results.jsonl", finished)
         return [done[ref.image_id] for ref in refs]

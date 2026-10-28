@@ -7,11 +7,11 @@ import urllib.error
 import pytest
 
 from menu_poc.cli import resolve_llm
-from menu_poc.config import RunConfig
 from menu_poc.llm import ollama_engine as ollama
 from menu_poc.llm.anthropic_engine import AnthropicEngine
 from menu_poc.llm.engine import LLMEngine, LLMOutputError
 from menu_poc.llm.ollama_engine import OllamaEngine
+from menu_poc.models import RunConfig
 
 
 class _Resp(io.BytesIO):

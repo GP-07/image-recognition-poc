@@ -8,10 +8,10 @@ added.
 from __future__ import annotations
 
 from menu_poc.cache.store import ArtifactStore
-from menu_poc.config import RunConfig
 from menu_poc.llm.engine import LLMEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
+from menu_poc.models import RunConfig
 from menu_poc.ocr.rapid import RapidOcrEngine
 from menu_poc.parsing.rules import RuleBasedParser
 from menu_poc.pipeline.core import Pipeline

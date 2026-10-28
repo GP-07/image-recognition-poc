@@ -6,15 +6,11 @@ from typing import Any
 
 import pytest
 
+from menu_poc.constants import DEFAULT_PROMPT_PATH, DISHES_SCHEMA
 from menu_poc.llm.engine import prompt_key
 from menu_poc.llm.fake_engine import FakeEngine
 from menu_poc.llm.grounding import GroundingVerifier
-from menu_poc.llm.structurer import (
-    DEFAULT_PROMPT_PATH,
-    DISHES_SCHEMA,
-    LLMStructurer,
-    build_user_message,
-)
+from menu_poc.llm.structurer import LLMStructurer, build_user_message
 from menu_poc.llm.text import reading_order, render_lines
 from menu_poc.models import OcrLine, OcrResult
 
@@ -25,8 +21,8 @@ def load_fixture(name: str) -> dict[str, Any]:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-def _line(i: int, text: str, x0: float, y0: float, x1: float, h: float = 20) -> OcrLine:
-    return OcrLine(id=i, text=text, bbox=(x0, y0, x1, y0 + h), confidence=0.9)
+def _line(line_id: int, text: str, x0: float, y0: float, x1: float, height: float = 20) -> OcrLine:
+    return OcrLine(id=line_id, text=text, bbox=(x0, y0, x1, y0 + height), confidence=0.9)
 
 
 def test_default_prompt_exists_and_states_key_rules():
@@ -73,16 +69,16 @@ def test_render_lines_format():
 def test_end_to_end_with_recorded_fixture():
     fx = load_fixture("pizzeria_salads_desserts.json")
     ocr = OcrResult(**fx["ocr"])
-    structurer = LLMStructurer(FakeEngine(lambda s, u, schema: fx["response"]))
+    structurer = LLMStructurer(FakeEngine(lambda system, user, schema: fx["response"]))
     result = structurer.structure(ocr)
 
-    assert [d.name for d in result.dishes] == fx["expected_names"]
-    assert all(d.origin == "llm" for d in result.dishes)
+    assert [dish.name for dish in result.dishes] == fx["expected_names"]
+    assert all(dish.origin == "llm" for dish in result.dishes)
     assert result.prompt_version.startswith("structure_v2@")
     assert result.usage.cost_usd == 0.0
     first = result.dishes[0]
     assert first.prices == [4.9] and first.section == "ENSALADAS" and first.source_line_ids
-    assert not {"Agua", "San Miguel"} & {d.name for d in result.dishes}
+    assert not {"Agua", "San Miguel"} & {dish.name for dish in result.dishes}
 
     verified = GroundingVerifier().verify(result.dishes, ocr)
     assert len(verified.kept) == len(result.dishes) and not verified.dropped
@@ -95,9 +91,9 @@ def test_fake_client_keyed_by_prompt_hash():
     key = prompt_key(structurer.system, build_user_message(ocr))
     structurer.client = FakeEngine({key: fx["response"]})
     result = structurer.structure(ocr)
-    assert [d.name for d in result.dishes] == fx["expected_names"]
+    assert [dish.name for dish in result.dishes] == fx["expected_names"]
     verified = GroundingVerifier().verify(result.dishes, ocr)
-    assert [d.name for d in verified.kept] == fx["expected_names"]
+    assert [dish.name for dish in verified.kept] == fx["expected_names"]
 
 
 def test_user_message_contains_ids_and_text():
@@ -138,12 +134,14 @@ def test_empty_ocr_skips_the_call():
 def test_fingerprint_changes_with_model_and_prompt(tmp_path):
     prompt = tmp_path / "structure_v1.md"
     prompt.write_text("v1")
-    a = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
-    b = LLMStructurer(FakeEngine({}, model="m2"), prompt).fingerprint()
+    original = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
+    other_model = LLMStructurer(FakeEngine({}, model="m2"), prompt).fingerprint()
     prompt.write_text("v1 edited")
-    c = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
-    assert a["client"]["model"] == "m1" and a["prompt_version"].startswith("structure_v1@")
-    assert a != b and a["prompt_version"] != c["prompt_version"]
+    edited = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
+    assert original["client"]["model"] == "m1"
+    assert original["prompt_version"].startswith("structure_v1@")
+    assert original != other_model
+    assert original["prompt_version"] != edited["prompt_version"]
 
 
 @pytest.mark.parametrize("name", ["pizzeria_salads_desserts.json", "indian_multilingual.json"])

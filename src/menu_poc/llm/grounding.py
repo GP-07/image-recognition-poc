@@ -26,20 +26,27 @@ from typing import Any
 
 from rapidfuzz import fuzz
 
+from menu_poc.constants import (
+    BELOW_MAX_GAP,
+    BELOW_MIN_DROP,
+    GROUNDING_THRESHOLD,
+    GROUNDING_VERSION,
+    MIN_WORD_CHARS,
+    SHORT_NAME_CHARS,
+)
 from menu_poc.llm.text import normalize, reading_order
 from menu_poc.models import Dish, OcrLine, OcrResult, VerificationResult
-
-Candidate = tuple[str, list[int]]  # normalised text, line ids
+from menu_poc.typings import Candidate
 
 
 def match_score(name: str, text: str) -> float:
     """Similarity (0-100) of a normalised name against a normalised candidate text."""
     if not name or not text:
         return 0.0
-    if len(name) <= 3:
+    if len(name) <= SHORT_NAME_CHARS:
         return 100.0 if name in text.split() else 0.0
     phrase = fuzz.partial_ratio(name, text) if len(name) <= len(text) else fuzz.ratio(name, text)
-    words = [fuzz.partial_ratio(word, text) for word in name.split() if len(word) >= 3]
+    words = [fuzz.partial_ratio(word, text) for word in name.split() if len(word) >= MIN_WORD_CHARS]
     return min([phrase, *words])
 
 
@@ -48,12 +55,12 @@ def _line_below(line: OcrLine, lines: list[OcrLine]) -> OcrLine | None:
     below = [
         other
         for other in lines
-        if other.y_center > line.y1 - 0.25 * line.height
-        and other.y0 - line.y1 < 1.5 * max(line.height, 1.0)
+        if other.y_center > line.y1 - BELOW_MIN_DROP * line.height
+        and other.y0 - line.y1 < BELOW_MAX_GAP * max(line.height, 1.0)
         and min(line.x1, other.x1) - max(line.x0, other.x0) > 0
         and other.id != line.id
     ]
-    return min(below, key=lambda o: o.y_center, default=None)
+    return min(below, key=lambda other: other.y_center, default=None)
 
 
 def page_candidates(ocr: OcrResult) -> list[Candidate]:
@@ -62,35 +69,37 @@ def page_candidates(ocr: OcrResult) -> list[Candidate]:
     norm = {line.id: normalize(line.text) for line in ordered}
     candidates: list[Candidate] = [(norm[line.id], [line.id]) for line in ordered]
     pairs: set[tuple[int, int]] = set()
-    for current, nxt in zip(ordered, ordered[1:], strict=False):
-        pairs.add((current.id, nxt.id))
+    for current, following in zip(ordered, ordered[1:], strict=False):
+        pairs.add((current.id, following.id))
     for line in ordered:
         below = _line_below(line, ordered)
         if below is not None:
             pairs.add((line.id, below.id))
-    for a, b in sorted(pairs):
-        candidates.append((f"{norm[a]} {norm[b]}".strip(), [a, b]))
+    for first_id, second_id in sorted(pairs):
+        joined = f"{norm[first_id]} {norm[second_id]}".strip()
+        candidates.append((joined, [first_id, second_id]))
     return candidates
 
 
 class GroundingVerifier:
-    def __init__(self, threshold: float = 85.0) -> None:
+    def __init__(self, threshold: float = GROUNDING_THRESHOLD) -> None:
         self.threshold = threshold
 
     def fingerprint(self) -> dict[str, Any]:
-        return {"stage": "grounding", "threshold": self.threshold, "version": "v1"}
+        return {"stage": "grounding", "threshold": self.threshold, "version": GROUNDING_VERSION}
 
     def verify(self, dishes: list[Dish], ocr: OcrResult) -> VerificationResult:
         by_id = {line.id: line for line in ocr.lines}
-        order = {line.id: i for i, line in enumerate(reading_order(ocr.lines))}
+        order = {line.id: index for index, line in enumerate(reading_order(ocr.lines))}
         page: list[Candidate] | None = None  # built lazily, only if some dish needs it
         kept: list[Dish] = []
         dropped: list[Dish] = []
 
         for dish in dishes:
             name = normalize(dish.name)
-            ids = sorted({i for i in dish.source_line_ids if i in by_id}, key=order.__getitem__)
-            own: list[Candidate] = [(normalize(by_id[i].text), [i]) for i in ids]
+            known = {line_id for line_id in dish.source_line_ids if line_id in by_id}
+            ids = sorted(known, key=order.__getitem__)
+            own: list[Candidate] = [(normalize(by_id[line_id].text), [line_id]) for line_id in ids]
             if len(ids) > 1:
                 own.append((" ".join(text for text, _ in own), ids))
 

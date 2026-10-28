@@ -6,41 +6,15 @@ Each dish is labelled once; its translations on the same menu go in ``aliases``.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, field_validator
+from pydantic import ValidationError
 
-Split = Literal["dev", "test"]
+from menu_poc.models import GoldenImage
 
 
 class GoldenError(ValueError):
     """A golden file is malformed; the message starts with the file name."""
-
-
-class GoldenDish(BaseModel):
-    name: str
-    aliases: list[str] = Field(default_factory=list)
-
-    @field_validator("name")
-    @classmethod
-    def _non_empty(cls, v: str) -> str:
-        if not v.strip():
-            raise ValueError("dish name must not be empty")
-        return v
-
-    @property
-    def variants(self) -> list[str]:
-        """Name plus aliases (any of them counts as recognising the dish)."""
-        return [self.name, *self.aliases]
-
-
-class GoldenImage(BaseModel):
-    image_id: str  # "<restaurant_id>/<file_stem>"
-    split: Split
-    reviewed: bool = False
-    notes: str | None = None
-    dishes: list[GoldenDish] = Field(default_factory=list)
 
 
 def expected_filename(image_id: str) -> str:
@@ -52,14 +26,14 @@ def load_golden_file(path: Path) -> GoldenImage:
     path = Path(path)
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as e:
-        raise GoldenError(f"{path.name}: invalid YAML: {e}") from e
+    except yaml.YAMLError as exc:
+        raise GoldenError(f"{path.name}: invalid YAML: {exc}") from exc
     if not isinstance(data, dict):
         raise GoldenError(f"{path.name}: expected a mapping at the top level")
     try:
         golden = GoldenImage.model_validate(data)
-    except ValidationError as e:
-        raise GoldenError(f"{path.name}: {e}") from e
+    except ValidationError as exc:
+        raise GoldenError(f"{path.name}: {exc}") from exc
     if path.name != expected_filename(golden.image_id):
         raise GoldenError(
             f"{path.name}: image_id {golden.image_id!r} implies file name "

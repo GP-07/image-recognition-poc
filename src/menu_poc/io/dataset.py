@@ -6,34 +6,12 @@ The image id is ``<restaurant_id>/<file stem>``.
 
 from __future__ import annotations
 
-import io
 import zipfile
 from collections.abc import Iterator
-from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
-from PIL import Image
-
-from menu_poc.cache.store import sha256_bytes
-
-IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp"}
-
-
-@dataclass(frozen=True)
-class ImageRef:
-    image_id: str
-    restaurant_id: str
-    filename: str
-    data: bytes
-
-    @property
-    def sha256(self) -> str:
-        return sha256_bytes(self.data)
-
-    def open(self) -> Image.Image:
-        image = Image.open(io.BytesIO(self.data))
-        image.load()
-        return image
+from menu_poc.constants import IMAGE_SUFFIXES
+from menu_poc.data_classes import ImageRef
 
 
 def _is_image(path: PurePosixPath) -> bool:
@@ -70,17 +48,17 @@ def iter_images(source: Path, image_ids: list[str] | None = None) -> Iterator[Im
     wanted = set(image_ids) if image_ids else None
 
     if source.is_file() and source.suffix.lower() == ".zip":
-        with zipfile.ZipFile(source) as zf:
-            names = sorted(n for n in zf.namelist() if _is_image(PurePosixPath(n)))
-            _check_unique([PurePosixPath(n) for n in names])
+        with zipfile.ZipFile(source) as archive:
+            names = sorted(name for name in archive.namelist() if _is_image(PurePosixPath(name)))
+            _check_unique([PurePosixPath(name) for name in names])
             for name in names:
                 path = PurePosixPath(name)
                 if wanted is None or _image_id(path) in wanted:
-                    yield _ref(path, zf.read(name))
+                    yield _ref(path, archive.read(name))
     elif source.is_dir():
-        files = sorted(p for p in source.rglob("*") if p.is_file())
-        paths = {f: PurePosixPath(f.relative_to(source).as_posix()) for f in files}
-        images = {f: path for f, path in paths.items() if _is_image(path)}
+        files = sorted(file for file in source.rglob("*") if file.is_file())
+        paths = {file: PurePosixPath(file.relative_to(source).as_posix()) for file in files}
+        images = {file: path for file, path in paths.items() if _is_image(path)}
         _check_unique(list(images.values()))
         for file, path in images.items():
             if wanted is None or _image_id(path) in wanted:

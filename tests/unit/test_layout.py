@@ -9,21 +9,23 @@ from menu_poc.parsing.layout import (
 )
 
 
-def _line(i, x0, y0, x1, y1, text="text"):
-    return OcrLine(id=i, text=text, bbox=(x0, y0, x1, y1), confidence=0.99)
+def _line(line_id, x0, y0, x1, y1, text="text"):
+    return OcrLine(id=line_id, text=text, bbox=(x0, y0, x1, y1), confidence=0.99)
 
 
 def _two_columns():
     # Left column x 0..300, right column x 500..800, three rows each.
-    left = [_line(i, 0, 100 + 40 * i, 300, 120 + 40 * i, f"L{i}") for i in range(3)]
-    right = [_line(10 + i, 500, 100 + 40 * i, 800, 120 + 40 * i, f"R{i}") for i in range(3)]
+    left = [_line(row, 0, 100 + 40 * row, 300, 120 + 40 * row, f"L{row}") for row in range(3)]
+    right = [
+        _line(10 + row, 500, 100 + 40 * row, 800, 120 + 40 * row, f"R{row}") for row in range(3)
+    ]
     return left + right
 
 
 def test_v_overlap_is_relative_to_the_shorter_box():
-    a = _line(0, 0, 0, 10, 20)
-    assert v_overlap(a, _line(1, 0, 10, 10, 20)) == 1.0
-    assert v_overlap(a, _line(2, 0, 30, 10, 40)) == 0.0
+    box = _line(0, 0, 0, 10, 20)
+    assert v_overlap(box, _line(1, 0, 10, 10, 20)) == 1.0
+    assert v_overlap(box, _line(2, 0, 30, 10, 40)) == 0.0
 
 
 def test_group_rows_by_vertical_overlap():

@@ -12,7 +12,7 @@ def _make_run(run_dir, config, names, cost=None):
             ImageResult(
                 image_id="r1/a",
                 restaurant_id="r1",
-                dishes=[Dish(name=n, origin="rules") for n in names],
+                dishes=[Dish(name=name, origin="rules") for name in names],
                 llm_used=usage is not None,
                 llm_usage=usage,
                 timings_s={"total": 1.5},
@@ -51,15 +51,15 @@ def test_run_report_sections(tmp_path):
 
 def test_compare_runs_table(tmp_path):
     golden = _golden(tmp_path)
-    a, b = tmp_path / "a", tmp_path / "b"
-    _make_run(a, {"mode": "ocr", "llm_model": "claude-haiku-5-5"}, ["Lamb Curry"])
+    ocr_run, llm_run = tmp_path / "a", tmp_path / "b"
+    _make_run(ocr_run, {"mode": "ocr", "llm_model": "claude-haiku-5-5"}, ["Lamb Curry"])
     _make_run(
-        b,
+        llm_run,
         {"mode": "ocr+llm", "llm_model": "claude-haiku-5-5", "llm_policy": "always"},
         ["Lamb Curry", "Patatas bravas"],
         cost=0.02,
     )
-    md = compare_runs([a, b], golden)
+    md = compare_runs([ocr_run, llm_run], golden)
     lines = md.splitlines()
     assert lines[0].startswith("| run | mode | LLM model | policy | recall dev | recall test")
     assert lines[2].startswith("| `a` | ocr | - | - | 50.0% | - | 50.0% | 100.0% | 0.0% | $0.0000")
@@ -67,4 +67,4 @@ def test_compare_runs_table(tmp_path):
         "| `b` | ocr+llm | claude-haiku-5-5 | always | 100.0% | - | 100.0% | 100.0% | 50.0% "
         "| $0.0200 | $0.0100"
     )
-    assert not (a / "metrics.json").exists()
+    assert not (ocr_run / "metrics.json").exists()

@@ -21,10 +21,10 @@ def test_expected_filename():
 def test_load_golden_ok(tmp_path):
     (tmp_path / "r1__menu_a.yaml").write_text(GOOD)
     golden = load_golden(tmp_path)
-    g = golden["r1/menu_a"]
-    assert g.split == "dev" and g.reviewed
-    assert g.dishes[0].variants == ["Lamb Curry", "Xai al curry", "Cordero al curry"]
-    assert g.dishes[1].aliases == []
+    image = golden["r1/menu_a"]
+    assert image.split == "dev" and image.reviewed
+    assert image.dishes[0].variants == ["Lamb Curry", "Xai al curry", "Cordero al curry"]
+    assert image.dishes[1].aliases == []
 
 
 def test_only_reviewed_skips_unreviewed(tmp_path):

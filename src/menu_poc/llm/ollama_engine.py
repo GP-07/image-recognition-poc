@@ -14,20 +14,17 @@ import urllib.error
 import urllib.request
 from typing import Any
 
+from menu_poc.constants import OLLAMA_DEFAULT_HOST, OLLAMA_DEFAULT_MODEL, OLLAMA_PREFIX
 from menu_poc.llm.engine import LLMEngine, LLMError, LLMOutputError, LLMRetryableError
 from menu_poc.models import LLMUsage
 
-OLLAMA_PREFIX = "ollama/"
-
-DEFAULT_HOST = "http://localhost:11434"
-
 
 def ollama_host() -> str:
-    return os.environ.get("OLLAMA_HOST", DEFAULT_HOST).rstrip("/")
+    return os.environ.get("OLLAMA_HOST", OLLAMA_DEFAULT_HOST).rstrip("/")
 
 
 class OllamaEngine(LLMEngine):
-    aliases = {"ollama": f"{OLLAMA_PREFIX}qwen2.5:7b"}
+    aliases = {"ollama": f"{OLLAMA_PREFIX}{OLLAMA_DEFAULT_MODEL}"}
 
     @classmethod
     def handles(cls, name: str) -> bool:
@@ -46,8 +43,8 @@ class OllamaEngine(LLMEngine):
     def unavailable_reason(self) -> str | None:
         """None when the server answers and the model is pulled, else a human-readable reason."""
         try:
-            with urllib.request.urlopen(f"{self.host}/api/tags", timeout=3) as resp:
-                models = {m["name"] for m in json.load(resp).get("models", [])}
+            with urllib.request.urlopen(f"{self.host}/api/tags", timeout=3) as response:
+                models = {model["name"] for model in json.load(response).get("models", [])}
         except (urllib.error.URLError, OSError, ValueError) as exc:
             return f"Ollama server not reachable at {self.host} ({exc})"
         if self.name not in models and f"{self.name}:latest" not in models:
@@ -71,8 +68,8 @@ class OllamaEngine(LLMEngine):
         )
         start = time.perf_counter()
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_s) as resp:
-                payload = json.load(resp)
+            with urllib.request.urlopen(request, timeout=self.timeout_s) as response:
+                payload = json.load(response)
         except urllib.error.HTTPError as exc:
             raise LLMError(f"Ollama error {exc.code} ({self.model}): {exc.read()[:200]!r}") from exc
         except (urllib.error.URLError, OSError) as exc:

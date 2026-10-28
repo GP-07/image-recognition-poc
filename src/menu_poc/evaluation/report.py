@@ -5,22 +5,21 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from menu_poc.evaluation.matching import DEFAULT_THRESHOLD
-from menu_poc.evaluation.metrics import SPLITS, RunMetrics, evaluate_run
-
-TOP_ERRORS = 5  # unmatched gold dishes / false positives listed per image
-
-
-def _pct(x: float | None) -> str:
-    return "-" if x is None else f"{100 * x:.1f}%"
+from menu_poc.constants import MATCH_THRESHOLD, SPLITS, TOP_ERRORS
+from menu_poc.evaluation.metrics import evaluate_run
+from menu_poc.models import RunMetrics
 
 
-def _usd(x: float) -> str:
-    return f"${x:.4f}"
+def _pct(value: float | None) -> str:
+    return "-" if value is None else f"{100 * value:.1f}%"
 
 
-def _sec(x: float) -> str:
-    return f"{x:.2f}s"
+def _usd(value: float) -> str:
+    return f"${value:.4f}"
+
+
+def _sec(value: float) -> str:
+    return f"{value:.2f}s"
 
 
 def _cell(text: str) -> str:
@@ -29,40 +28,42 @@ def _cell(text: str) -> str:
 
 def _table(header: Sequence[str], rows: Sequence[Sequence[str]]) -> list[str]:
     lines = ["| " + " | ".join(header) + " |", "|" + "---|" * len(header)]
-    lines += ["| " + " | ".join(_cell(c) for c in row) + " |" for row in rows]
+    lines += ["| " + " | ".join(_cell(cell) for cell in row) + " |" for row in rows]
     return lines
 
 
-def _llm_model(m: RunMetrics) -> str:
-    return m.llm_model if m.mode == "ocr+llm" and m.llm_model else "-"
+def _llm_model(metrics: RunMetrics) -> str:
+    return metrics.llm_model if metrics.mode == "ocr+llm" and metrics.llm_model else "-"
 
 
-def render_run(m: RunMetrics) -> str:
+def render_run(metrics: RunMetrics) -> str:
     """Markdown for one evaluated run."""
-    out = [f"# Run `{m.run}`", ""]
+    out = [f"# Run `{metrics.run}`", ""]
+    reviewed_only = " · reviewed golden only" if metrics.only_reviewed else ""
     out.append(
-        f"Mode: `{m.mode or '?'}` · LLM: `{_llm_model(m)}` · policy: `{m.llm_policy or '-'}` · "
-        f"match threshold: {m.threshold:g}" + (" · reviewed golden only" if m.only_reviewed else "")
+        f"Mode: `{metrics.mode or '?'}` · LLM: `{_llm_model(metrics)}` · "
+        f"policy: `{metrics.llm_policy or '-'}` · "
+        f"match threshold: {metrics.threshold:g}{reviewed_only}"
     )
     out += ["", "## Summary", ""]
     rows = []
     for split in SPLITS:
-        s = m.accuracy.get(split)
-        if s is None or s.n_images == 0:
+        stats = metrics.accuracy.get(split)
+        if stats is None or stats.n_images == 0:
             continue
         rows.append(
             [
                 split,
-                str(s.n_images),
-                str(s.n_gold),
-                str(s.tp),
-                str(s.fp),
-                str(s.fn),
-                str(s.duplicates),
-                _pct(s.micro_recall),
-                _pct(s.macro_recall),
-                _pct(s.micro_precision),
-                _pct(s.macro_precision),
+                str(stats.n_images),
+                str(stats.n_gold),
+                str(stats.tp),
+                str(stats.fp),
+                str(stats.fn),
+                str(stats.duplicates),
+                _pct(stats.micro_recall),
+                _pct(stats.macro_recall),
+                _pct(stats.micro_precision),
+                _pct(stats.macro_precision),
             ]
         )
     header = ["split", "images", "gold", "TP", "FP", "FN", "dup", "recall (micro)"]
@@ -70,57 +71,64 @@ def render_run(m: RunMetrics) -> str:
     out += _table(header, rows) if rows else ["No labeled images."]
     out += [
         "",
-        f"- Images: {m.n_images} ({m.n_labeled} labeled, {len(m.unlabeled)} unlabeled, "
-        f"{m.n_duplicate_images} duplicate photos skipped and not scored)",
-        f"- LLM used: {_pct(m.llm_share)} of images ({_pct(m.llm_cached_share)} of them cached)",
-        f"- Cost: {_usd(m.cost_total_usd)} total, {_usd(m.cost_per_image_usd)} per image",
-        f"- Time: {_sec(m.time_total_s)} total, {_sec(m.time_mean_s)} per image; "
-        f"LLM latency {_sec(m.llm_latency_total_s)} total, "
-        f"{_sec(m.llm_latency_mean_s)} per LLM call",
-        f"- Ungrounded dishes dropped: {m.ungrounded_dropped}",
-        f"- Errors: {m.n_errors}",
+        f"- Images: {metrics.n_images} ({metrics.n_labeled} labeled, "
+        f"{len(metrics.unlabeled)} unlabeled, "
+        f"{metrics.n_duplicate_images} duplicate photos skipped and not scored)",
+        f"- LLM used: {_pct(metrics.llm_share)} of images "
+        f"({_pct(metrics.llm_cached_share)} of them cached)",
+        f"- Cost: {_usd(metrics.cost_total_usd)} total, "
+        f"{_usd(metrics.cost_per_image_usd)} per image",
+        f"- Time: {_sec(metrics.time_total_s)} total, {_sec(metrics.time_mean_s)} per image; "
+        f"LLM latency {_sec(metrics.llm_latency_total_s)} total, "
+        f"{_sec(metrics.llm_latency_mean_s)} per LLM call",
+        f"- Ungrounded dishes dropped: {metrics.ungrounded_dropped}",
+        f"- Errors: {metrics.n_errors}",
     ]
-    out += [f"  - `{image_id}`: {err}" for image_id, err in m.errors.items()]
+    out += [f"  - `{image_id}`: {err}" for image_id, err in metrics.errors.items()]
 
     out += ["", "## Per image", ""]
     rows = [
         [
-            f"`{i.image_id}`",
-            i.split or "unlabeled",
-            str(i.n_pred),
-            str(i.n_gold) if i.labeled else "-",
-            str(i.tp) if i.labeled else "-",
-            str(i.fp) if i.labeled else "-",
-            str(i.fn) if i.labeled else "-",
-            str(i.duplicates) if i.labeled else "-",
-            _pct(i.recall),
-            _pct(i.precision),
-            "yes" if i.llm_used else "no",
-            _usd(i.cost_usd),
-            _sec(i.time_s),
-            "error" if i.error else "",
+            f"`{image.image_id}`",
+            image.split or "unlabeled",
+            str(image.n_pred),
+            str(image.n_gold) if image.labeled else "-",
+            str(image.tp) if image.labeled else "-",
+            str(image.fp) if image.labeled else "-",
+            str(image.fn) if image.labeled else "-",
+            str(image.duplicates) if image.labeled else "-",
+            _pct(image.recall),
+            _pct(image.precision),
+            "yes" if image.llm_used else "no",
+            _usd(image.cost_usd),
+            _sec(image.time_s),
+            "error" if image.error else "",
         ]
-        for i in m.images
+        for image in metrics.images
     ]
     header = ["image", "split", "pred", "gold", "TP", "FP", "FN", "dup", "recall", "precision"]
     header += ["LLM", "cost", "time", ""]
     out += _table(header, rows)
 
-    errors = [i for i in m.images if i.labeled and (i.unmatched_gold or i.false_positives)]
+    errors = [
+        image
+        for image in metrics.images
+        if image.labeled and (image.unmatched_gold or image.false_positives)
+    ]
     if errors:
         out += ["", "## Error analysis", ""]
-        for i in errors:
-            out.append(f"### `{i.image_id}` (recall {_pct(i.recall)})")
-            if i.unmatched_gold:
-                out.append(f"- Missed gold dishes: {_listing(i.unmatched_gold)}")
-            if i.false_positives:
-                out.append(f"- False positives: {_listing(i.false_positives)}")
+        for image in errors:
+            out.append(f"### `{image.image_id}` (recall {_pct(image.recall)})")
+            if image.unmatched_gold:
+                out.append(f"- Missed gold dishes: {_listing(image.unmatched_gold)}")
+            if image.false_positives:
+                out.append(f"- False positives: {_listing(image.false_positives)}")
             out.append("")
     return "\n".join(out).rstrip() + "\n"
 
 
 def _listing(items: list[str]) -> str:
-    shown = ", ".join(f'"{x}"' for x in items[:TOP_ERRORS])
+    shown = ", ".join(f'"{item}"' for item in items[:TOP_ERRORS])
     extra = len(items) - TOP_ERRORS
     return shown + (f" (+{extra} more)" if extra > 0 else "")
 
@@ -130,23 +138,23 @@ def render_comparison(metrics: Sequence[RunMetrics]) -> str:
     header = ["run", "mode", "LLM model", "policy", "recall dev", "recall test", "recall all"]
     header += ["precision", "% LLM", "cost total", "cost/image", "time/image", "LLM latency"]
     rows = []
-    for m in metrics:
-        acc = m.accuracy
+    for run in metrics:
+        acc = run.accuracy
         rows.append(
             [
-                f"`{m.run}`",
-                m.mode or "?",
-                _llm_model(m),
-                m.llm_policy if m.mode == "ocr+llm" and m.llm_policy else "-",
+                f"`{run.run}`",
+                run.mode or "?",
+                _llm_model(run),
+                run.llm_policy if run.mode == "ocr+llm" and run.llm_policy else "-",
                 _pct(acc["dev"].micro_recall if "dev" in acc else None),
                 _pct(acc["test"].micro_recall if "test" in acc else None),
                 _pct(acc["all"].micro_recall if "all" in acc else None),
                 _pct(acc["all"].micro_precision if "all" in acc else None),
-                _pct(m.llm_share),
-                _usd(m.cost_total_usd),
-                _usd(m.cost_per_image_usd),
-                _sec(m.time_mean_s),
-                _sec(m.llm_latency_mean_s),
+                _pct(run.llm_share),
+                _usd(run.cost_total_usd),
+                _usd(run.cost_per_image_usd),
+                _sec(run.time_mean_s),
+                _sec(run.llm_latency_mean_s),
             ]
         )
     lines = _table(header, rows)
@@ -159,7 +167,7 @@ def run_report(
     golden_dir: Path,
     *,
     only_reviewed: bool = False,
-    threshold: float = DEFAULT_THRESHOLD,
+    threshold: float = MATCH_THRESHOLD,
 ) -> str:
     """Evaluate a run (also writing ``metrics.json``) and return its Markdown report."""
     metrics = evaluate_run(run_dir, golden_dir, only_reviewed=only_reviewed, threshold=threshold)
@@ -171,11 +179,13 @@ def compare_runs(
     golden_dir: Path,
     *,
     only_reviewed: bool = False,
-    threshold: float = DEFAULT_THRESHOLD,
+    threshold: float = MATCH_THRESHOLD,
 ) -> str:
     """Markdown table comparing several runs against the same golden set."""
     metrics = [
-        evaluate_run(d, golden_dir, only_reviewed=only_reviewed, threshold=threshold, save=False)
-        for d in run_dirs
+        evaluate_run(
+            run_dir, golden_dir, only_reviewed=only_reviewed, threshold=threshold, save=False
+        )
+        for run_dir in run_dirs
     ]
     return render_comparison(metrics)

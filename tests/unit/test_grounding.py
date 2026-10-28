@@ -10,7 +10,8 @@ from menu_poc.models import Dish, OcrLine, OcrResult
 def _ocr(*rows: tuple[int, str, float, float]) -> OcrResult:
     """Rows of (id, text, x0, y0); every line is 300 px wide and 30 px tall."""
     lines = [
-        OcrLine(id=i, text=t, bbox=(x, y, x + 300, y + 30), confidence=0.9) for i, t, x, y in rows
+        OcrLine(id=line_id, text=text, bbox=(x0, y0, x0 + 300, y0 + 30), confidence=0.9)
+        for line_id, text, x0, y0 in rows
     ]
     return OcrResult(image_id="r/i", width=1000, height=1000, engine="t", lines=lines)
 
@@ -45,7 +46,7 @@ def test_normalize(raw, expected):
 
 def test_keeps_verbatim_name_with_its_ids():
     result = GroundingVerifier().verify([_dish("Pizza Quattro Formaggi", [1, 2])], OCR)
-    assert [d.name for d in result.kept] == ["Pizza Quattro Formaggi"]
+    assert [dish.name for dish in result.kept] == ["Pizza Quattro Formaggi"]
     assert result.kept[0].source_line_ids == [1, 2]
 
 

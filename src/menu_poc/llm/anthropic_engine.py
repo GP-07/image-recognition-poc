@@ -12,8 +12,9 @@ import os
 import time
 from typing import Any
 
+from menu_poc.constants import ANTHROPIC_RETRYABLE_STATUS, MODEL_PRICES_PER_MTOK
 from menu_poc.llm.engine import LLMEngine, LLMError, LLMOutputError, LLMRetryableError
-from menu_poc.llm.pricing import PRICES, cost_usd
+from menu_poc.llm.pricing import cost_usd
 from menu_poc.models import LLMUsage
 
 
@@ -29,7 +30,7 @@ class AnthropicEngine(LLMEngine):
 
     @classmethod
     def handles(cls, name: str) -> bool:
-        return name in cls.aliases or name in PRICES  # a known price = a model we can bill
+        return name in cls.aliases or name in MODEL_PRICES_PER_MTOK  # known price = billable
 
     def __init__(
         self,
@@ -95,9 +96,9 @@ class AnthropicEngine(LLMEngine):
                 },
             )
         except anthropic.APIStatusError as exc:
-            retryable = exc.status_code in (408, 409, 429) or exc.status_code >= 500
-            cls = LLMRetryableError if retryable else LLMError
-            raise cls(
+            retryable = exc.status_code in ANTHROPIC_RETRYABLE_STATUS or exc.status_code >= 500
+            error_type = LLMRetryableError if retryable else LLMError
+            raise error_type(
                 f"Anthropic API error {exc.status_code} ({self.model}): {exc.message}"
             ) from exc
         except anthropic.APIConnectionError as exc:  # includes APITimeoutError

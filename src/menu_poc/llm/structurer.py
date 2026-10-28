@@ -13,38 +13,10 @@ import math
 from pathlib import Path
 from typing import Any
 
+from menu_poc.constants import DEFAULT_PROMPT_PATH, DISHES_SCHEMA, RENDER_VERSION
 from menu_poc.llm.engine import LLMEngine
 from menu_poc.llm.text import render_lines
 from menu_poc.models import Dish, LLMUsage, OcrResult, StructureResult
-
-PROMPTS_DIR = Path(__file__).resolve().parents[3] / "prompts"
-DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v2.md"
-RENDER_VERSION = "lines_v1"  # bump when render_lines / the user message format changes
-
-_NULLABLE_STRING = {"anyOf": [{"type": "string"}, {"type": "null"}]}
-
-DISHES_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "dishes": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "description": _NULLABLE_STRING,
-                    "prices": {"type": "array", "items": {"type": "number"}},
-                    "section": _NULLABLE_STRING,
-                    "source_line_ids": {"type": "array", "items": {"type": "integer"}},
-                },
-                "required": ["name", "description", "prices", "section", "source_line_ids"],
-                "additionalProperties": False,
-            },
-        }
-    },
-    "required": ["dishes"],
-    "additionalProperties": False,
-}
 
 
 def _short_hash(text: str) -> str:
@@ -98,11 +70,14 @@ def _to_dish(item: Any) -> Dish | None:
     if name is None:
         return None
     prices = [
-        float(p)
-        for p in item.get("prices") or []
-        if isinstance(p, (int, float)) and not isinstance(p, bool) and math.isfinite(p) and p >= 0
+        float(price)
+        for price in item.get("prices") or []
+        if isinstance(price, (int, float))
+        and not isinstance(price, bool)
+        and math.isfinite(price)
+        and price >= 0
     ]
-    ids = [i for i in item.get("source_line_ids") or [] if isinstance(i, int)]
+    ids = [line_id for line_id in item.get("source_line_ids") or [] if isinstance(line_id, int)]
     return Dish(
         name=name,
         description=_clean_str(item.get("description")),

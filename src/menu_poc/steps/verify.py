@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from menu_poc.data_classes import ImageContext
 from menu_poc.interfaces import Verifier
-from menu_poc.steps.base import ImageContext, Step
+from menu_poc.steps.base import Step, require
 
 
 class VerifyStep(Step):
@@ -14,12 +15,13 @@ class VerifyStep(Step):
         self.verifier = verifier
 
     def process(self, ctx: ImageContext) -> bool:
-        assert ctx.structured is not None and ctx.ocr is not None and ctx.parsed is not None
-        verified = self.verifier.verify(ctx.structured.dishes, ctx.ocr)
+        structured = require(ctx.structured, "LLM output")
+        parsed = require(ctx.parsed, "rules output")
+        verified = self.verifier.verify(structured.dishes, require(ctx.ocr, "OCR output"))
         result = ctx.result
         result.llm_used = True
-        result.ungrounded_dropped = [d.name for d in verified.dropped]
-        if verified.kept or not ctx.parsed.dishes:
+        result.ungrounded_dropped = [dish.name for dish in verified.dropped]
+        if verified.kept or not parsed.dishes:
             result.dishes = verified.kept
         else:  # an empty LLM answer should not wipe out what the rules found
             result.error = "llm: no grounded dishes, kept rules output"
