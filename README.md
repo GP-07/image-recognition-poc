@@ -2,15 +2,27 @@
 
 ## Goal
 
-Restaurants publish their menus as photos, and those photos are hard to use: you cannot search
-them, compare them or load them into a catalogue. This proof of concept takes a set of menu photos
-(19 phone pictures from 10 restaurants) and turns each one into a list of the things a customer
-can order — dishes, desserts, drinks and extras — with their descriptions and prices. It runs on
-an ordinary laptop, without a graphics card and without training any model. The point is not a
-perfect result but a sound design: which technique to use, how to measure how good it is, and
-what it would take to put it in production.
+This proof of concept takes a set of menu photos and turns each one into a list of the things a customer
+can order — dishes, desserts, drinks and extras — with their descriptions and prices. 
 
 ## How it works
+
+```
+image ──► duplicate? ──yes──► copy the original's result (no OCR, no LLM)
+   │no
+   └──► preprocess ──► OCR (RapidOCR, CPU) ──► rule parser + confidence
+           EXIF, resize   lines + boxes,           price-anchored, layout-aware
+                          rotation/deskew                   │
+                          [cached]                          ├─ confidence ≥ threshold ─► dishes (rules)
+                                                            │
+                                                            └─ confidence < threshold (or policy=always)
+                                                                    │
+                                                    text LLM (Claude Haiku 5.5, structured JSON)
+                                                    [cached]        │
+                                                    grounding: every dish must appear in the OCR
+                                                                    │
+                                                                    └─► dishes (LLM)
+```
 
 Each photo goes through a short chain of steps. First, the system checks whether the photo is a
 copy of one it has already seen (the same file, or the same picture resized); copies simply reuse
@@ -48,10 +60,11 @@ Install it once (Python 3.10 or newer):
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 ```
 
-The simplest run uses only OCR and rules on the sample photos:
+Every run takes `--input`, a `.zip` file or a folder that holds one sub-folder per restaurant,
+and `--output`, the folder where the results go. The simplest run uses only OCR and rules:
 
 ```bash
-.venv/bin/menu-poc run
+.venv/bin/menu-poc run --input path/to/menus.zip --output path/to/results
 ```
 
 With a free local model through Ollama, install Ollama, download the model and pass
@@ -60,7 +73,7 @@ With a free local model through Ollama, install Ollama, download the model and p
 ```bash
 brew install ollama && ollama serve &
 ollama pull qwen2.5:7b
-.venv/bin/menu-poc run --llm-model ollama
+.venv/bin/menu-poc run --input path/to/menus.zip --output path/to/results --llm-model ollama
 ```
 
 With a Claude model, copy `.env.example` to `.env`, write your key in it
@@ -68,17 +81,17 @@ With a Claude model, copy `.env.example` to `.env`, write your key in it
 
 ```bash
 cp .env.example .env
-.venv/bin/menu-poc run --llm-model haiku
+.venv/bin/menu-poc run --input path/to/menus.zip --output path/to/results --llm-model haiku
 ```
 
-To process your own photos, pass `--input` with a `.zip` file or a folder that holds one
-sub-folder per restaurant, and `--output` with the folder where results should go. Other settings
-(which pages go to the language model, the confidence threshold) live in `config/default.yaml`.
+Without `--input` and `--output` the command uses the sample photos and the project's `tmp/`
+folder. Other settings (which pages go to the language model, the confidence threshold) live in
+`config/default.yaml`.
 
 ## Output files
 
-Each run creates its own folder, named after the date, time and model used, inside `tmp/` (or
-the folder given with `--output`). It holds:
+Each run creates its own folder, named after the date, time and model used, inside the
+`--output` folder. It holds:
 
 | File | What it shows |
 |---|---|
@@ -89,7 +102,7 @@ the folder given with `--output`). It holds:
 | `metrics.json`, `config.yaml` | The evaluation figures and the exact settings used, in machine-readable form. |
 
 To compare several runs side by side (for example, rules only against Haiku against Sonnet), use
-`.venv/bin/menu-poc compare tmp/<run 1> tmp/<run 2>`.
+`.venv/bin/menu-poc compare path/to/results/<run 1> path/to/results/<run 2>`.
 
 The design decisions, the evaluation method, the current results and the answers to the test
 questions are in [docs/technical_notes.md](docs/technical_notes.md); the full history of
