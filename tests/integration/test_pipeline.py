@@ -3,6 +3,7 @@
 import io
 import zipfile
 
+import numpy as np
 import pytest
 from PIL import Image
 
@@ -79,12 +80,18 @@ class FakeVerifier:
         return VerificationResult(kept=kept, dropped=dropped)
 
 
+def _noise(seed: int, size: int = 64) -> Image.Image:
+    rng = np.random.default_rng(seed)
+    return Image.fromarray(rng.integers(0, 255, (size, size, 3), dtype=np.uint8))
+
+
 def _zip(tmp_path, names, identical=False):
+    """One PNG per name; distinct random content unless ``identical``."""
     path = tmp_path / "in.zip"
     with zipfile.ZipFile(path, "w") as zf:
         for i, name in enumerate(names):
             buf = io.BytesIO()
-            Image.new("RGB", (8, 8), (0, 0, 0) if identical else (i * 40, 0, 0)).save(buf, "PNG")
+            _noise(0 if identical else i).save(buf, "PNG")
             zf.writestr(f"imgs/r1/{name}.png", buf.getvalue())
     return path
 
@@ -172,7 +179,7 @@ def test_broken_image_is_isolated(tmp_path):
 
 def test_identical_images_share_ocr_but_keep_their_own_id(tmp_path):
     ocr = FakeOcr()
-    config = RunConfig(input_path=_zip(tmp_path, ["high", "low"], identical=True))
+    config = RunConfig(input_path=_zip(tmp_path, ["high", "low"], identical=True), dedup=False)
     pipe = Pipeline(config, ArtifactStore(tmp_path / "a"), FakePre(), ocr, FakeParser())
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert ocr.calls == 1
@@ -235,3 +242,29 @@ def test_rules_signals_survive_llm_replacement(tmp_path):
     pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
     low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
     assert low.llm_used and low.rules_dish_count == 1 and low.llm_prompt_version == "v1"
+
+
+def test_duplicate_photos_are_skipped_before_ocr(tmp_path):
+    path = tmp_path / "in.zip"
+    big, small = io.BytesIO(), io.BytesIO()
+    _noise(7, 128).save(big, "PNG")
+    _noise(7, 128).resize((64, 64)).save(small, "JPEG", quality=90)  # resized + re-encoded
+    other = io.BytesIO()
+    _noise(8, 128).save(other, "PNG")
+    with zipfile.ZipFile(path, "w") as zf:
+        zf.writestr("imgs/r1/a_small.jpg", small.getvalue())
+        zf.writestr("imgs/r1/b_big.png", big.getvalue())
+        zf.writestr("imgs/r1/c_other.png", other.getvalue())
+    ocr = FakeOcr()
+    config = RunConfig(input_path=path)
+    pipe = Pipeline(config, ArtifactStore(tmp_path / "a"), FakePre(), ocr, FakeParser())
+    results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
+    assert ocr.calls == 2  # the small copy was never OCR'd
+    dup = results["r1/a_small"]
+    assert dup.duplicate_of == "r1/b_big"  # the larger image is kept as the original
+    assert dup.dishes == results["r1/b_big"].dishes and "near-duplicate" in dup.duplicate_reason
+    assert [r.image_id for r in read_jsonl(tmp_path / "run" / "results.jsonl", ImageResult)] == [
+        "r1/a_small",
+        "r1/b_big",
+        "r1/c_other",
+    ]

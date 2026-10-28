@@ -16,8 +16,8 @@ Steps for one page:
      translations, except an ALL CAPS line at the dish's indent (a sibling whose price was lost);
    - a lowercase line with a price continues the open dish's description: its price (tilted row)
      goes to the next name line.
-4. Clean names (numbering, leaders, prices, ``Name: ingredients``), drop drinks (beverage
-   sections, volumes) and score the result.
+4. Clean names (numbering, leaders, prices, ``Name: ingredients``) and score the result.
+   Every orderable item is kept: dishes, desserts, beverages, add-ons.
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ from menu_poc.parsing.prices import (
     strip_prices,
 )
 
-VERSION = "2"
+VERSION = "3"
 MIN_OCR_CONF = 0.6  # lines read with less confidence are treated as noise
 HEADER_MAX_WORDS = 5
 HEADER_MAX_CHARS = 40
@@ -80,14 +80,6 @@ _CODE_RE = re.compile(r"^(?:[A-Za-z]\s?\.\s?){2,}[A-Za-z]?\.?$|^[B-DF-HJ-NP-TV-X
 # A bulleted list item ("· MARGARITA") is a dish name like a numbered one; "·PLATOS SECOS·" is not.
 _BULLETS = "·•▪●◦"
 _BULLET_RE = re.compile(rf"^\s*[{_BULLETS}]\s*[A-ZÀ-Ý]")
-# Beverage sections and items: the task is food dishes.
-_DRINK_SECTION_RE = re.compile(
-    r"\b(?:bebidas?|begudes|drinks?|beverages?|refrescos?|refrescs|cervezas?|cerveses|beers?"
-    r"|vinos?|vins|wines?|zumos?|sucs|juices?|licores|cocktails?|c[oò]cteles|caf[eéè]s"
-    r"|infusiones|infusions)\b",
-    re.IGNORECASE,
-)
-_VOLUME_RE = re.compile(r"\b\d+(?:[.,]\d+)?\s?(?:cl|ml|lt?|litros?)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -170,13 +162,6 @@ def _name_like(text: str) -> bool:
     """Short line that starts with a capital letter and does not read as ingredients."""
     name = clean_name(text)[0]
     return bool(name) and name[0].isupper() and not _descriptive(text)
-
-
-def _is_drink(dish: Dish) -> bool:
-    """Item of a beverage section, or a name with a volume (``LATA 33 CL``)."""
-    in_drinks = bool(dish.section and _DRINK_SECTION_RE.search(dish.section))
-    only_drink_word = bool(_DRINK_SECTION_RE.fullmatch(dish.name.strip()))  # "REFRESCOS 2,20€"
-    return in_drinks or only_drink_word or bool(_VOLUME_RE.search(dish.name))
 
 
 def _descriptive(text: str) -> bool:
@@ -268,10 +253,7 @@ class RuleBasedParser:
         )
         value, signals = confidence.score(stats)
         signals["orphan_prices"] = float(orphan_prices)
-        # Drinks were understood (their prices count as attached) but are not dishes.
-        food = [d for d in dishes if not _is_drink(d)]
-        signals["drinks"] = float(len(dishes) - len(food))
-        return ParseResult(dishes=food, confidence=value, signals=signals)
+        return ParseResult(dishes=dishes, confidence=value, signals=signals)
 
     @staticmethod
     def _attach_row_prices(content: list[_Info], columns: list[list[OcrLine]]) -> None:

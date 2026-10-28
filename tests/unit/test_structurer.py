@@ -77,7 +77,7 @@ def test_end_to_end_with_recorded_fixture():
 
     assert [d.name for d in result.dishes] == fx["expected_names"]
     assert all(d.origin == "llm" for d in result.dishes)
-    assert result.prompt_version.startswith("structure_v1@")
+    assert result.prompt_version.startswith("structure_v2@")
     assert result.usage.cost_usd == 0.0
     first = result.dishes[0]
     assert first.prices == [4.9] and first.section == "ENSALADAS" and first.source_line_ids

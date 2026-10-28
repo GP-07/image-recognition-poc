@@ -23,6 +23,8 @@ class RunConfig(BaseModel):
     llm_offline: bool = False  # only use cached LLM answers; never call the API
 
     confidence_threshold: float = Field(0.6, ge=0.0, le=1.0)
+    dedup: bool = True  # skip OCR/LLM for duplicate photos (same file or near-identical)
+    dedup_max_distance: int = Field(10, ge=0)  # perceptual hash bits out of 256
     max_image_side: int = Field(2000, gt=0)
 
     # Image selection

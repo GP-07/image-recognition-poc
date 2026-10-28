@@ -18,7 +18,7 @@ from menu_poc.llm.text import render_lines
 from menu_poc.models import Dish, LLMUsage, OcrResult, StructureResult
 
 PROMPTS_DIR = Path(__file__).resolve().parents[3] / "prompts"
-DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v1.md"
+DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v2.md"
 RENDER_VERSION = "lines_v1"  # bump when render_lines / the user message format changes
 
 _NULLABLE_STRING = {"anyOf": [{"type": "string"}, {"type": "null"}]}

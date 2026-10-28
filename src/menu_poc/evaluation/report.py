@@ -70,7 +70,8 @@ def render_run(m: RunMetrics) -> str:
     out += _table(header, rows) if rows else ["No labeled images."]
     out += [
         "",
-        f"- Images: {m.n_images} ({m.n_labeled} labeled, {len(m.unlabeled)} unlabeled)",
+        f"- Images: {m.n_images} ({m.n_labeled} labeled, {len(m.unlabeled)} unlabeled, "
+        f"{m.n_duplicate_images} duplicate photos skipped and not scored)",
         f"- LLM used: {_pct(m.llm_share)} of images ({_pct(m.llm_cached_share)} of them cached)",
         f"- Cost: {_usd(m.cost_total_usd)} total, {_usd(m.cost_per_image_usd)} per image",
         f"- Time: {_sec(m.time_total_s)} total, {_sec(m.time_mean_s)} per image; "

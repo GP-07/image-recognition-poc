@@ -3,6 +3,7 @@
 - ``AnthropicClient``: Claude Messages API with structured outputs (``output_config.format``), so
   the answer always parses against the JSON schema. No sampling parameters are sent
   (``temperature``/``top_p``/``top_k`` are rejected by current models).
+- ``OllamaClient`` (``llm/ollama.py``): free local models, selected with ``ollama/<model>``.
 - ``FakeLLMClient``: canned answers (by prompt hash or a callable), zero cost, never touches the
   network. Used by tests and offline demos.
 """
@@ -11,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from collections.abc import Callable, Mapping
 from typing import Any
@@ -67,6 +69,12 @@ class AnthropicClient:
         self.timeout_s = timeout_s
         self.max_retries = max_retries
         self._sdk = sdk_client
+
+    def unavailable_reason(self) -> str | None:
+        """None when credentials are configured, else why the LLM step cannot run."""
+        if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+            return None
+        return "ANTHROPIC_API_KEY is not set (environment or .env)"
 
     def _client(self) -> Any:
         if self._sdk is None:
@@ -182,11 +190,14 @@ class FakeLLMClient:
         return {"model": self.model}
 
 
-def make_llm_client(
-    model: str = DEFAULT_MODEL, fake_responses: FakeResponses | None = None
-) -> AnthropicClient | FakeLLMClient:
-    """Real client for ``model``, or a fake one (named ``fake/<model>``, so its answers never
-    share cache keys with the real model) when ``fake_responses`` is given."""
+def make_llm_client(model: str = DEFAULT_MODEL, fake_responses: FakeResponses | None = None) -> Any:
+    """Client for ``model``: ``ollama/<name>`` -> local Ollama, otherwise Claude. With
+    ``fake_responses`` a fake (named ``fake/<model>``, so its answers never share cache keys with
+    the real model)."""
     if fake_responses is not None:
         return FakeLLMClient(fake_responses, model=f"fake/{model}")
+    from menu_poc.llm.ollama import PREFIX, OllamaClient
+
+    if model.startswith(PREFIX):
+        return OllamaClient(model)
     return AnthropicClient(model)

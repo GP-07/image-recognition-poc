@@ -16,6 +16,7 @@ dependencies = [
     "rapidfuzz>=3",
     "scipy>=1.10",  # optimal one-to-one matching in the evaluation
     "anthropic>=0.40",
+    "python-dotenv>=1.0",  # ANTHROPIC_API_KEY from a local .env
 ]
 
 [project.optional-dependencies]

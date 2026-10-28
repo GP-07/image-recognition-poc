@@ -45,6 +45,7 @@ class ImageMetrics(BaseModel):
     llm_latency_s: float = 0.0
     time_s: float = 0.0
     ungrounded_dropped: int = 0
+    duplicate_of: str | None = None  # duplicate photo: excluded from accuracy (counted once)
     error: str | None = None
     matched: list[MatchedPair] = Field(default_factory=list)
     duplicate_pairs: list[MatchedPair] = Field(default_factory=list)
@@ -74,6 +75,7 @@ class RunMetrics(BaseModel):
     only_reviewed: bool = False
     n_images: int = 0
     n_labeled: int = 0
+    n_duplicate_images: int = 0  # skipped photos (same menu as another image)
     unlabeled: list[str] = Field(default_factory=list)
     accuracy: dict[str, AccuracyStats] = Field(default_factory=dict)  # keys: all, dev, test
     cost_total_usd: float = 0.0
@@ -118,6 +120,7 @@ def evaluate_image(
         llm_latency_s=usage.latency_s if usage else 0.0,
         time_s=image_time(result),
         ungrounded_dropped=len(result.ungrounded_dropped),
+        duplicate_of=result.duplicate_of,
         error=result.error,
     )
     if golden is None:
@@ -159,7 +162,8 @@ def aggregate(
     """Compute run metrics from results and an already loaded golden set."""
     config = config or {}
     images = [evaluate_image(r, golden.get(r.image_id), threshold) for r in results]
-    labeled = [m for m in images if m.labeled]
+    # Duplicate photos would weigh their menu twice: each menu is scored once.
+    labeled = [m for m in images if m.labeled and m.duplicate_of is None]
     llm_images = [m for m in images if m.llm_used]
     n = len(images)
     cost = sum(m.cost_usd for m in images)
@@ -174,6 +178,7 @@ def aggregate(
         only_reviewed=only_reviewed,
         n_images=n,
         n_labeled=len(labeled),
+        n_duplicate_images=sum(m.duplicate_of is not None for m in images),
         unlabeled=[m.image_id for m in images if not m.labeled],
         accuracy={
             "all": accuracy_stats(labeled),

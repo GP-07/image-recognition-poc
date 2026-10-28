@@ -116,7 +116,7 @@ def test_sections_change_with_headers():
     }
 
 
-def test_drinks_are_not_dishes():
+def test_drinks_are_menu_items_too():
     result = _parse(
         [
             ("Tiramisu 4,50€", 50, 100),
@@ -127,8 +127,8 @@ def test_drinks_are_not_dishes():
             ("Café 1,20€", 50, 350),
         ]
     )
-    assert [d.name for d in result.dishes] == ["Tiramisu"]
-    assert result.signals["drinks"] == 4
+    names = [d.name for d in result.dishes]
+    assert {"Tiramisu", "Agua", "Café"} <= set(names)
 
 
 def test_ordering_note_with_price_is_not_a_dish():

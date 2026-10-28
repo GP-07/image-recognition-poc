@@ -112,4 +112,6 @@ class ImageResult(BaseModel):
     llm_prompt_version: str | None = None
     ungrounded_dropped: list[str] = Field(default_factory=list)
     timings_s: dict[str, float] = Field(default_factory=dict)
+    duplicate_of: str | None = None  # same photo as this image id: dishes copied, nothing run
+    duplicate_reason: str | None = None
     error: str | None = None

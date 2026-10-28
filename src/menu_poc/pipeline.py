@@ -14,6 +14,7 @@ from pathlib import Path
 
 from menu_poc.cache.store import ArtifactStore, make_key
 from menu_poc.config import RunConfig
+from menu_poc.dedup import find_duplicates
 from menu_poc.interfaces import OcrEngine, Parser, Preprocessor, Structurer, Verifier
 from menu_poc.io.dataset import ImageRef, iter_images
 from menu_poc.io.writers import read_jsonl, write_jsonl, write_yaml
@@ -135,12 +136,37 @@ class Pipeline:
         return result
 
     def run(self, refs: Iterable[ImageRef], run_dir: Path) -> list[ImageResult]:
+        refs = list(refs)
+        duplicates = (
+            find_duplicates(refs, self.config.dedup_max_distance) if self.config.dedup else {}
+        )
+        done: dict[str, ImageResult] = {}
+        for ref in refs:
+            if ref.image_id in duplicates:
+                continue
+            log.info("processing %s", ref.image_id)
+            done[ref.image_id] = self.process(ref)
+            # Rewrite after every image so an interrupted run keeps its progress.
+            write_jsonl(run_dir / "results.jsonl", done.values())
+
         results = []
         for ref in refs:
-            log.info("processing %s", ref.image_id)
-            results.append(self.process(ref))
-            # Rewrite after every image so an interrupted run keeps its progress.
-            write_jsonl(run_dir / "results.jsonl", results)
+            dup = duplicates.get(ref.image_id)
+            if dup is None:
+                results.append(done[ref.image_id])
+                continue
+            original = done[dup.original_id]
+            results.append(
+                ImageResult(
+                    image_id=ref.image_id,
+                    restaurant_id=ref.restaurant_id,
+                    dishes=original.dishes,
+                    rules_confidence=original.rules_confidence,
+                    duplicate_of=dup.original_id,
+                    duplicate_reason=dup.reason,
+                )
+            )
+        write_jsonl(run_dir / "results.jsonl", results)
         return results
 
 

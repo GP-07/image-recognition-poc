@@ -5,12 +5,16 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from datetime import datetime
 from pathlib import Path
+from typing import Any
+
+from dotenv import load_dotenv
 
 from menu_poc.cache.store import ArtifactStore
 from menu_poc.config import RunConfig, load_config
 from menu_poc.evaluation.report import compare_runs, run_report
-from menu_poc.io.writers import write_jsonl
+from menu_poc.io.writers import write_json, write_jsonl
 from menu_poc.llm.client import make_llm_client
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
@@ -23,10 +27,10 @@ DEFAULT_CONFIG = Path("config/default.yaml")
 DEFAULT_GOLDEN = Path("data/golden")
 
 
-def build_pipeline(config: RunConfig) -> Pipeline:
+def build_pipeline(config: RunConfig, llm_client: Any | None = None) -> Pipeline:
     structurer = verifier = None
     if config.uses_llm:
-        structurer = LLMStructurer(make_llm_client(config.llm_model))
+        structurer = LLMStructurer(llm_client or make_llm_client(config.llm_model))
         verifier = GroundingVerifier()
     return Pipeline(
         config,
@@ -39,13 +43,28 @@ def build_pipeline(config: RunConfig) -> Pipeline:
     )
 
 
+def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, Any | None]:
+    """The LLM client for this run, or degrade to OCR + rules with a warning when it cannot run
+    (no API key, local server down): a CI job without the secret still produces results."""
+    if not config.uses_llm:
+        return config, None
+    client = make_llm_client(config.llm_model)
+    reason = None if config.llm_offline else client.unavailable_reason()
+    if reason is None:
+        return config, client
+    warnings.append(f"LLM step disabled: {reason}. Results come from OCR + rules only.")
+    return config.model_copy(update={"mode": "ocr"}), None
+
+
 def _cmd_run(args: argparse.Namespace) -> int:
     if args.config != DEFAULT_CONFIG and not args.config.exists():
         print(f"Config file not found: {args.config}", file=sys.stderr)
         return 2
-    config = load_config(
+    requested = load_config(
         args.config if args.config.exists() else None,
         input_path=args.input,
+        runs_dir=args.output,
+        artifacts_dir=args.artifacts,
         mode=args.mode,
         llm_policy=args.llm_policy,
         llm_model=args.llm_model,
@@ -55,22 +74,48 @@ def _cmd_run(args: argparse.Namespace) -> int:
         reuse_from=args.reuse_from,
         only_low_confidence=True if args.only_low_confidence else None,
     )
-    refs = select_images(config)
+    refs = select_images(requested)
     if not refs:
         print("No images selected.", file=sys.stderr)
         return 1
-    pipeline = build_pipeline(config)
-    run_dir = new_run_dir(config)
+
+    warnings: list[str] = []
+    config, client = resolve_llm(requested, warnings)
+    for warning in warnings:
+        print(f"WARNING: {warning}", file=sys.stderr)
+    pipeline = build_pipeline(config, client)
+    run_dir = new_run_dir(config)  # effective config: reports must show what actually ran
     print(f"Run {run_dir} — {len(refs)} images, mode={config.mode}")
+    started = datetime.now().isoformat(timespec="seconds")
     results = pipeline.run(refs, run_dir)
     if config.reuse_from is not None:
         write_jsonl(run_dir / "results.jsonl", merge_previous(config, results))
         print(f"Re-ran {len(results)} images; the rest carried over from {config.reuse_from}.")
 
-    errors = [r for r in results if r.error]
-    print(f"Done: {sum(len(r.dishes) for r in results)} dishes, {len(errors)} images with errors.")
-    for r in errors:
-        print(f"  {r.image_id}: {r.error}")
+    errors = {r.image_id: r.error for r in results if r.error}
+    duplicates = {r.image_id: r.duplicate_of for r in results if r.duplicate_of}
+    write_json(
+        run_dir / "manifest.json",
+        {
+            "run": run_dir.name,
+            "started": started,
+            "finished": datetime.now().isoformat(timespec="seconds"),
+            "requested_mode": requested.mode,
+            "effective_mode": config.mode,
+            "llm_model": config.llm_model if config.uses_llm else None,
+            "n_images": len(results),
+            "n_dishes": sum(len(r.dishes) for r in results),
+            "duplicates": duplicates,
+            "warnings": warnings,
+            "errors": errors,
+        },
+    )
+    print(
+        f"Done: {sum(len(r.dishes) for r in results)} dishes, {len(duplicates)} duplicate photos "
+        f"skipped, {len(errors)} images with errors, {len(warnings)} warnings."
+    )
+    for image_id, error in errors.items():
+        print(f"  {image_id}: {error}")
     if args.golden.exists():
         report = run_report(run_dir, args.golden)
         (run_dir / "summary.md").write_text(report, encoding="utf-8")
@@ -101,6 +146,8 @@ def _parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="process images (results go to a new run directory)")
     run.add_argument("--config", type=Path, default=DEFAULT_CONFIG)
     run.add_argument("--input", type=Path, help="zip file or directory of images")
+    run.add_argument("--output", type=Path, help="directory for run results (default: runs/)")
+    run.add_argument("--artifacts", type=Path, help="stage cache directory (default: artifacts/)")
     run.add_argument("--mode", choices=["ocr", "ocr+llm"])
     run.add_argument("--llm-policy", choices=["fallback", "always"])
     run.add_argument("--llm-model", help="one model per run, e.g. claude-haiku-5-5")
@@ -132,6 +179,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    load_dotenv()  # ANTHROPIC_API_KEY etc. from ./.env; real environment variables win
     args = _parser().parse_args(argv)
     logging.basicConfig(
         level=logging.INFO if args.verbose else logging.WARNING,
