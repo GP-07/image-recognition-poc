@@ -2,12 +2,15 @@
 
 The order is not the caller's choice: duplicates are skipped first, the LLM never runs before
 OCR and rules, and LLM output is always verified. Optional pieces (dedup, LLM) are simply not
-added.
+added. Post-processors (e.g. evaluation against the golden set) run after the whole run, in the
+order they are added; by default there are none.
 """
 
 from __future__ import annotations
 
 from menu_poc.cache.store import ArtifactStore
+from menu_poc.evaluation.post_process import GoldenSetEvaluation
+from menu_poc.interfaces import PostProcessor
 from menu_poc.llm.engine import LLMEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
@@ -33,6 +36,7 @@ class PipelineBuilder:
 
     def __init__(self) -> None:
         self._steps: dict[type[Step], Step] = {}
+        self._post_processors: list[PostProcessor] = []
 
     def add(self, step: Step) -> PipelineBuilder:
         """Add (or replace) the step of its kind."""
@@ -40,6 +44,10 @@ class PipelineBuilder:
         if kind is None:
             raise PipelineBuildError(f"Unknown step type {type(step).__name__}")
         self._steps[kind] = step
+        return self
+
+    def add_post_processor(self, post_processor: PostProcessor) -> PipelineBuilder:
+        self._post_processors.append(post_processor)
         return self
 
     def build(self) -> Pipeline:
@@ -58,7 +66,7 @@ class PipelineBuilder:
         for step, following in zip(steps, steps[1:], strict=False):
             step.next = following
         steps[-1].next = None
-        return Pipeline(steps)
+        return Pipeline(steps, list(self._post_processors))
 
     @classmethod
     def from_config(cls, config: RunConfig) -> PipelineBuilder:
@@ -79,4 +87,6 @@ class PipelineBuilder:
                     config.llm_offline,
                 )
             )
+        if config.golden_dir is not None and config.golden_dir.is_dir():
+            builder.add_post_processor(GoldenSetEvaluation(config.golden_dir))
         return builder

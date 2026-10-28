@@ -3,6 +3,7 @@
 input_path: "../_20260514 AI code test TO SEND/source/google_images.zip"
 runs_dir: tmp             # --output; one sub-directory per run
 artifacts_dir: artifacts  # stage cache (OCR, LLM answers)
+golden_dir: data/golden   # each run is evaluated against it (post-processor); null to skip
 
 llm_policy: fallback      # fallback (only low-confidence images) | always
 # OCR + rules always run. Set an LLM model to add the LLM step for hard pages:

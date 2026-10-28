@@ -90,6 +90,7 @@ class RunOutcome:
     warnings: list[str]
     started: str
     finished: str
+    reports: list[Path] = field(default_factory=list)  # files written by the post-processors
 
     @property
     def items_path(self) -> Path:
@@ -121,6 +122,7 @@ class RunOutcome:
             "duplicates": self.duplicates,
             "warnings": self.warnings,
             "errors": self.errors,
+            "reports": [report.name for report in self.reports],
         }
 
 

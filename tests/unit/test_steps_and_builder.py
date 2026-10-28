@@ -212,6 +212,40 @@ def test_from_config_includes_only_the_requested_pieces(tmp_path):
     assert names == ["dedup", "ocr", "rules", "llm", "verify"]
 
 
+def test_from_config_adds_the_evaluation_only_with_a_golden_set(tmp_path):
+    def post_processors(golden_dir):
+        config = RunConfig(input_path="x.zip", artifacts_dir=tmp_path, golden_dir=golden_dir)
+        return PipelineBuilder.from_config(config).build().post_processors
+
+    assert [step.name for step in post_processors(tmp_path)] == ["golden_set_evaluation"]
+    assert post_processors(None) == [] and post_processors(tmp_path / "missing") == []
+
+
+class _Export:
+    name = "export"
+
+    def __init__(self, fail=False):
+        self.fail = fail
+
+    def run(self, outcome):
+        if self.fail:
+            raise RuntimeError("disk full")
+        path = outcome.run_dir / "export.txt"
+        path.write_text(str(outcome.n_items))
+        return [path]
+
+
+def test_post_processors_run_after_the_run_and_never_lose_it(tmp_path):
+    pieces = _pieces(tmp_path)
+    builder = PipelineBuilder().add(pieces["ocr"]).add(pieces["rules"])
+    pipeline = builder.add_post_processor(_Export(fail=True)).add_post_processor(_Export()).build()
+    refs, _ = pipeline.validate_inputs(_image_dir(tmp_path))
+    outcome = pipeline.run(refs, RunConfig(input_path="x.zip", runs_dir=tmp_path / "runs"))
+    assert [report.name for report in outcome.reports] == ["export.txt"]
+    assert "Post-processor export failed: disk full" in outcome.warnings
+    assert outcome.manifest()["reports"] == ["export.txt"]
+
+
 def test_pipeline_process_returns_a_result_with_total_time(tmp_path):
     pieces = _pieces(tmp_path)
     pipeline = PipelineBuilder().add(pieces["ocr"]).add(pieces["rules"]).build()

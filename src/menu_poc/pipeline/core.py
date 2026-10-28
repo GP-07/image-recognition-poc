@@ -5,6 +5,7 @@ from __future__ import annotations
 import io
 import logging
 from collections.abc import Iterable
+from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
@@ -12,6 +13,7 @@ from PIL import Image
 
 from menu_poc.constants import LLM_HELP, MANIFEST_FILE, RESULTS_FILE
 from menu_poc.data_classes import ImageContext, ImageRef, RunOutcome
+from menu_poc.interfaces import PostProcessor
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_items_csv, write_json, write_jsonl
 from menu_poc.models import ImageResult, RunConfig
@@ -31,11 +33,15 @@ def _pixels(ref: ImageRef) -> int:
 
 
 class Pipeline:
-    """Built by ``PipelineBuilder``; ``steps`` are linked in the system's fixed order."""
+    """Built by ``PipelineBuilder``; ``steps`` are linked in the system's fixed order and the
+    ``post_processors`` run once at the end of a run, in the order they were added."""
 
-    def __init__(self, steps: list[Step]) -> None:
+    def __init__(
+        self, steps: list[Step], post_processors: list[PostProcessor] | None = None
+    ) -> None:
         self.steps = steps
         self.head = steps[0]
+        self.post_processors = post_processors or []
         self.warnings: list[str] = []  # from ``validate_inputs``, saved in the run manifest
 
     @property
@@ -70,8 +76,8 @@ class Pipeline:
 
     def run(self, refs: Iterable[ImageRef], config: RunConfig) -> RunOutcome:
         """Process every image into a new run directory under ``config.runs_dir`` and save its
-        files: ``results.jsonl`` (kept up to date while running), then ``items.csv`` and
-        ``manifest.json``. Results come back in input order."""
+        files: ``results.jsonl`` (kept up to date while running), then ``items.csv``, the
+        post-processors' reports and ``manifest.json``. Results come back in input order."""
         refs = list(refs)
         started = _now()
         # The run directory records what actually runs: no LLM model when its step was disabled.
@@ -98,5 +104,18 @@ class Pipeline:
             finished=_now(),
         )
         write_items_csv(outcome.items_path, outcome.results)
+        outcome = self._post_process(outcome)
         write_json(run_dir / MANIFEST_FILE, outcome.manifest())
         return outcome
+
+    def _post_process(self, outcome: RunOutcome) -> RunOutcome:
+        """A failing post-processor never loses the run: its error becomes a warning."""
+        reports: list[Path] = []
+        warnings = list(outcome.warnings)
+        for post_processor in self.post_processors:
+            try:
+                reports += post_processor.run(outcome)
+            except Exception as exc:
+                log.exception("post-processor %s failed", post_processor.name)
+                warnings.append(f"Post-processor {post_processor.name} failed: {exc}")
+        return replace(outcome, reports=reports, warnings=warnings)

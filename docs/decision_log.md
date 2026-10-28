@@ -348,6 +348,20 @@ dos funciones de normalización.
   y arma el manifest. El CLI sólo imprime. `summary.md` queda en el CLI porque es evaluación contra
   el golden set (lo mismo que `menu-poc eval`), no extracción.
 
+## Discusión 16 — Post-procesos del pipeline; la evaluación es uno (2026-10-28)
+
+- Propuesta del usuario: que la evaluación contra el golden set no la decida el CLI, sino que sea
+  una función de post-proceso del pipeline, decidida en `PipelineBuilder.from_config`.
+- `PostProcessor` (Protocol en `interfaces.py`): `name` y `run(outcome) -> list[Path]` (archivos
+  escritos). `Pipeline` guarda una lista, vacía por defecto; el builder los agrega con
+  `add_post_processor()` y corren en ese orden al final de `Pipeline.run`, después de
+  `results.jsonl` e `items.csv` y antes del manifest, que los lista en `reports`.
+- `GoldenSetEvaluation` (`evaluation/post_process.py`) escribe `summary.md` y `metrics.json`, el
+  mismo reporte que `menu-poc eval`. `from_config` lo agrega cuando `golden_dir` (nuevo campo de
+  la config, `data/golden` por defecto; `null` lo apaga) existe.
+- Un post-proceso que falla no pierde la corrida: queda como warning en el manifest.
+- El CLI ya no conoce el golden set al correr: imprime `outcome.reports`.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -362,3 +376,4 @@ dos funciones de normalización.
 | 2026-10-28 | Subagente de Claude Code (Opus 5.5, visión) | Re-etiquetado del golden set con la nueva política (todos los ítems pedibles). |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Refactor de estilo: constantes, typings, modelos y dataclasses en archivos propios; sin asserts ni variables de una letra. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Simplificación del CLI (corrida siempre completa) y validación de inputs como fase del pipeline. |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Post-procesos del pipeline (evaluación contra el golden set como el primero). |

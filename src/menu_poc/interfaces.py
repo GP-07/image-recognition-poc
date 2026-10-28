@@ -1,4 +1,5 @@
-"""Stage interfaces (Protocols): a new OCR engine, parser or LLM is one new class.
+"""Stage interfaces (Protocols): a new OCR engine, parser, LLM or post-processor is one new
+class.
 
 Every stage exposes a ``fingerprint()``: the settings that change its output. It is part of the
 artifact cache key, so changing an engine version, a parameter or a prompt invalidates the cache.
@@ -6,10 +7,12 @@ artifact cache key, so changing an engine version, a parameter or a prompt inval
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any, Protocol
 
 from PIL import Image
 
+from menu_poc.data_classes import RunOutcome
 from menu_poc.models import (
     Dish,
     OcrResult,
@@ -55,3 +58,13 @@ class Verifier(Protocol):
     def fingerprint(self) -> dict[str, Any]: ...
 
     def verify(self, dishes: list[Dish], ocr: OcrResult) -> VerificationResult: ...
+
+
+class PostProcessor(Protocol):
+    """Runs once on a finished run, after its files are saved (e.g. evaluation, exports)."""
+
+    name: str
+
+    def run(self, outcome: RunOutcome) -> list[Path]:
+        """Do the work; return the files written into the run directory."""
+        ...

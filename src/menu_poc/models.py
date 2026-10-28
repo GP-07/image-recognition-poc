@@ -14,6 +14,7 @@ from menu_poc.constants import (
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CONFIDENCE_THRESHOLD,
     DEFAULT_DEDUP_MAX_DISTANCE,
+    DEFAULT_GOLDEN_DIR,
     DEFAULT_MAX_IMAGE_SIDE,
     DEFAULT_RUNS_DIR,
     MATCH_THRESHOLD,
@@ -27,6 +28,7 @@ class RunConfig(BaseModel):
     input_path: Path
     runs_dir: Path = DEFAULT_RUNS_DIR  # one sub-directory per run
     artifacts_dir: Path = DEFAULT_ARTIFACTS_DIR  # stage cache, reused across runs
+    golden_dir: Path | None = DEFAULT_GOLDEN_DIR  # evaluate each run against it, when it exists
 
     # OCR + rules always run. The LLM step runs only when a model is configured: an alias
     # (haiku, sonnet, opus, ollama) or an exact id, stored resolved to the exact id.

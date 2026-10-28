@@ -10,7 +10,12 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from menu_poc.config import load_config
-from menu_poc.constants import DEFAULT_CONFIG_PATH, DEFAULT_GOLDEN_DIR, PROJECT_ROOT
+from menu_poc.constants import (
+    DEFAULT_CONFIG_PATH,
+    DEFAULT_GOLDEN_DIR,
+    PROJECT_ROOT,
+    SUMMARY_FILE,
+)
 from menu_poc.evaluation.report import compare_runs, run_report
 from menu_poc.pipeline import PipelineBuilder
 from menu_poc.steps import InputValidationError
@@ -40,17 +45,14 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print(f"  {image_id}: {error}")
     print(f"Run: {outcome.run_dir}")
     print(f"Items: {outcome.items_path}")
-    if DEFAULT_GOLDEN_DIR.exists():
-        # Evaluation, not extraction: the same report ``menu-poc eval`` writes.
-        report = run_report(outcome.run_dir, DEFAULT_GOLDEN_DIR)
-        (outcome.run_dir / "summary.md").write_text(report, encoding="utf-8")
-        print(f"Report: {outcome.run_dir / 'summary.md'}")
+    for report in outcome.reports:
+        print(f"Report: {report}")
     return 0
 
 
 def _cmd_eval(args: argparse.Namespace) -> int:
     report = run_report(args.run, args.golden, only_reviewed=args.only_reviewed)
-    (args.run / "summary.md").write_text(report, encoding="utf-8")
+    (args.run / SUMMARY_FILE).write_text(report, encoding="utf-8")
     print(report)
     return 0
 

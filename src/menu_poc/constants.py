@@ -21,10 +21,11 @@ DEFAULT_RUNS_DIR = PROJECT_ROOT / "tmp"  # one sub-directory per run
 DEFAULT_ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"  # stage cache, reused across runs
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v2.md"
-CONFIG_PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir")
+CONFIG_PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir", "golden_dir")
 RESULTS_FILE = "results.jsonl"  # files of a run directory
 ITEMS_FILE = "items.csv"
 MANIFEST_FILE = "manifest.json"
+SUMMARY_FILE = "summary.md"
 
 DEFAULT_CONFIDENCE_THRESHOLD = 0.6  # rules confidence below this sends the page to the LLM
 DEFAULT_DEDUP_MAX_DISTANCE = 10  # perceptual hash bits out of 256

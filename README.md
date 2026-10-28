@@ -59,7 +59,7 @@ present and rejects invalid chains (e.g. an LLM without OCR). Optional pieces ar
 ```python
 pipeline = PipelineBuilder.from_config(config).build()               # production
 refs, warnings = pipeline.validate_inputs(config.input_path)       # once, before any image
-outcome = pipeline.run(refs, config)   # run dir + results.jsonl, items.csv, manifest.json
+outcome = pipeline.run(refs, config)   # run dir + results.jsonl, items.csv, post-processors, manifest.json
 pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(...)).build()
 # -> dedup? no · ocr → rules → llm → verify, whatever the insertion order
 ```
@@ -118,7 +118,7 @@ is `artifacts/`. Each run creates `<output>/<timestamp>_<label>/`:
 | `results.jsonl` | full per-image record (nested): items plus confidence and its signals, LLM usage and cost, timings, `duplicate_of`, per-image `error`; used by `eval` |
 | `manifest.json` | requested vs effective LLM model, counts, duplicates, run-level `warnings` and per-image `errors` |
 | `config.yaml` | the effective configuration |
-| `summary.md`, `metrics.json` | evaluation against the golden set, when one exists |
+| `summary.md`, `metrics.json` | evaluation against the golden set (`golden_dir` in the config), written by a pipeline post-processor |
 
 Exit code is 0 when images were processed, even with warnings or per-image errors (they are in
 the output); 2 when the run cannot start: no images in the input, or an OCR engine that cannot
@@ -213,7 +213,8 @@ src/menu_poc/
   preprocess/  ocr/  parsing/           image prep, RapidOCR adapter, layout + rules + confidence
   llm/                                  LLMEngine.get_for_alias + one engine per provider (Anthropic,
                                         Ollama, fake), pricing, structurer, grounding
-  evaluation/                           golden loader, matching, metrics, Markdown reports
+  evaluation/                           golden loader, matching, metrics, Markdown reports,
+                                        GoldenSetEvaluation post-processor
 prompts/structure_v1.md                 versioned LLM prompt (its hash is part of the cache key)
 data/golden/                            silver labels (AI-generated reference, not reviewed)
 docs/decision_log.md                    every design decision and the AI tools used
