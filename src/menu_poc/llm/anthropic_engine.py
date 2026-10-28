@@ -12,14 +12,24 @@ import os
 import time
 from typing import Any
 
-from menu_poc.llm.client import LLMError, LLMOutputError, LLMRetryableError
-from menu_poc.llm.pricing import cost_usd, price_for
+from menu_poc.llm.engine import LLMEngine, LLMError, LLMOutputError, LLMRetryableError
+from menu_poc.llm.pricing import PRICES, cost_usd
 from menu_poc.models import LLMUsage
 
 
-class AnthropicClient:
+class AnthropicEngine(LLMEngine):
     """The SDK client is created lazily on the first call, so building this object needs no API
     key (e.g. when every answer comes from the cache)."""
+
+    aliases = {
+        "haiku": "claude-haiku-5-5",
+        "sonnet": "claude-sonnet-5-5",
+        "opus": "claude-opus-5-5",
+    }
+
+    @classmethod
+    def handles(cls, name: str) -> bool:
+        return name in cls.aliases or name in PRICES  # a known price = a model we can bill
 
     def __init__(
         self,
@@ -31,8 +41,7 @@ class AnthropicClient:
         max_retries: int = 3,
         sdk_client: Any | None = None,
     ) -> None:
-        price_for(model)  # fail fast on a model without a known price
-        self.model = model
+        super().__init__(model)
         self.max_tokens = max_tokens
         self.effort = effort
         self.timeout_s = timeout_s

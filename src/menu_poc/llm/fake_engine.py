@@ -7,19 +7,24 @@ import time
 from collections.abc import Callable, Mapping
 from typing import Any
 
-from menu_poc.llm.client import LLMError, prompt_key
+from menu_poc.llm.engine import LLMEngine, LLMError, prompt_key
 from menu_poc.llm.text import estimate_tokens
 from menu_poc.models import LLMUsage
 
 FakeResponses = Mapping[str, dict[str, Any]] | Callable[[str, str, dict[str, Any]], dict[str, Any]]
 
 
-class FakeLLMClient:
+class FakeEngine(LLMEngine):
     """Answers come from ``responses`` keyed by ``prompt_key`` or from a callable
-    ``(system, user, schema) -> dict``. Token counts are estimated, cost is zero."""
+    ``(system, user, schema) -> dict``. Token counts are estimated, cost is zero.
+    Built directly by tests; ``get_for`` never selects it."""
+
+    @classmethod
+    def handles(cls, name: str) -> bool:
+        return False
 
     def __init__(self, responses: FakeResponses, model: str = "fake") -> None:
-        self.model = model
+        super().__init__(model)
         self._responses = responses
         self.calls: list[tuple[str, str]] = []
 
@@ -39,7 +44,7 @@ class FakeLLMClient:
         else:
             key = prompt_key(system, user)
             if key not in self._responses:
-                raise LLMError(f"FakeLLMClient has no recorded answer for prompt {key[:12]}")
+                raise LLMError(f"FakeEngine has no recorded answer for prompt {key[:12]}")
             data = self._responses[key]
         data = json.loads(json.dumps(data))  # defensive copy, and proves it is JSON
         usage = LLMUsage(

@@ -11,16 +11,18 @@ import httpx2
 import pytest
 from anthropic.types import Message
 
-from menu_poc.llm.anthropic_client import AnthropicClient
-from menu_poc.llm.client import (
+from menu_poc.llm.anthropic_engine import AnthropicEngine
+from menu_poc.llm.engine import (
+    LLMEngine,
     LLMError,
     LLMOutputError,
     LLMRetryableError,
-    make_llm_client,
     prompt_key,
 )
-from menu_poc.llm.fake_client import FakeLLMClient
-from menu_poc.llm.pricing import UnknownModelError, cost_usd
+from menu_poc.llm.engine import UnknownModelError as UnknownEngineModel
+from menu_poc.llm.fake_engine import FakeEngine
+from menu_poc.llm.ollama_engine import OllamaEngine
+from menu_poc.llm.pricing import cost_usd
 
 SCHEMA = {"type": "object", "properties": {}, "additionalProperties": False}
 
@@ -65,7 +67,7 @@ def _status_error(cls: type[anthropic.APIStatusError], status: int) -> anthropic
 
 def test_anthropic_client_request_shape_and_usage():
     sdk = _StubSDK(_message(json.dumps({"dishes": []})))
-    client = AnthropicClient("claude-haiku-5-5", sdk_client=sdk)
+    client = AnthropicEngine("claude-haiku-5-5", sdk_client=sdk)
     data, usage = client.complete_json("sys", "user", SCHEMA)
 
     assert data == {"dishes": []}
@@ -90,13 +92,13 @@ def test_refusal_raises_output_error():
         stop_reason="refusal",
         stop_details={"type": "refusal", "category": None, "explanation": "nope"},
     )
-    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(msg))
+    client = AnthropicEngine("claude-haiku-5-5", sdk_client=_StubSDK(msg))
     with pytest.raises(LLMOutputError, match="refused.*nope"):
         client.complete_json("s", "u", SCHEMA)
 
 
 def test_max_tokens_raises_output_error():
-    client = AnthropicClient(
+    client = AnthropicEngine(
         "claude-haiku-5-5", sdk_client=_StubSDK(_message('{"dishes": [', "max_tokens"))
     )
     with pytest.raises(LLMOutputError, match="truncated"):
@@ -104,7 +106,7 @@ def test_max_tokens_raises_output_error():
 
 
 def test_invalid_json_raises_output_error():
-    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(_message("not json")))
+    client = AnthropicEngine("claude-haiku-5-5", sdk_client=_StubSDK(_message("not json")))
     with pytest.raises(LLMOutputError, match="invalid JSON"):
         client.complete_json("s", "u", SCHEMA)
 
@@ -119,7 +121,7 @@ def test_invalid_json_raises_output_error():
     ],
 )
 def test_api_errors_are_classified(cls, status, expected):
-    client = AnthropicClient("claude-haiku-5-5", sdk_client=_StubSDK(_status_error(cls, status)))
+    client = AnthropicEngine("claude-haiku-5-5", sdk_client=_StubSDK(_status_error(cls, status)))
     with pytest.raises(expected) as info:
         client.complete_json("s", "u", SCHEMA)
     assert (info.type is LLMRetryableError) == (expected is LLMRetryableError)
@@ -127,20 +129,20 @@ def test_api_errors_are_classified(cls, status, expected):
 
 def test_connection_error_is_retryable():
     request = httpx2.Request("POST", "https://api.anthropic.com/v1/messages")
-    client = AnthropicClient(
+    client = AnthropicEngine(
         "claude-haiku-5-5", sdk_client=_StubSDK(anthropic.APIConnectionError(request=request))
     )
     with pytest.raises(LLMRetryableError):
         client.complete_json("s", "u", SCHEMA)
 
 
-def test_unknown_model_fails_at_construction():
-    with pytest.raises(UnknownModelError):
-        AnthropicClient("claude-unknown")
+def test_unknown_model_is_rejected_by_get_for():
+    with pytest.raises(UnknownEngineModel, match="haiku, sonnet, opus, ollama"):
+        LLMEngine.get_for("claude-unknown")
 
 
 def test_fake_client_by_prompt_hash_and_callable():
-    fake = FakeLLMClient({prompt_key("s", "u"): {"dishes": [{"name": "X"}]}})
+    fake = FakeEngine({prompt_key("s", "u"): {"dishes": [{"name": "X"}]}})
     data, usage = fake.complete_json("s", "u", SCHEMA)
     assert data == {"dishes": [{"name": "X"}]}
     assert usage.cost_usd == 0.0 and usage.input_tokens > 0 and usage.model == "fake"
@@ -148,12 +150,23 @@ def test_fake_client_by_prompt_hash_and_callable():
     with pytest.raises(LLMError, match="no recorded answer"):
         fake.complete_json("s", "other", SCHEMA)
 
-    echo = FakeLLMClient(lambda system, user, schema: {"user": user})
+    echo = FakeEngine(lambda system, user, schema: {"user": user})
     assert echo.complete_json("s", "hi", SCHEMA)[0] == {"user": "hi"}
 
 
-def test_factory():
-    real = make_llm_client("claude-sonnet-5-5")
-    assert isinstance(real, AnthropicClient) and real.model == "claude-sonnet-5-5"
-    fake = make_llm_client("claude-haiku-5-5", fake_responses={})
-    assert isinstance(fake, FakeLLMClient) and fake.model == "fake/claude-haiku-5-5"
+@pytest.mark.parametrize(
+    ("name", "engine", "model"),
+    [
+        ("HAIKU", AnthropicEngine, "claude-haiku-5-5"),
+        ("claude-sonnet-5-5", AnthropicEngine, "claude-sonnet-5-5"),
+        ("Ollama", OllamaEngine, "ollama/qwen2.5:7b"),
+        ("ollama/llama3.2:3b", OllamaEngine, "ollama/llama3.2:3b"),
+    ],
+)
+def test_get_for_picks_the_subclass_that_handles_the_name(name, engine, model):
+    instance = LLMEngine.get_for(name)
+    assert type(instance) is engine and instance.model == model
+
+
+def test_fake_engine_is_never_selected_by_name():
+    assert not FakeEngine.handles("fake")

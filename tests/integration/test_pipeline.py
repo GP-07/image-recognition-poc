@@ -226,7 +226,7 @@ def test_verifier_failure_is_isolated(tmp_path):
 
 
 def test_billed_failure_keeps_its_cost(tmp_path):
-    from menu_poc.llm.client import LLMOutputError
+    from menu_poc.llm.engine import LLMOutputError
 
     class TruncatingStructurer(FakeStructurer):
         def structure(self, ocr):

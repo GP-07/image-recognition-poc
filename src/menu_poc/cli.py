@@ -7,7 +7,6 @@ import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from dotenv import load_dotenv
 
@@ -15,7 +14,7 @@ from menu_poc.cache.store import ArtifactStore
 from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
 from menu_poc.evaluation.report import compare_runs, run_report
 from menu_poc.io.writers import read_jsonl, write_items_csv, write_json, write_jsonl
-from menu_poc.llm.client import make_llm_client
+from menu_poc.llm.engine import LLMEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.models import ImageResult
@@ -28,10 +27,10 @@ DEFAULT_CONFIG = PROJECT_ROOT / "config" / "default.yaml"
 DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
 
 
-def build_pipeline(config: RunConfig, llm_client: Any | None = None) -> Pipeline:
+def build_pipeline(config: RunConfig, llm: LLMEngine | None = None) -> Pipeline:
     structurer = verifier = None
     if config.uses_llm:
-        structurer = LLMStructurer(llm_client or make_llm_client(config.llm_model))
+        structurer = LLMStructurer(llm or LLMEngine.get_for(config.llm_model))
         verifier = GroundingVerifier()
     return Pipeline(
         config,
@@ -44,15 +43,15 @@ def build_pipeline(config: RunConfig, llm_client: Any | None = None) -> Pipeline
     )
 
 
-def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, Any | None]:
-    """The LLM client for this run, or degrade to OCR + rules with a warning when it cannot run
+def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLMEngine | None]:
+    """The LLM engine for this run, or degrade to OCR + rules with a warning when it cannot run
     (no API key, local server down): a CI job without the secret still produces results."""
     if not config.uses_llm:
         return config, None
-    client = make_llm_client(config.llm_model)
-    reason = None if config.llm_offline else client.unavailable_reason()
+    engine = LLMEngine.get_for(config.llm_model)
+    reason = None if config.llm_offline else engine.unavailable_reason()
     if reason is None:
-        return config, client
+        return config, engine
     warnings.append(f"LLM step disabled: {reason}. Results come from OCR + rules only.")
     return config.model_copy(update={"mode": "ocr"}), None
 

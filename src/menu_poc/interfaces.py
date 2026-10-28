@@ -10,7 +10,7 @@ from typing import Any, Protocol
 
 from PIL import Image
 
-from menu_poc.llm.client import LLMClient  # noqa: F401  (re-exported: stage interfaces live here)
+from menu_poc.llm.engine import LLMEngine  # noqa: F401  (re-exported: stage interfaces live here)
 from menu_poc.models import (
     Dish,
     OcrResult,

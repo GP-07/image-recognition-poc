@@ -1,9 +1,8 @@
 """Free, local LLM via Ollama (https://ollama.com): no API key, no cost, data stays on the machine.
 
-Select it with ``--llm-model ollama`` (default local model, see ``registry.ALIASES``) or
-``--llm-model ollama/<model>``. Ollama's structured outputs (``format`` = JSON schema) keep the
-answer parseable, like the Anthropic client. Only the standard library is used (one HTTP POST),
-so it adds no dependency.
+Select it with ``--llm-model ollama`` (default local model) or ``--llm-model ollama/<model>``.
+Ollama's structured outputs (``format`` = JSON schema) keep the answer parseable, like the
+Anthropic engine. Only the standard library is used (one HTTP POST), so it adds no dependency.
 """
 
 from __future__ import annotations
@@ -15,9 +14,10 @@ import urllib.error
 import urllib.request
 from typing import Any
 
-from menu_poc.llm.client import LLMError, LLMOutputError, LLMRetryableError
-from menu_poc.llm.registry import OLLAMA_PREFIX
+from menu_poc.llm.engine import LLMEngine, LLMError, LLMOutputError, LLMRetryableError
 from menu_poc.models import LLMUsage
+
+OLLAMA_PREFIX = "ollama/"
 
 DEFAULT_HOST = "http://localhost:11434"
 
@@ -26,9 +26,15 @@ def ollama_host() -> str:
     return os.environ.get("OLLAMA_HOST", DEFAULT_HOST).rstrip("/")
 
 
-class OllamaClient:
+class OllamaEngine(LLMEngine):
+    aliases = {"ollama": f"{OLLAMA_PREFIX}qwen2.5:7b"}
+
+    @classmethod
+    def handles(cls, name: str) -> bool:
+        return name in cls.aliases or name.startswith(OLLAMA_PREFIX)
+
     def __init__(self, model: str, *, host: str | None = None, timeout_s: float = 600.0) -> None:
-        self.model = model if model.startswith(OLLAMA_PREFIX) else OLLAMA_PREFIX + model
+        super().__init__(model if model.startswith(OLLAMA_PREFIX) else OLLAMA_PREFIX + model)
         self.name = self.model.removeprefix(OLLAMA_PREFIX)
         self.host = host or ollama_host()
         self.timeout_s = timeout_s

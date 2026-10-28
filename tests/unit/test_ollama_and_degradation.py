@@ -8,10 +8,10 @@ import pytest
 
 from menu_poc.cli import resolve_llm
 from menu_poc.config import RunConfig
-from menu_poc.llm import ollama_client as ollama
-from menu_poc.llm.anthropic_client import AnthropicClient
-from menu_poc.llm.client import LLMOutputError, make_llm_client
-from menu_poc.llm.ollama_client import OllamaClient
+from menu_poc.llm import ollama_engine as ollama
+from menu_poc.llm.anthropic_engine import AnthropicEngine
+from menu_poc.llm.engine import LLMEngine, LLMOutputError
+from menu_poc.llm.ollama_engine import OllamaEngine
 
 
 class _Resp(io.BytesIO):
@@ -36,9 +36,9 @@ def _fake_urlopen(payloads):
 
 
 def test_factory_routes_ollama_models():
-    client = make_llm_client("ollama/qwen2.5:7b")
-    assert isinstance(client, OllamaClient) and client.name == "qwen2.5:7b"
-    assert isinstance(make_llm_client("claude-haiku-5-5"), AnthropicClient)
+    client = LLMEngine.get_for("ollama/qwen2.5:7b")
+    assert isinstance(client, OllamaEngine) and client.name == "qwen2.5:7b"
+    assert isinstance(LLMEngine.get_for("claude-haiku-5-5"), AnthropicEngine)
 
 
 def test_ollama_returns_json_with_zero_cost(monkeypatch):
@@ -50,7 +50,7 @@ def test_ollama_returns_json_with_zero_cost(monkeypatch):
         "done_reason": "stop",
     }
     monkeypatch.setattr(ollama.urllib.request, "urlopen", _fake_urlopen({"/api/chat": chat}))
-    data, usage = OllamaClient("qwen2.5:7b").complete_json("sys", "user", {"type": "object"})
+    data, usage = OllamaEngine("qwen2.5:7b").complete_json("sys", "user", {"type": "object"})
     assert data == answer
     assert (usage.input_tokens, usage.output_tokens, usage.cost_usd) == (900, 120, 0.0)
 
@@ -59,18 +59,18 @@ def test_ollama_truncation_is_an_output_error(monkeypatch):
     chat = {"message": {"content": "{"}, "done_reason": "length", "eval_count": 5}
     monkeypatch.setattr(ollama.urllib.request, "urlopen", _fake_urlopen({"/api/chat": chat}))
     with pytest.raises(LLMOutputError) as exc:
-        OllamaClient("m").complete_json("s", "u", {})
+        OllamaEngine("m").complete_json("s", "u", {})
     assert exc.value.usage.output_tokens == 5
 
 
 def test_ollama_availability(monkeypatch):
     tags = {"models": [{"name": "qwen2.5:7b"}]}
     monkeypatch.setattr(ollama.urllib.request, "urlopen", _fake_urlopen({"/api/tags": tags}))
-    assert OllamaClient("qwen2.5:7b").unavailable_reason() is None
-    assert "not pulled" in OllamaClient("llama3.2").unavailable_reason()
+    assert OllamaEngine("qwen2.5:7b").unavailable_reason() is None
+    assert "not pulled" in OllamaEngine("llama3.2").unavailable_reason()
     down = {"/api/tags": urllib.error.URLError("refused")}
     monkeypatch.setattr(ollama.urllib.request, "urlopen", _fake_urlopen(down))
-    assert "not reachable" in OllamaClient("qwen2.5:7b").unavailable_reason()
+    assert "not reachable" in OllamaEngine("qwen2.5:7b").unavailable_reason()
 
 
 def test_missing_api_key_degrades_to_ocr_with_a_warning(monkeypatch):
@@ -99,10 +99,10 @@ class _FakeSdk:
 
 def test_api_key_present_keeps_the_llm(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-    monkeypatch.setattr(AnthropicClient, "_client", lambda self: _FakeSdk())
+    monkeypatch.setattr(AnthropicEngine, "_client", lambda self: _FakeSdk())
     warnings: list[str] = []
     config, client = resolve_llm(RunConfig(input_path="x.zip", mode="ocr+llm"), warnings)
-    assert config.mode == "ocr+llm" and isinstance(client, AnthropicClient) and not warnings
+    assert config.mode == "ocr+llm" and isinstance(client, AnthropicEngine) and not warnings
 
 
 def test_offline_mode_needs_no_key(monkeypatch):
@@ -120,7 +120,7 @@ def test_invalid_api_key_degrades_before_processing(monkeypatch):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "wrong")
     response = httpx.Response(401, request=httpx.Request("GET", "https://api.anthropic.com"))
     error = anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
-    monkeypatch.setattr(AnthropicClient, "_client", lambda self: _FakeSdk(error))
+    monkeypatch.setattr(AnthropicEngine, "_client", lambda self: _FakeSdk(error))
     warnings: list[str] = []
     config, client = resolve_llm(RunConfig(input_path="x.zip", mode="ocr+llm"), warnings)
     assert config.mode == "ocr" and client is None and "invalid" in warnings[0]

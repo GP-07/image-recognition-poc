@@ -8,7 +8,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from menu_poc.llm.registry import resolve_model
+from menu_poc.llm.engine import LLMEngine
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir", "reuse_from")
@@ -41,7 +41,7 @@ class RunConfig(BaseModel):
     @field_validator("llm_model")
     @classmethod
     def _resolve_model(cls, value: str) -> str:
-        return resolve_model(value)
+        return LLMEngine.resolve(value)[1]
 
     @model_validator(mode="after")
     def _check(self) -> RunConfig:

@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from menu_poc.llm.client import prompt_key
-from menu_poc.llm.fake_client import FakeLLMClient
+from menu_poc.llm.engine import prompt_key
+from menu_poc.llm.fake_engine import FakeEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import (
     DEFAULT_PROMPT_PATH,
@@ -73,7 +73,7 @@ def test_render_lines_format():
 def test_end_to_end_with_recorded_fixture():
     fx = load_fixture("pizzeria_salads_desserts.json")
     ocr = OcrResult(**fx["ocr"])
-    structurer = LLMStructurer(FakeLLMClient(lambda s, u, schema: fx["response"]))
+    structurer = LLMStructurer(FakeEngine(lambda s, u, schema: fx["response"]))
     result = structurer.structure(ocr)
 
     assert [d.name for d in result.dishes] == fx["expected_names"]
@@ -91,9 +91,9 @@ def test_end_to_end_with_recorded_fixture():
 def test_fake_client_keyed_by_prompt_hash():
     fx = load_fixture("indian_multilingual.json")
     ocr = OcrResult(**fx["ocr"])
-    structurer = LLMStructurer(FakeLLMClient({}))
+    structurer = LLMStructurer(FakeEngine({}))
     key = prompt_key(structurer.system, build_user_message(ocr))
-    structurer.client = FakeLLMClient({key: fx["response"]})
+    structurer.client = FakeEngine({key: fx["response"]})
     result = structurer.structure(ocr)
     assert [d.name for d in result.dishes] == fx["expected_names"]
     verified = GroundingVerifier().verify(result.dishes, ocr)
@@ -121,7 +121,7 @@ def test_tolerant_conversion():
         ]
     }
     ocr = OcrResult(image_id="r/i", width=10, height=10, engine="t", lines=[_line(3, "x", 0, 0, 1)])
-    result = LLMStructurer(FakeLLMClient(lambda *_: answer)).structure(ocr)
+    result = LLMStructurer(FakeEngine(lambda *_: answer)).structure(ocr)
     assert len(result.dishes) == 1
     dish = result.dishes[0]
     assert dish.name == "Pizza Margarita" and dish.description is None
@@ -129,7 +129,7 @@ def test_tolerant_conversion():
 
 
 def test_empty_ocr_skips_the_call():
-    fake = FakeLLMClient({})
+    fake = FakeEngine({})
     ocr = OcrResult(image_id="r/i", width=10, height=10, engine="t", lines=[])
     result = LLMStructurer(fake).structure(ocr)
     assert result.dishes == [] and fake.calls == []
@@ -138,10 +138,10 @@ def test_empty_ocr_skips_the_call():
 def test_fingerprint_changes_with_model_and_prompt(tmp_path):
     prompt = tmp_path / "structure_v1.md"
     prompt.write_text("v1")
-    a = LLMStructurer(FakeLLMClient({}, model="m1"), prompt).fingerprint()
-    b = LLMStructurer(FakeLLMClient({}, model="m2"), prompt).fingerprint()
+    a = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
+    b = LLMStructurer(FakeEngine({}, model="m2"), prompt).fingerprint()
     prompt.write_text("v1 edited")
-    c = LLMStructurer(FakeLLMClient({}, model="m1"), prompt).fingerprint()
+    c = LLMStructurer(FakeEngine({}, model="m1"), prompt).fingerprint()
     assert a["client"]["model"] == "m1" and a["prompt_version"].startswith("structure_v1@")
     assert a != b and a["prompt_version"] != c["prompt_version"]
 

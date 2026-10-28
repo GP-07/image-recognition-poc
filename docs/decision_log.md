@@ -255,6 +255,18 @@ dos funciones de normalización.
 - Golden set: el usuario plantea borrarlo para no sumar trabajo manual; recomendación: conservarlo
   como "silver set" generado por IA sin revisión obligatoria (ver respuesta en la conversación). Pendiente de decisión.
 
+## Discusión 11 — Selección del motor LLM por subclases (2026-10-28)
+
+- Pedido del usuario: menos código de "preparación" y una selección tipo `LLMEngine.get_for(nombre)`.
+- Implementado como factory method con subclases auto-registradas (cercano a chain of
+  responsibility; no es el patrón State): clase abstracta `LLMEngine` con `get_for`/`resolve`;
+  cada subclase (`AnthropicEngine`, `OllamaEngine`, `FakeEngine`) declara sus `aliases` y un
+  `handles(nombre)`. `get_for` recorre las subclases y devuelve una instancia de la que lo maneja.
+- Se eliminan `registry.py` y `make_llm_client`: la config valida el modelo con
+  `LLMEngine.resolve` y la CLI usa `LLMEngine.get_for`. Agregar un proveedor = agregar una subclase.
+- Archivos: `llm/engine.py` (base, errores, `prompt_key`), `anthropic_engine.py`,
+  `ollama_engine.py`, `fake_engine.py`; `llm/__init__.py` importa los motores para registrarlos.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |

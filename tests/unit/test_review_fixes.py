@@ -11,7 +11,7 @@ from menu_poc.evaluation.golden import GoldenDish
 from menu_poc.evaluation.matching import match_dishes, normalize
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_jsonl
-from menu_poc.llm.fake_client import FakeLLMClient
+from menu_poc.llm.fake_engine import FakeEngine
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.models import Dish, ImageResult, OcrLine, OcrResult
@@ -63,7 +63,7 @@ def test_duplicate_image_ids_are_rejected(tmp_path):
 
 
 def test_llm_cache_key_changes_with_client_settings():
-    class Client(FakeLLMClient):
+    class Client(FakeEngine):
         def __init__(self, effort):
             super().__init__({}, model="m")
             self.effort = effort
