@@ -32,8 +32,10 @@ class RunConfig(BaseModel):
 
     @model_validator(mode="after")
     def _check(self) -> RunConfig:
-        if self.only_low_confidence and self.reuse_from is None:
-            raise ValueError("only_low_confidence requires reuse_from (a previous run directory)")
+        if self.only_low_confidence != (self.reuse_from is not None):
+            raise ValueError("only_low_confidence and reuse_from go together")
+        if self.only_low_confidence and not self.uses_llm:
+            raise ValueError("re-running low-confidence images only makes sense with mode ocr+llm")
         return self
 
     @property

@@ -42,14 +42,26 @@ def _is_image(path: PurePosixPath) -> bool:
     )
 
 
+def _image_id(path: PurePosixPath) -> str:
+    return f"{path.parent.name or 'unknown'}/{path.stem}"
+
+
 def _ref(path: PurePosixPath, data: bytes) -> ImageRef:
-    restaurant_id = path.parent.name or "unknown"
+    image_id = _image_id(path)
     return ImageRef(
-        image_id=f"{restaurant_id}/{path.stem}",
-        restaurant_id=restaurant_id,
+        image_id=image_id,
+        restaurant_id=image_id.split("/")[0],
         filename=path.name,
         data=data,
     )
+
+
+def _check_unique(paths: list[PurePosixPath]) -> None:
+    seen: dict[str, PurePosixPath] = {}
+    for path in paths:
+        other = seen.setdefault(_image_id(path), path)
+        if other != path:
+            raise ValueError(f"Duplicate image id {_image_id(path)!r}: {other} and {path}")
 
 
 def iter_images(source: Path, image_ids: list[str] | None = None) -> Iterator[ImageRef]:
@@ -60,18 +72,18 @@ def iter_images(source: Path, image_ids: list[str] | None = None) -> Iterator[Im
     if source.is_file() and source.suffix.lower() == ".zip":
         with zipfile.ZipFile(source) as zf:
             names = sorted(n for n in zf.namelist() if _is_image(PurePosixPath(n)))
+            _check_unique([PurePosixPath(n) for n in names])
             for name in names:
                 path = PurePosixPath(name)
-                ref_id = f"{path.parent.name}/{path.stem}"
-                if wanted is None or ref_id in wanted:
+                if wanted is None or _image_id(path) in wanted:
                     yield _ref(path, zf.read(name))
     elif source.is_dir():
-        for file in sorted(p for p in source.rglob("*") if p.is_file()):
-            path = PurePosixPath(file.relative_to(source).as_posix())
-            if not _is_image(path):
-                continue
-            ref_id = f"{path.parent.name}/{path.stem}"
-            if wanted is None or ref_id in wanted:
+        files = sorted(p for p in source.rglob("*") if p.is_file())
+        paths = {f: PurePosixPath(f.relative_to(source).as_posix()) for f in files}
+        images = {f: path for f, path in paths.items() if _is_image(path)}
+        _check_unique(list(images.values()))
+        for file, path in images.items():
+            if wanted is None or _image_id(path) in wanted:
                 yield _ref(path, file.read_bytes())
     else:
         raise FileNotFoundError(f"Input must be a .zip file or a directory: {source}")

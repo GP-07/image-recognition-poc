@@ -167,9 +167,35 @@ Decisiones (reemplazan la parte de normalización de la Discusión 4):
 - En producción no hay golden set: "tasa baja" se detecta con proxies (confianza, % de ítems verificados
   contra el OCR, % de precios sin plato).
 
+## Discusión 7 — Implementación (2026-10-28)
+
+- Organización: F0/F1 (contratos) y F4 (pipeline/CLI) en la sesión principal; F2 (OCR + reglas),
+  F3 (LLM + grounding), F5 (evaluación) y el borrador del golden set con 4 subagentes en paralelo,
+  cada uno dueño de sus archivos. Revisión: un subagente de código (sólo lectura) y uno de análisis
+  de errores del clasificador por reglas (ajusta sólo sobre dev).
+- OCR: RapidOCR (modelos PP-OCR sobre ONNX Runtime) en lugar de PaddleOCR, por peso de instalación.
+  Detecta páginas giradas 90° (re-OCR a 90/270) e inclinación leve (deskew).
+- Bug encontrado por los tests de integración: imágenes con bytes idénticos compartían la entrada de
+  caché del OCR con el `image_id` de la primera. Corregido (se re-etiqueta al leer de caché).
+- Costo y tiempos reportados = los de producir el resultado, aunque venga de caché (corridas comparables);
+  `llm_usage.cached` indica si hubo llamada real.
+- Golden set: 19 YAML, 620 platos, split por restaurante (dev 10 imágenes / test 9), redactado por IA
+  y pendiente de revisión humana. El dataset trae fotos duplicadas (idénticas o a media resolución)
+  en 4 restaurantes: esas cartas pesan doble en las métricas.
+- Primera corrida real, sólo OCR + reglas: recall micro 71,9% (dev 72,6% / test 70,1%), precision 72,4%,
+  ~4,8 s por imagen en CPU (M1), costo $0. Superior a la estimación previa (35–55%).
+- Hallazgo: la confianza de las reglas no está bien calibrada en algunos casos (p. ej. una página con
+  recall 13,6% obtuvo 0,92) → se manda a calibrar al agente de análisis de errores (sólo con dev).
+- Sin `ANTHROPIC_API_KEY` en el entorno: el LLM se probó con respuestas grabadas; las corridas reales
+  con Haiku/Sonnet requieren que el usuario exporte la key.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
 |---|---|---|
 | 2026-10-27 | Claude Code (Claude Opus 5.5) | Inspección del dataset, análisis de alternativas, diseño de arquitectura, este log. |
 | 2026-10-27 | Claude Haiku 5.5 / Sonnet 5.5 (elegidos, aún no usados) | Estructurador de texto OCR → JSON; un modelo por corrida (Haiku por defecto, Sonnet en una re-corrida). |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Plan de implementación, contratos, pipeline, CLI, integración, tests de integración. |
+| 2026-10-28 | Subagentes de Claude Code (Opus 5.5) ×4 en paralelo | F2 OCR + reglas, F3 conector LLM + grounding, F5 evaluación, borrador del golden set mirando las imágenes (visión). |
+| 2026-10-28 | Subagentes de Claude Code (Opus 5.5) ×2 | Revisión de código (sólo lectura) y análisis de errores / calibración del clasificador por reglas. |
+| 2026-10-28 | RapidOCR 3.10 (modelos PP-OCRv6 det/rec small, ONNX Runtime) | Motor OCR local en CPU (modelos de deep learning preentrenados, sin entrenamiento propio). |

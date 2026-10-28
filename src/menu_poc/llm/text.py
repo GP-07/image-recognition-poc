@@ -15,7 +15,7 @@ import unicodedata
 from menu_poc.models import OcrLine, OcrResult
 
 _NUMBERING = re.compile(r"^\s*(?:\d{1,3}|[a-z])\s*[.)\-:]\s*|^\s*\d{1,3}\s+(?=[^\W\d])")
-_NON_ALNUM = re.compile(r"[^0-9a-z]+")
+_NON_ALNUM = re.compile(r"[\W_]+")  # Unicode-aware: keeps Greek, Cyrillic, CJK, Devanagari...
 
 
 def strip_accents(text: str) -> str:

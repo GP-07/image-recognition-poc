@@ -105,8 +105,11 @@ class ImageResult(BaseModel):
     restaurant_id: str
     dishes: list[Dish] = Field(default_factory=list)
     rules_confidence: float = 0.0
+    rules_dish_count: int = 0  # kept even when the LLM answer replaces the rules dishes
+    rules_signals: dict[str, float] = Field(default_factory=dict)  # to calibrate the threshold
     llm_used: bool = False
-    llm_usage: LLMUsage | None = None
+    llm_usage: LLMUsage | None = None  # also set for a failed but billed call
+    llm_prompt_version: str | None = None
     ungrounded_dropped: list[str] = Field(default_factory=list)
     timings_s: dict[str, float] = Field(default_factory=dict)
     error: str | None = None

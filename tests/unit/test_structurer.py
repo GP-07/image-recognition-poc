@@ -141,7 +141,7 @@ def test_fingerprint_changes_with_model_and_prompt(tmp_path):
     b = LLMStructurer(FakeLLMClient({}, model="m2"), prompt).fingerprint()
     prompt.write_text("v1 edited")
     c = LLMStructurer(FakeLLMClient({}, model="m1"), prompt).fingerprint()
-    assert a["model"] == "m1" and a["prompt_version"].startswith("structure_v1@")
+    assert a["client"]["model"] == "m1" and a["prompt_version"].startswith("structure_v1@")
     assert a != b and a["prompt_version"] != c["prompt_version"]
 
 

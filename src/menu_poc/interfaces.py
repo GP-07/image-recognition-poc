@@ -41,6 +41,8 @@ class Parser(Protocol):
 class LLMClient(Protocol):
     model: str
 
+    def fingerprint(self) -> dict[str, Any]: ...
+
     def complete_json(
         self, system: str, user: str, schema: dict[str, Any]
     ) -> tuple[dict[str, Any], LLMUsage]:
@@ -55,4 +57,6 @@ class Structurer(Protocol):
 
 
 class Verifier(Protocol):
+    def fingerprint(self) -> dict[str, Any]: ...
+
     def verify(self, dishes: list[Dish], ocr: OcrResult) -> VerificationResult: ...

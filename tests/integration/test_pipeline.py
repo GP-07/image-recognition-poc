@@ -189,7 +189,7 @@ def test_select_only_low_confidence_from_previous_run(tmp_path):
             ImageResult(image_id="r1/low", restaurant_id="r1", rules_confidence=0.1),
         ],
     )
-    config = RunConfig(input_path=zpath, reuse_from=prev, only_low_confidence=True)
+    config = RunConfig(input_path=zpath, mode="ocr+llm", reuse_from=prev, only_low_confidence=True)
     assert [r.image_id for r in select_images(config)] == ["r1/low"]
 
 
@@ -198,3 +198,40 @@ def test_new_run_dir_writes_config(tmp_path):
     run_dir = new_run_dir(config)
     assert "llm-fallback-claude-haiku-5-5" in run_dir.name
     assert (run_dir / "config.yaml").exists()
+
+
+class RaisingVerifier:
+    def fingerprint(self):
+        return {}
+
+    def verify(self, dishes, ocr):
+        raise RuntimeError("verifier bug")
+
+
+def test_verifier_failure_is_isolated(tmp_path):
+    config = RunConfig(input_path=_zip(tmp_path, ["high", "low"]), mode="ocr+llm")
+    store = ArtifactStore(tmp_path / "a")
+    pipe = Pipeline(
+        config, store, FakePre(), FakeOcr(), FakeParser(), FakeStructurer(), RaisingVerifier()
+    )
+    low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
+    assert "verifier bug" in low.error and low.dishes[0].origin == "rules"
+
+
+def test_billed_failure_keeps_its_cost(tmp_path):
+    from menu_poc.llm.client import LLMOutputError
+
+    class TruncatingStructurer(FakeStructurer):
+        def structure(self, ocr):
+            usage = LLMUsage(model="m", output_tokens=16000, cost_usd=0.32)
+            raise LLMOutputError("truncated", usage=usage)
+
+    pipe = _pipeline(tmp_path, structurer=TruncatingStructurer(), mode="ocr+llm")
+    low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
+    assert not low.llm_used and low.llm_usage.cost_usd == pytest.approx(0.32)
+
+
+def test_rules_signals_survive_llm_replacement(tmp_path):
+    pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
+    low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
+    assert low.llm_used and low.rules_dish_count == 1 and low.llm_prompt_version == "v1"

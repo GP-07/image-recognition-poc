@@ -10,12 +10,13 @@ from pathlib import Path
 from menu_poc.cache.store import ArtifactStore
 from menu_poc.config import RunConfig, load_config
 from menu_poc.evaluation.report import compare_runs, run_report
+from menu_poc.io.writers import write_jsonl
 from menu_poc.llm.client import make_llm_client
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.ocr.rapid import RapidOcrEngine
 from menu_poc.parsing.rules import RuleBasedParser
-from menu_poc.pipeline import Pipeline, new_run_dir, select_images
+from menu_poc.pipeline import Pipeline, merge_previous, new_run_dir, select_images
 from menu_poc.preprocess.image import ImagePreprocessor
 
 DEFAULT_CONFIG = Path("config/default.yaml")
@@ -39,6 +40,9 @@ def build_pipeline(config: RunConfig) -> Pipeline:
 
 
 def _cmd_run(args: argparse.Namespace) -> int:
+    if args.config != DEFAULT_CONFIG and not args.config.exists():
+        print(f"Config file not found: {args.config}", file=sys.stderr)
+        return 2
     config = load_config(
         args.config if args.config.exists() else None,
         input_path=args.input,
@@ -59,6 +63,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     run_dir = new_run_dir(config)
     print(f"Run {run_dir} — {len(refs)} images, mode={config.mode}")
     results = pipeline.run(refs, run_dir)
+    if config.reuse_from is not None:
+        write_jsonl(run_dir / "results.jsonl", merge_previous(config, results))
+        print(f"Re-ran {len(results)} images; the rest carried over from {config.reuse_from}.")
 
     errors = [r for r in results if r.error]
     print(f"Done: {sum(len(r.dishes) for r in results)} dishes, {len(errors)} images with errors.")

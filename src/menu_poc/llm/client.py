@@ -32,6 +32,12 @@ class LLMRetryableError(LLMError):
 
 
 class LLMOutputError(LLMError):
+    """The call succeeded (and was billed) but the answer is unusable; ``usage`` keeps the cost."""
+
+    def __init__(self, message: str, usage: LLMUsage | None = None) -> None:
+        super().__init__(message)
+        self.usage = usage
+
     """The model answered but the output is unusable (refusal, truncation, invalid JSON)."""
 
 
@@ -96,17 +102,6 @@ class AnthropicClient:
             raise LLMRetryableError(
                 f"Anthropic API connection error ({self.model}): {exc}"
             ) from exc
-        latency = time.perf_counter() - start
-
-        _check_stop_reason(response, self.model, self.max_tokens)
-        text = "".join(block.text for block in response.content if block.type == "text")
-        try:
-            data = json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise LLMOutputError(f"Model {self.model} returned invalid JSON: {exc}") from exc
-        if not isinstance(data, dict):
-            raise LLMOutputError(f"Model {self.model} returned {type(data).__name__}, not object")
-
         in_tok = response.usage.input_tokens
         out_tok = response.usage.output_tokens
         usage = LLMUsage(
@@ -114,9 +109,26 @@ class AnthropicClient:
             input_tokens=in_tok,
             output_tokens=out_tok,
             cost_usd=cost_usd(self.model, in_tok, out_tok),
-            latency_s=latency,
+            latency_s=time.perf_counter() - start,
         )
+        try:
+            _check_stop_reason(response, self.model, self.max_tokens)
+            text = "".join(block.text for block in response.content if block.type == "text")
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise LLMOutputError(f"Model {self.model} returned invalid JSON: {exc}") from exc
+            if not isinstance(data, dict):
+                kind = type(data).__name__
+                raise LLMOutputError(f"Model {self.model} returned {kind}, not object")
+        except LLMOutputError as exc:
+            exc.usage = usage  # billed anyway: keep the cost visible
+            raise
         return data, usage
+
+    def fingerprint(self) -> dict[str, Any]:
+        """Settings that change the answer (part of the LLM cache key)."""
+        return {"model": self.model, "effort": self.effort, "max_tokens": self.max_tokens}
 
 
 def _check_stop_reason(response: Any, model: str, max_tokens: int) -> None:
@@ -165,6 +177,9 @@ class FakeLLMClient:
             latency_s=time.perf_counter() - start,
         )
         return data, usage
+
+    def fingerprint(self) -> dict[str, Any]:
+        return {"model": self.model}
 
 
 def make_llm_client(

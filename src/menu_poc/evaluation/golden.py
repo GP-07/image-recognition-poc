@@ -78,7 +78,7 @@ def load_golden(golden_dir: Path, only_reviewed: bool = False) -> dict[str, Gold
     out: dict[str, GoldenImage] = {}
     if not golden_dir.is_dir():
         return out
-    for path in sorted([*golden_dir.glob("*.yaml"), *golden_dir.glob("*.yml")]):
+    for path in sorted(golden_dir.glob("*.yaml")):
         golden = load_golden_file(path)
         if golden.image_id in out:
             raise GoldenError(f"{path.name}: duplicate image_id {golden.image_id!r}")

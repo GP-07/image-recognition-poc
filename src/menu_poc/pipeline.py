@@ -95,6 +95,8 @@ class Pipeline:
             result.timings_s["rules"] = time.perf_counter() - start
             result.dishes = parsed.dishes
             result.rules_confidence = parsed.confidence
+            result.rules_dish_count = len(parsed.dishes)
+            result.rules_signals = parsed.signals
         except Exception as exc:  # one bad image must not stop the run
             log.exception("OCR/rules failed for %s", ref.image_id)
             result.error = f"ocr/rules: {exc}"
@@ -110,20 +112,26 @@ class Pipeline:
         assert self.verifier is not None
         try:
             structured = self._run_llm(ocr, ocr_key)
-        except Exception as exc:  # keep the rules answer when the LLM fails
+            if structured is None:
+                result.error = "llm: cache miss in offline mode, kept rules output"
+                return result
+            verified = self.verifier.verify(structured.dishes, ocr)
+        except Exception as exc:  # keep the rules answer when the LLM stage fails
             log.exception("LLM failed for %s", ref.image_id)
             result.error = f"llm: {exc}"
-            return result
-        if structured is None:
-            result.error = "llm: cache miss in offline mode, kept rules output"
+            # A billed but unusable answer (refusal, truncation) still counts as cost.
+            result.llm_usage = getattr(exc, "usage", None)
             return result
 
-        verified = self.verifier.verify(structured.dishes, ocr)
         result.llm_used = True
         result.llm_usage = structured.usage
+        result.llm_prompt_version = structured.prompt_version
         result.timings_s["llm"] = structured.usage.latency_s
-        result.dishes = verified.kept
         result.ungrounded_dropped = [d.name for d in verified.dropped]
+        if verified.kept or not parsed.dishes:
+            result.dishes = verified.kept
+        else:  # an empty LLM answer should not wipe out what the rules found
+            result.error = "llm: no grounded dishes, kept rules output"
         return result
 
     def run(self, refs: Iterable[ImageRef], run_dir: Path) -> list[ImageResult]:
@@ -134,6 +142,17 @@ class Pipeline:
             # Rewrite after every image so an interrupted run keeps its progress.
             write_jsonl(run_dir / "results.jsonl", results)
         return results
+
+
+def merge_previous(config: RunConfig, results: list[ImageResult]) -> list[ImageResult]:
+    """With ``reuse_from``: carry over the previous run's results for the images not re-run, so
+    the new run covers the same image set and stays comparable with other runs."""
+    if config.reuse_from is None:
+        return results
+    redone = {r.image_id for r in results}
+    previous = read_jsonl(config.reuse_from / "results.jsonl", ImageResult)
+    merged = [r for r in previous if r.image_id not in redone] + results
+    return sorted(merged, key=lambda r: r.image_id)
 
 
 def select_images(config: RunConfig) -> list[ImageRef]:
@@ -152,6 +171,10 @@ def new_run_dir(config: RunConfig) -> Path:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     label = "ocr" if not config.uses_llm else f"llm-{config.llm_policy}-{config.llm_model}"
     run_dir = config.runs_dir / f"{stamp}_{label}"
-    run_dir.mkdir(parents=True, exist_ok=False)
+    suffix = 1
+    while run_dir.exists():  # two runs started in the same second
+        suffix += 1
+        run_dir = config.runs_dir / f"{stamp}_{label}_{suffix}"
+    run_dir.mkdir(parents=True)
     write_yaml(run_dir / "config.yaml", config.model_dump(mode="json"))
     return run_dir

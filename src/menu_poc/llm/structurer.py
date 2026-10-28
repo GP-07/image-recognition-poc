@@ -68,7 +68,7 @@ class LLMStructurer:
     def fingerprint(self) -> dict[str, Any]:
         return {
             "stage": "llm_structurer",
-            "model": self.client.model,
+            "client": self.client.fingerprint(),  # model + settings such as effort
             "prompt_version": self.prompt_version,
             "schema": _short_hash(json.dumps(DISHES_SCHEMA, sort_keys=True)),
             "render": RENDER_VERSION,
