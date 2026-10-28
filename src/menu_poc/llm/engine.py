@@ -1,4 +1,4 @@
-"""LLM engines: one base class, one subclass per provider, chosen with ``LLMEngine.get_for``.
+"""LLM engines: one base class, one subclass per provider, chosen with ``LLMEngine.get_for_alias``.
 
 Each subclass says whether it can handle a model name (``handles``) and which aliases it owns, so
 adding a provider is adding a subclass; nothing else in the code base has to change:
@@ -45,18 +45,16 @@ class LLMEngine(ABC):
         self.model = model
 
     @classmethod
-    def get_for(cls, name: str) -> LLMEngine:
-        """Instance of the engine that handles ``name`` (alias, any case, or exact id)."""
-        engine, model = cls.resolve(name)
-        return engine(model)
+    def get_for_alias(cls, name: str) -> LLMEngine:
+        """Instance of the engine that handles ``name`` (alias in any case, or exact model id).
 
-    @classmethod
-    def resolve(cls, name: str) -> tuple[type[LLMEngine], str]:
-        """The engine class for ``name`` and the exact model id, without building the engine."""
+        Building an engine is cheap (no network: clients connect on first use), so this is also
+        how the configuration validates and resolves a model name.
+        """
         key = name.strip().lower()
         for engine in cls.__subclasses__():
             if engine.handles(key):
-                return engine, engine.aliases.get(key, key)
+                return engine(engine.aliases.get(key, key))
         known = ", ".join(alias for engine in cls.__subclasses__() for alias in engine.aliases)
         raise UnknownModelError(f"Unknown LLM model {name!r}. Use one of: {known} (or an exact id)")
 

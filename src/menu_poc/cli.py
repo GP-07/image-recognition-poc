@@ -30,7 +30,7 @@ DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
 def build_pipeline(config: RunConfig, llm: LLMEngine | None = None) -> Pipeline:
     structurer = verifier = None
     if config.uses_llm:
-        structurer = LLMStructurer(llm or LLMEngine.get_for(config.llm_model))
+        structurer = LLMStructurer(llm or LLMEngine.get_for_alias(config.llm_model))
         verifier = GroundingVerifier()
     return Pipeline(
         config,
@@ -48,7 +48,7 @@ def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLME
     (no API key, local server down): a CI job without the secret still produces results."""
     if not config.uses_llm:
         return config, None
-    engine = LLMEngine.get_for(config.llm_model)
+    engine = LLMEngine.get_for_alias(config.llm_model)
     reason = None if config.llm_offline else engine.unavailable_reason()
     if reason is None:
         return config, engine

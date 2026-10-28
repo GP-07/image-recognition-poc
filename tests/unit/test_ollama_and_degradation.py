@@ -36,9 +36,9 @@ def _fake_urlopen(payloads):
 
 
 def test_factory_routes_ollama_models():
-    client = LLMEngine.get_for("ollama/qwen2.5:7b")
+    client = LLMEngine.get_for_alias("ollama/qwen2.5:7b")
     assert isinstance(client, OllamaEngine) and client.name == "qwen2.5:7b"
-    assert isinstance(LLMEngine.get_for("claude-haiku-5-5"), AnthropicEngine)
+    assert isinstance(LLMEngine.get_for_alias("claude-haiku-5-5"), AnthropicEngine)
 
 
 def test_ollama_returns_json_with_zero_cost(monkeypatch):

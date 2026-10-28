@@ -185,7 +185,7 @@ src/menu_poc/
   pipeline.py, cli.py                   cascade orchestration, `menu-poc` command
   io/  cache/                           zip/dir reader, JSON helpers, content-addressed store
   preprocess/  ocr/  parsing/           image prep, RapidOCR adapter, layout + rules + confidence
-  llm/                                  LLMEngine.get_for + one engine per provider (Anthropic,
+  llm/                                  LLMEngine.get_for_alias + one engine per provider (Anthropic,
                                         Ollama, fake), pricing, structurer, grounding
   evaluation/                           golden loader, matching, metrics, Markdown reports
 prompts/structure_v1.md                 versioned LLM prompt (its hash is part of the cache key)

@@ -136,9 +136,9 @@ def test_connection_error_is_retryable():
         client.complete_json("s", "u", SCHEMA)
 
 
-def test_unknown_model_is_rejected_by_get_for():
+def test_unknown_model_is_rejected_by_get_for_alias():
     with pytest.raises(UnknownEngineModel, match="haiku, sonnet, opus, ollama"):
-        LLMEngine.get_for("claude-unknown")
+        LLMEngine.get_for_alias("claude-unknown")
 
 
 def test_fake_client_by_prompt_hash_and_callable():
@@ -163,8 +163,8 @@ def test_fake_client_by_prompt_hash_and_callable():
         ("ollama/llama3.2:3b", OllamaEngine, "ollama/llama3.2:3b"),
     ],
 )
-def test_get_for_picks_the_subclass_that_handles_the_name(name, engine, model):
-    instance = LLMEngine.get_for(name)
+def test_get_for_alias_picks_the_subclass_that_handles_the_name(name, engine, model):
+    instance = LLMEngine.get_for_alias(name)
     assert type(instance) is engine and instance.model == model
 
 

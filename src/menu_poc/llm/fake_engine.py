@@ -17,7 +17,7 @@ FakeResponses = Mapping[str, dict[str, Any]] | Callable[[str, str, dict[str, Any
 class FakeEngine(LLMEngine):
     """Answers come from ``responses`` keyed by ``prompt_key`` or from a callable
     ``(system, user, schema) -> dict``. Token counts are estimated, cost is zero.
-    Built directly by tests; ``get_for`` never selects it."""
+    Built directly by tests; ``get_for_alias`` never selects it."""
 
     @classmethod
     def handles(cls, name: str) -> bool:

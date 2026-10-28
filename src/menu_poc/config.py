@@ -41,7 +41,7 @@ class RunConfig(BaseModel):
     @field_validator("llm_model")
     @classmethod
     def _resolve_model(cls, value: str) -> str:
-        return LLMEngine.resolve(value)[1]
+        return LLMEngine.get_for_alias(value).model
 
     @model_validator(mode="after")
     def _check(self) -> RunConfig:

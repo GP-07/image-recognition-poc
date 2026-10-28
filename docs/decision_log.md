@@ -262,8 +262,9 @@ dos funciones de normalización.
   responsibility; no es el patrón State): clase abstracta `LLMEngine` con `get_for`/`resolve`;
   cada subclase (`AnthropicEngine`, `OllamaEngine`, `FakeEngine`) declara sus `aliases` y un
   `handles(nombre)`. `get_for` recorre las subclases y devuelve una instancia de la que lo maneja.
-- Se eliminan `registry.py` y `make_llm_client`: la config valida el modelo con
-  `LLMEngine.resolve` y la CLI usa `LLMEngine.get_for`. Agregar un proveedor = agregar una subclase.
+- Se eliminan `registry.py` y `make_llm_client`. Agregar un proveedor = agregar una subclase.
+- Luego `get_for` + `resolve` se unificaron en `LLMEngine.get_for_alias(nombre)`: la config valida
+  y resuelve el modelo con `get_for_alias(valor).model` (crear un motor no abre conexiones).
 - Archivos: `llm/engine.py` (base, errores, `prompt_key`), `anthropic_engine.py`,
   `ollama_engine.py`, `fake_engine.py`; `llm/__init__.py` importa los motores para registrarlos.
 
