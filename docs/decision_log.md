@@ -268,6 +268,23 @@ dos funciones de normalización.
 - Archivos: `llm/engine.py` (base, errores, `prompt_key`), `anthropic_engine.py`,
   `ollama_engine.py`, `fake_engine.py`; `llm/__init__.py` importa los motores para registrarlos.
 
+## Discusión 12 — Pipeline como Chain of Responsibility + Builder (2026-10-28)
+
+- Problema: la clase `Pipeline` concentraba OCR, reglas, política LLM, caché, verificación y
+  duplicados; difícil de leer y de testear por partes.
+- Cada paso es un `Step` en su módulo (`steps/dedup.py`, `ocr.py`, `rules.py`, `llm.py`,
+  `verify.py`) con `process(ctx) -> bool` (¿sigue la cadena?) y un link `next`. El estado de cada
+  imagen viaja en `ImageContext`. Una excepción corta la cadena sólo para esa imagen y conserva lo
+  ya calculado (p. ej. si falla el LLM queda la salida de reglas).
+- `PipelineBuilder`: `add()` en cualquier orden; `build()` enlaza en el orden fijo del sistema
+  (dedup → ocr → rules → llm → verify), agrega `verify` siempre que haya `llm` y rechaza cadenas
+  inválidas (LLM sin OCR/reglas, sin OCR). `from_config` arma las piezas según la configuración.
+- `Pipeline` quedó como alimentador delgado: ordena por tamaño (para que el original de un grupo
+  de duplicados sea la foto más grande), pasa cada imagen por la cadena y guarda resultados.
+- Se eliminó `dedup.py` como paso por lotes: ahora es el primer step y guarda los originales vistos.
+- Verificado: misma salida y mismas métricas que antes del refactor; 14 tests nuevos por step y
+  del builder (210 en total).
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |

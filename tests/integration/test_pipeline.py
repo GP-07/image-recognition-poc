@@ -1,4 +1,4 @@
-"""Pipeline cascade with fake stages: policy, caching, offline mode, failure isolation."""
+"""Pipeline chain built with fake stages: policy, caching, offline mode, failure isolation."""
 
 import io
 import zipfile
@@ -20,7 +20,8 @@ from menu_poc.models import (
     StructureResult,
     VerificationResult,
 )
-from menu_poc.pipeline import Pipeline, new_run_dir, select_images
+from menu_poc.pipeline import PipelineBuilder, new_run_dir, select_images
+from menu_poc.steps import DedupStep, LlmStep, OcrStep, RulesStep, VerifyStep
 
 
 class FakePre:
@@ -96,17 +97,22 @@ def _zip(tmp_path, names, identical=False):
     return path
 
 
+def _build(config, store, ocr=None, structurer=None, verifier=None):
+    """Same pieces as ``PipelineBuilder.from_config``, with fake stages."""
+    builder = PipelineBuilder()
+    builder.add(OcrStep(FakePre(), ocr or FakeOcr(), store)).add(RulesStep(FakeParser()))
+    if config.dedup:
+        builder.add(DedupStep(config.dedup_max_distance))
+    if config.uses_llm:
+        policy, threshold = config.llm_policy, config.confidence_threshold
+        llm = LlmStep(structurer or FakeStructurer(), store, policy, threshold, config.llm_offline)
+        builder.add(llm).add(VerifyStep(verifier or FakeVerifier()))
+    return builder.build()
+
+
 def _pipeline(tmp_path, ocr=None, structurer=None, **cfg):
     config = RunConfig(input_path=_zip(tmp_path, ["high", "low"]), **cfg)
-    return Pipeline(
-        config,
-        ArtifactStore(tmp_path / "artifacts"),
-        FakePre(),
-        ocr or FakeOcr(),
-        FakeParser(),
-        structurer or FakeStructurer(),
-        FakeVerifier(),
-    )
+    return _build(config, ArtifactStore(tmp_path / "artifacts"), ocr, structurer), config
 
 
 def _by_id(results):
@@ -115,16 +121,16 @@ def _by_id(results):
 
 def test_ocr_mode_never_calls_llm(tmp_path):
     structurer = FakeStructurer()
-    pipe = _pipeline(tmp_path, structurer=structurer, mode="ocr")
-    results = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))
+    pipe, config = _pipeline(tmp_path, structurer=structurer, mode="ocr")
+    results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert structurer.calls == 0
     assert all(not r.llm_used for r in results.values())
     assert results["r1/low"].dishes[0].origin == "rules"
 
 
 def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_path):
-    pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="fallback")
-    results = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))
+    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="fallback")
+    results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert not results["r1/high"].llm_used
     low = results["r1/low"]
     assert low.llm_used and [d.name for d in low.dishes] == ["Lamb curry"]
@@ -133,45 +139,49 @@ def test_fallback_policy_only_escalates_low_confidence_and_drops_ungrounded(tmp_
 
 
 def test_always_policy_escalates_every_image(tmp_path):
-    pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
-    results = pipe.run(select_images(pipe.config), tmp_path / "run")
+    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
+    results = pipe.run(select_images(config), tmp_path / "run")
     assert all(r.llm_used for r in results)
 
 
 def test_rerun_reuses_ocr_and_llm_cache_and_new_model_only_calls_llm(tmp_path):
     ocr = FakeOcr()
-    first = _pipeline(tmp_path, ocr=ocr, mode="ocr+llm", llm_policy="always")
-    first.run(select_images(first.config), tmp_path / "run1")
+    first, cfg1 = _pipeline(tmp_path, ocr=ocr, mode="ocr+llm", llm_policy="always")
+    first.run(select_images(cfg1), tmp_path / "run1")
     assert ocr.calls == 2
 
     same = FakeStructurer()
-    second = _pipeline(tmp_path, ocr=ocr, structurer=same, mode="ocr+llm", llm_policy="always")
-    results = second.run(select_images(second.config), tmp_path / "run2")
+    second, cfg2 = _pipeline(
+        tmp_path, ocr=ocr, structurer=same, mode="ocr+llm", llm_policy="always"
+    )
+    results = second.run(select_images(cfg2), tmp_path / "run2")
     assert ocr.calls == 2 and same.calls == 0
     assert all(r.llm_usage.cached for r in results)
 
     other = FakeStructurer(model="m2")
-    third = _pipeline(tmp_path, ocr=ocr, structurer=other, mode="ocr+llm", llm_policy="always")
-    third.run(select_images(third.config), tmp_path / "run3")
+    third, cfg3 = _pipeline(
+        tmp_path, ocr=ocr, structurer=other, mode="ocr+llm", llm_policy="always"
+    )
+    third.run(select_images(cfg3), tmp_path / "run3")
     assert ocr.calls == 2 and other.calls == 2
 
 
 def test_offline_cache_miss_keeps_rules_output(tmp_path):
-    pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always", llm_offline=True)
-    results = pipe.run(select_images(pipe.config), tmp_path / "run")
+    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always", llm_offline=True)
+    results = pipe.run(select_images(config), tmp_path / "run")
     assert all(not r.llm_used and r.dishes[0].origin == "rules" for r in results)
     assert all("offline" in r.error for r in results)
 
 
 def test_llm_failure_keeps_rules_output(tmp_path):
-    pipe = _pipeline(tmp_path, structurer=FakeStructurer(fail=True), mode="ocr+llm")
-    low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
+    pipe, config = _pipeline(tmp_path, structurer=FakeStructurer(fail=True), mode="ocr+llm")
+    low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert not low.llm_used and low.dishes[0].origin == "rules" and "api down" in low.error
 
 
 def test_broken_image_is_isolated(tmp_path):
     config = RunConfig(input_path=_zip(tmp_path, ["ok", "broken"]))
-    pipe = Pipeline(config, ArtifactStore(tmp_path / "a"), FakePre(), FakeOcr(), FakeParser())
+    pipe = _build(config, ArtifactStore(tmp_path / "a"))
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert results["r1/broken"].error and not results["r1/ok"].error
     assert len(read_jsonl(tmp_path / "run" / "results.jsonl", ImageResult)) == 2
@@ -180,7 +190,7 @@ def test_broken_image_is_isolated(tmp_path):
 def test_identical_images_share_ocr_but_keep_their_own_id(tmp_path):
     ocr = FakeOcr()
     config = RunConfig(input_path=_zip(tmp_path, ["high", "low"], identical=True), dedup=False)
-    pipe = Pipeline(config, ArtifactStore(tmp_path / "a"), FakePre(), ocr, FakeParser())
+    pipe = _build(config, ArtifactStore(tmp_path / "a"), ocr)
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert ocr.calls == 1
     assert results["r1/low"].rules_confidence == pytest.approx(0.2)
@@ -218,9 +228,7 @@ class RaisingVerifier:
 def test_verifier_failure_is_isolated(tmp_path):
     config = RunConfig(input_path=_zip(tmp_path, ["high", "low"]), mode="ocr+llm")
     store = ArtifactStore(tmp_path / "a")
-    pipe = Pipeline(
-        config, store, FakePre(), FakeOcr(), FakeParser(), FakeStructurer(), RaisingVerifier()
-    )
+    pipe = _build(config, store, verifier=RaisingVerifier())
     low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert "verifier bug" in low.error and low.dishes[0].origin == "rules"
 
@@ -233,14 +241,14 @@ def test_billed_failure_keeps_its_cost(tmp_path):
             usage = LLMUsage(model="m", output_tokens=16000, cost_usd=0.32)
             raise LLMOutputError("truncated", usage=usage)
 
-    pipe = _pipeline(tmp_path, structurer=TruncatingStructurer(), mode="ocr+llm")
-    low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
+    pipe, config = _pipeline(tmp_path, structurer=TruncatingStructurer(), mode="ocr+llm")
+    low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert not low.llm_used and low.llm_usage.cost_usd == pytest.approx(0.32)
 
 
 def test_rules_signals_survive_llm_replacement(tmp_path):
-    pipe = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
-    low = _by_id(pipe.run(select_images(pipe.config), tmp_path / "run"))["r1/low"]
+    pipe, config = _pipeline(tmp_path, mode="ocr+llm", llm_policy="always")
+    low = _by_id(pipe.run(select_images(config), tmp_path / "run"))["r1/low"]
     assert low.llm_used and low.rules_dish_count == 1 and low.llm_prompt_version == "v1"
 
 
@@ -257,7 +265,7 @@ def test_duplicate_photos_are_skipped_before_ocr(tmp_path):
         zf.writestr("imgs/r1/c_other.png", other.getvalue())
     ocr = FakeOcr()
     config = RunConfig(input_path=path)
-    pipe = Pipeline(config, ArtifactStore(tmp_path / "a"), FakePre(), ocr, FakeParser())
+    pipe = _build(config, ArtifactStore(tmp_path / "a"), ocr)
     results = _by_id(pipe.run(select_images(config), tmp_path / "run"))
     assert ocr.calls == 2  # the small copy was never OCR'd
     dup = results["r1/a_small"]

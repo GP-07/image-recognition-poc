@@ -10,37 +10,15 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from menu_poc.cache.store import ArtifactStore
 from menu_poc.config import PROJECT_ROOT, RunConfig, load_config
 from menu_poc.evaluation.report import compare_runs, run_report
 from menu_poc.io.writers import read_jsonl, write_items_csv, write_json, write_jsonl
 from menu_poc.llm.engine import LLMEngine
-from menu_poc.llm.grounding import GroundingVerifier
-from menu_poc.llm.structurer import LLMStructurer
 from menu_poc.models import ImageResult
-from menu_poc.ocr.rapid import RapidOcrEngine
-from menu_poc.parsing.rules import RuleBasedParser
-from menu_poc.pipeline import Pipeline, merge_previous, new_run_dir, select_images
-from menu_poc.preprocess.image import ImagePreprocessor
+from menu_poc.pipeline import PipelineBuilder, merge_previous, new_run_dir, select_images
 
 DEFAULT_CONFIG = PROJECT_ROOT / "config" / "default.yaml"
 DEFAULT_GOLDEN = PROJECT_ROOT / "data" / "golden"
-
-
-def build_pipeline(config: RunConfig, llm: LLMEngine | None = None) -> Pipeline:
-    structurer = verifier = None
-    if config.uses_llm:
-        structurer = LLMStructurer(llm or LLMEngine.get_for_alias(config.llm_model))
-        verifier = GroundingVerifier()
-    return Pipeline(
-        config,
-        ArtifactStore(config.artifacts_dir),
-        ImagePreprocessor(config.max_image_side),
-        RapidOcrEngine(),
-        RuleBasedParser(),
-        structurer,
-        verifier,
-    )
 
 
 def resolve_llm(config: RunConfig, warnings: list[str]) -> tuple[RunConfig, LLMEngine | None]:
@@ -84,9 +62,9 @@ def _cmd_run(args: argparse.Namespace) -> int:
     if not refs:
         print("No images selected.", file=sys.stderr)
         return 1
-    pipeline = build_pipeline(config, client)
+    pipeline = PipelineBuilder.from_config(config, client).build()
     run_dir = new_run_dir(config)  # effective config: reports must show what actually ran
-    print(f"Run {run_dir} — {len(refs)} images, mode={config.mode}")
+    print(f"Run {run_dir} — {len(refs)} images, steps: {' → '.join(pipeline.step_names)}")
     started = datetime.now().isoformat(timespec="seconds")
     results = pipeline.run(refs, run_dir)
     if config.reuse_from is not None:

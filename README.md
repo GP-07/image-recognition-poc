@@ -44,6 +44,19 @@ image ──► duplicate? ──yes──► copy the original's result (no OCR
                                                                     └─► dishes (LLM)
 ```
 
+**Implementation: Chain of Responsibility + Builder.** Each box above is a `Step` in its own
+module (`steps/`); every image travels through the chain in an `ImageContext`, and each step
+decides whether the image goes on (a duplicate stops at `dedup`, a confident page stops after
+`rules`). `PipelineBuilder` accepts the pieces in any order and `build()` links them in the
+system's fixed order (`dedup → ocr → rules → llm → verify`), adds `verify` whenever `llm` is
+present and rejects invalid chains (e.g. an LLM without OCR). Optional pieces are just not added.
+
+```python
+pipeline = PipelineBuilder.from_config(config, llm_engine).build()   # production
+pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(...)).build()
+# -> dedup? no · ocr → rules → llm → verify, whatever the insertion order
+```
+
 | Component | When it runs | Cost | Why |
 |---|---|---|---|
 | Duplicate detection | always (`dedup: true`) | ~0.1 s/image | Same file, or same photo re-encoded/resized (dHash, 256 bits; duplicates differ by 0–4 bits, different menus by 100+) |
@@ -182,7 +195,9 @@ can help with semantic equivalences, calibrated against human labels — never a
 ```
 src/menu_poc/
   models.py, interfaces.py, config.py   contracts (pydantic + Protocols), run config
-  pipeline.py, cli.py                   cascade orchestration, `menu-poc` command
+  steps/                                one module per step: dedup, ocr, rules, llm, verify
+  pipeline/                             PipelineBuilder (fixed order + checks), Pipeline, run helpers
+  cli.py                                `menu-poc` command
   io/  cache/                           zip/dir reader, JSON helpers, content-addressed store
   preprocess/  ocr/  parsing/           image prep, RapidOCR adapter, layout + rules + confidence
   llm/                                  LLMEngine.get_for_alias + one engine per provider (Anthropic,
