@@ -1,7 +1,7 @@
 image_id: "12353399953336620223/2348ac983ccbea08aea4af7896f68c00"
 split: dev
 reviewed: false
-notes: "Night photo of a Japanese restaurant window with 4 menus: two black boards (Platos especiales + Entrantes/Para acompanar/Sashimi; Sushi pescado crudo + Frituras), a printed 'Menu de la noche y fin de semana' sheet, and a 'Menu del dia' sheet, plus a 'Shoyu Ramen' poster. Small text and reflections; board text readable at full resolution. Dishes on several menus listed once (exact same name). Set menu 'Menu de Kaede (para 2 personas)' included as one item; its option lines not listed separately. LEFT OUT: the whole 'Menu del dia' sheet (12.50 EUR) - too blurry to read reliably (possibly Yakisoba, Yakimeshi, Edamame, Pechuga de pollo frito con sesamo, desserts). Night-menu items are blurry-ish uppercase; medium confidence on their exact wording. Beverages line excluded."
+notes: "Night photo of a Japanese restaurant window with 4 menus: two black boards (Platos especiales + Entrantes/Para acompanar/Sashimi; Sushi pescado crudo + Frituras), a printed 'Menu de la noche y fin de semana' sheet, and a 'Menu del dia' sheet, plus a 'Shoyu Ramen' poster. Small text and reflections; board text readable at full resolution. Dishes on several menus listed once (exact same name). Set menu 'Menu de Kaede (para 2 personas)' included as one item; its option lines not listed separately. The night-menu sheet's dish lines were labeled individually in the first pass and are kept. LEFT OUT: the 'Menu del dia' sheet's component lines (12.50 EUR) - too blurry to read reliably. Night-menu items are blurry-ish uppercase; medium confidence on their exact wording. [v2 all-orderable-items policy] ADDED the two set menus as items: 'MENÚ DE LA NOCHE Y FIN DE SEMANA' (16.50 EUR) and 'MENU DEL DIA' (12.50 EUR) - both headers legible (strictly an omission of the first pass too). Drinks are printed only as included choices inside set menus ('Copa de vino / agua / cerveza / refresco', 'Agua o copa de vino o refresco o cerveza normal incluido', Kaede's 'Bebida, Postre, Cafe ... no incluido') - not separately orderable, blurry, not labeled."
 dishes:
   - name: "YAKITORI"
     aliases: []
@@ -202,4 +202,8 @@ dishes:
   - name: "TALLARINES FRITO AL ESTILO JAPONÉS"
     aliases: []
   - name: "ARROZ BLANCO"
+    aliases: []
+  - name: "MENÚ DE LA NOCHE Y FIN DE SEMANA"
+    aliases: []
+  - name: "MENU DEL DIA"
     aliases: []

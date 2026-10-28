@@ -1,7 +1,7 @@
 image_id: "1326306244314649407/8601bf03078cf8be78423f3b5835391a"
 split: dev
 reviewed: false
-notes: "Chicago's Pizza Factory printed menu sheet, flat and legible. Pizzas, Complementos, Bebidas y Postres, Ofertas. Excluded: beverages (Lata 33cl list, agua), 'Tarrinas de salsa' (sauce add-on), the add-ingredient list, and promotions 'Festin M', 'Festin XL', '2a pizza al 50% dto' (combos/discounts, not a concrete dish - reviewer may decide otherwise for Festin). Desserts included."
+notes: "Chicago's Pizza Factory printed menu sheet, flat and legible. Pizzas, Complementos, Bebidas y Postres, Ofertas. Desserts included; Ben & Jerry's flavours (Cookie Dough, Brownie, Cheesecake) are options of one item. [v2 all-orderable-items policy] ADDED: the 19 'Añade los ingredientes' extras exactly as printed (incl. 'Masa Chicago', which is a dough option printed in the same list); 'TARRINAS DE SALSA' as one add-on (flavours Tomate/Picante/BBQ/Pesto are options of it, not separate items); the 8 canned drinks of the 'Lata de 33 cl' list ('FANTA (NAR/LIM)' kept as one item, 'AGUA (50 CL.)' -> 'AGUA'); combos 'FESTÍN M' and 'FESTÍN XL'. Still excluded: '2a pizza al 50% dto' (generic discount), size/price tables, 'añade BBQ o Cebolla Caramelizada' option of The Boston."
 dishes:
   - name: "MARGARITA"
     aliases: []
@@ -48,4 +48,64 @@ dishes:
   - name: "BROWNIE"
     aliases: []
   - name: "COOKIES"
+    aliases: []
+  - name: "Masa Chicago"
+    aliases: []
+  - name: "Cebolla"
+    aliases: []
+  - name: "Pimiento verde"
+    aliases: []
+  - name: "Olivas negras"
+    aliases: []
+  - name: "Jamón York"
+    aliases: []
+  - name: "Champiñones"
+    aliases: []
+  - name: "Ternera"
+    aliases: []
+  - name: "Bacon"
+    aliases: []
+  - name: "Piña"
+    aliases: []
+  - name: "Butifarra fresca"
+    aliases: []
+  - name: "Azul"
+    aliases: []
+  - name: "Feta"
+    aliases: []
+  - name: "Cheddar"
+    aliases: []
+  - name: "Cherry"
+    aliases: []
+  - name: "Pollo"
+    aliases: []
+  - name: "Doble queso"
+    aliases: []
+  - name: "Pepperoni"
+    aliases: []
+  - name: "Barbacoa"
+    aliases: []
+  - name: "Atún"
+    aliases: []
+  - name: "TARRINAS DE SALSA"
+    aliases: []
+  - name: "COCA COLA"
+    aliases: []
+  - name: "COCA COLA ZERO"
+    aliases: []
+  - name: "COCA COLA LIGHT"
+    aliases: []
+  - name: "CERVEZA"
+    aliases: []
+  - name: "FANTA (NAR/LIM)"
+    aliases: []
+  - name: "AQUARIUS LIMÓN"
+    aliases: []
+  - name: "NESTEA LIMÓN"
+    aliases: []
+  - name: "AGUA"
+    aliases: []
+  - name: "FESTÍN M"
+    aliases: []
+  - name: "FESTÍN XL"
     aliases: []

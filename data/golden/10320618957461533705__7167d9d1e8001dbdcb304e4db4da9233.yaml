@@ -1,7 +1,7 @@
 image_id: "10320618957461533705/7167d9d1e8001dbdcb304e4db4da9233"
 split: dev
 reviewed: false
-notes: "Street photo of a restaurant entrance (Indian) with several menus on a stand: a table-top board (Entrantes / Pollo / Cordero), a 'Taj - Bowls' sheet partly covered, and an open booklet (Platos con Pollo / Platos con Cordero). Dishes appearing on both the board and the booklet are listed once; booklet spelling variants added as aliases (e.g. Dopizza/Dopiazza). Samosa items printed with '(2 uds.)' quantity, dropped from name. Left out: last row of the board's Cordero box (Cordero Palak / Cordero Biryani, cut by the booklet - but both are legible in the booklet so they are included), two Taj-Bowls items whose names are cut off ('...TTERFLY', and a 9,50 EUR item with no visible name). Background TV/food photos are not menu items. Spanish menu."
+notes: "Street photo of a restaurant entrance (Indian) with several menus on a stand: a table-top board (Entrantes / Pollo / Cordero), a 'Taj - Bowls' sheet partly covered, and an open booklet (Platos con Pollo / Platos con Cordero). Dishes appearing on both the board and the booklet are listed once; booklet spelling variants added as aliases (e.g. Dopizza/Dopiazza). Samosa items printed with '(2 uds.)' quantity, dropped from name. Left out: last row of the board's Cordero box (Cordero Palak / Cordero Biryani, cut by the booklet - but both are legible in the booklet so they are included), two Taj-Bowls items whose names are cut off ('...TTERFLY', and a 9,50 EUR item with no visible name). Background TV/food photos are not menu items. Spanish menu. [v2 all-orderable-items policy] Re-checked: no beverages, extras or combos printed on this photo; nothing added."
 dishes:
   - name: "Papad"
     aliases: []

@@ -1,7 +1,7 @@
 image_id: "13704801545575264378/ff5e0547d14515a853d60a8cc9063dd3"
 split: dev
 reviewed: false
-notes: "Decoded pixels identical to 594bd6c7... (same photo saved twice), so the labels are identical. Veg World India vertical menu board in a wooden frame on the street, trilingual (Catalan/Spanish/English); small text but legible at full resolution. Sub-lines under each dish are mostly descriptions; they were added as aliases only when they are a direct translation of the dish name (e.g. Naan -> Pa/Pan/Bread, Mango Kulfi -> Helado de mango) - reviewer should check this judgment. Set menus (Thali, Menu Degustacion N1/N2, Menu Infantil) are listed as one item each; their component lines (which repeat a la carte dishes) are not listed separately. Excluded: hot drinks (Yogi tea, Chai, Tulsi tea, coffees, infusions), natural juices, lassis (bottom, partly cut). Spellings kept as printed ('Chilli Panner', 'Panner Tikka Dosa')."
+notes: "Decoded pixels identical to 594bd6c7... (same photo saved twice), so the labels are identical. Veg World India vertical menu board in a wooden frame on the street, trilingual (Catalan/Spanish/English); small text but legible at full resolution. Sub-lines under each dish are mostly descriptions; they were added as aliases only when they are a direct translation of the dish name (e.g. Naan -> Pa/Pan/Bread, Mango Kulfi -> Helado de mango) - reviewer should check this judgment. Set menus (Thali, Menu Degustacion N1/N2, Menu Infantil) are listed as one item each; their component lines (which repeat a la carte dishes) are not listed separately. Spellings kept as printed ('Chilli Panner', 'Panner Tikka Dosa'). [v2 all-orderable-items policy] ADDED: hot drinks (YOGI Tea, CHAI, Tulsi tea, Café, Cortado, Café con Leche, Té Verde con Menta Fresca; the line 'Poleo Menta, Tila, Manzanilla' split into three infusions); 8 natural juices with their Spanish/English name translations as aliases; 'Salted Lassi' with its Catalan/Spanish/English sub-lines as aliases (they are closer to descriptions - check). LEFT OUT: the second lassi line at the very bottom edge (cut off, unreadable)."
 dishes:
   - name: "Veg Pakora"
     aliases: ["Croquetes de verdures", "Croquetas de verduras", "Indian vegetable fritters"]
@@ -121,3 +121,41 @@ dishes:
     aliases: ["Gelat d' aigua de roses", "Helado de agua de rosas", "Rose flavored ice cream"]
   - name: "Kulfi"
     aliases: []
+  - name: "YOGI Tea"
+    aliases: []
+  - name: "CHAI"
+    aliases: []
+  - name: "Tulsi tea"
+    aliases: []
+  - name: "Café"
+    aliases: []
+  - name: "Cortado"
+    aliases: []
+  - name: "Café con Leche"
+    aliases: []
+  - name: "Poleo Menta"
+    aliases: []
+  - name: "Tila"
+    aliases: []
+  - name: "Manzanilla"
+    aliases: []
+  - name: "Té Verde con Menta Fresca"
+    aliases: []
+  - name: "Pastanaga"
+    aliases: ["Zanahoria", "Carrot"]
+  - name: "Poma"
+    aliases: ["Manzana", "Apple"]
+  - name: "Taronja"
+    aliases: ["Naranja", "Orange"]
+  - name: "Llima i Menta"
+    aliases: ["Lima y menta", "Lime and mint"]
+  - name: "Maracuya"
+    aliases: ["Passion fruit"]
+  - name: "Guanabana"
+    aliases: ["Soursop"]
+  - name: "Pastanaga + Poma + Llimona"
+    aliases: ["Zanahoria + manzana + limón", "Carrot + apple + lemon"]
+  - name: "Pastanaga + Poma + Remolatxa + Gengibre + Menta"
+    aliases: ["Zanahoria + manzana + remolacha + jengibre + menta", "Carrot + apple + ginger + beetroot + mint"]
+  - name: "Salted Lassi"
+    aliases: ["Batut de Iogurt i Espècies", "Batido de yogur y especias", "Yogurt shake with spices"]

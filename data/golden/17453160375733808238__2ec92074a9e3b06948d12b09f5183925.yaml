@@ -1,7 +1,7 @@
 image_id: "17453160375733808238/2ec92074a9e3b06948d12b09f5183925"
 split: test
 reviewed: false
-notes: "Japanese restaurant spiral-bound photo menu, pages 16-17 'Edo Maki' (items 301-310), landscape photo, clean and legible. Each item has Spanish/Catalan/English descriptions (ingredients) - not aliases. '/ 4 PZS' suffix dropped from 'Salmon mango roll'. Allergen icons ignored."
+notes: "Japanese restaurant spiral-bound photo menu, pages 16-17 'Edo Maki' (items 301-310), landscape photo, clean and legible. Each item has Spanish/Catalan/English descriptions (ingredients) - not aliases. '/ 4 PZS' suffix dropped from 'Salmon mango roll'. Allergen icons ignored. [v2 all-orderable-items policy] Re-checked: no beverages, extras or combos printed on this photo; nothing added."
 dishes:
   - name: "Philadephia maki"
     aliases: []

@@ -1,7 +1,7 @@
 image_id: "2564282930447335749/2f04957e9038d0282481700cbf990c80"
 split: test
 reviewed: false
-notes: "La Clotenca (Barcelona) printed paper menu, pizza side, photo rotated 90 degrees; Catalan. Sections Pizzes Classic, Pizzes Healthy, Cosetes Bones. Each pizza has a playful subtitle (e.g. 'O SOLE MIO', 'LA DE LA CASA') - treated as tagline, not alias; reviewer may want them as aliases. 'CALABAZA' (Pumpkin Passion) is partly washed out by glare but reconstructible from visible letters - included, flag for review. Les Cassoletes listed as three dishes (header + variant). Excluded: 'De Temporada - pregunta'ns!' (no concrete dish), Pa d'all price variants (amb formatge / amb brie i tofona negra) folded into one item, offers 'Ofertes Clotenques', size/dough tables, beer promos."
+notes: "La Clotenca (Barcelona) printed paper menu, pizza side, photo rotated 90 degrees; Catalan. Sections Pizzes Classic, Pizzes Healthy, Cosetes Bones. Each pizza has a playful subtitle (e.g. 'O SOLE MIO', 'LA DE LA CASA') - treated as tagline, not alias; reviewer may want them as aliases. 'CALABAZA' (Pumpkin Passion) is partly washed out by glare but reconstructible from visible letters - included, flag for review. Les Cassoletes listed as three dishes (header + variant). Excluded: 'De Temporada - pregunta'ns!' (no concrete dish), Pa d'all price variants (amb formatge / amb brie i tofona negra) folded into one item, size/dough tables. [v2 all-orderable-items policy] ADDED: beer 'PACIFICO' (pairing box 'Gaudeix-la amb Pacifico 2,5 EUR'); add-on 'MOZZA VEGETAL' (+1 EUR box 'Demana les pizzes classic amb mozza vegetal'); named offers 'OFERTA PIZZES CLASSIC' and 'OFERTA PIZZES HEALTHY'. Still left out: 'Dona-li flow a la pizza classic +1,50 EUR' (healthy-dough upgrade with only a slogan as name), healthy dough choices A/B, home delivery +1 EUR, Trufatta +1 EUR surcharge."
 dishes:
   - name: "4 ESTACIONS"
     aliases: []
@@ -64,4 +64,12 @@ dishes:
   - name: "LES CASSOLETES DE TÒFONA NEGRA"
     aliases: []
   - name: "LA MANDONGA"
+    aliases: []
+  - name: "PACIFICO"
+    aliases: []
+  - name: "MOZZA VEGETAL"
+    aliases: []
+  - name: "OFERTA PIZZES CLASSIC"
+    aliases: []
+  - name: "OFERTA PIZZES HEALTHY"
     aliases: []

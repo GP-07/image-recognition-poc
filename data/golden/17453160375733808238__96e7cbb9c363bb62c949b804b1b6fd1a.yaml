@@ -1,7 +1,7 @@
 image_id: "17453160375733808238/96e7cbb9c363bb62c949b804b1b6fd1a"
 split: test
 reviewed: false
-notes: "Same Japanese spiral-bound photo menu, pages with Ruibe, Sashimi and Nigiri sushi (items 9, 19, 21, 221-236), landscape photo, legible. Nigiri items have Catalan/English translations of the name below (used as aliases); Ruibe and Sashimi de salmon have descriptions (not aliases). Item 21 is printed only as a descriptive line ('Bola de arroz cubierto...', priced as 'Variado') - kept as printed, reviewer may prefer 'Nigiri variado'. Sashimi price variants (Variado / Solo salmon / Solo atun) are not listed as separate dishes. Top of the left page (item above 9) and bottom of page under row 234-236 cut off; 236's English line not visible."
+notes: "Same Japanese spiral-bound photo menu, pages with Ruibe, Sashimi and Nigiri sushi (items 9, 19, 21, 221-236), landscape photo, legible. Nigiri items have Catalan/English translations of the name below (used as aliases); Ruibe and Sashimi de salmon have descriptions (not aliases). Item 21 is printed only as a descriptive line ('Bola de arroz cubierto...', priced as 'Variado') - kept as printed, reviewer may prefer 'Nigiri variado'. Sashimi price variants (Variado / Solo salmon / Solo atun) are not listed as separate dishes. Top of the left page (item above 9) and bottom of page under row 234-236 cut off; 236's English line not visible. [v2 all-orderable-items policy] Re-checked: no beverages, extras or combos printed on this photo; nothing added."
 dishes:
   - name: "Ruibe"
     aliases: []

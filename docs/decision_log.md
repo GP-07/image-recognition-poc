@@ -214,6 +214,31 @@ dos funciones de normalización.
 - Enrutamiento: ninguna página con recall < 60% queda fuera del LLM (antes 1 en test con conf 0,92).
   8/19 páginas (42%) irían al LLM con umbral 0,6. La confianza sigue más a F1/precision que a recall.
 
+## Discusión 9 — Duplicados, LLM gratuito, I/O, .env y alcance completo (2026-10-28)
+
+- **Duplicados tempranos:** ningún par duplicado del dataset compartía bytes (cambia la metadata),
+  así que la caché por bytes no los detectaba. Nuevo paso antes del OCR: hash del archivo + dHash
+  perceptual de 256 bits. En el dataset los duplicados quedan a 0–4 bits y las fotos distintas a
+  ≥100 → umbral 10. Se conserva la imagen más grande (mejor OCR); el duplicado recibe el resultado
+  del original con `duplicate_of` y no se puntúa (cada carta cuenta una vez). Costo ~0,1 s/imagen.
+- **LLM gratuito:** `OllamaClient` (modelos locales, ej. `ollama/qwen2.5:7b`), sólo librería
+  estándar, salida con JSON Schema, temperatura 0, costo $0 (se paga en latencia). No cambia el
+  estructurador ni el pipeline: es otra implementación de `LLMClient` elegida por prefijo de modelo.
+- **Escalado:** sólo con `--mode ocr+llm`; `fallback` = páginas con confianza < umbral (0,6,
+  configurable), `always` = todas. En `ocr` nunca se llama al LLM.
+- **I/O:** `--input` (zip o carpeta), `--output` (corridas) y `--artifacts` (caché) por CLI.
+  Cada corrida escribe `results.jsonl`, `manifest.json` (warnings + errores), `config.yaml`
+  efectiva y, si hay golden, `summary.md`/`metrics.json`.
+- **.env y degradación:** `ANTHROPIC_API_KEY` desde `.env` (python-dotenv; `.env` en .gitignore,
+  `.env.example` versionado). Sin key (o sin Ollama) una corrida `ocr+llm` sigue como `ocr`,
+  exit 0, warning en consola y en `manifest.json`. Base para un job de GitHub Actions con la key
+  como secret (bosquejado en el README).
+- **Alcance:** pasa a ser **todo ítem pedible** (platos, postres, bebidas, extras/salsas con
+  entrada propia). Se quitó el filtro de bebidas de las reglas (parser v3), prompt `structure_v2`,
+  y el golden set se re-etiquetó con la nueva política.
+- **Golden set (aclaración):** es la "hoja de respuestas" para medir; el pipeline nunca lo ve.
+  Sólo influyó indirectamente al ajustar reglas a mano con el split dev; test nunca.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -224,3 +249,5 @@ dos funciones de normalización.
 | 2026-10-28 | Subagentes de Claude Code (Opus 5.5) ×4 en paralelo | F2 OCR + reglas, F3 conector LLM + grounding, F5 evaluación, borrador del golden set mirando las imágenes (visión). |
 | 2026-10-28 | Subagentes de Claude Code (Opus 5.5) ×2 | Revisión de código (sólo lectura) y análisis de errores / calibración del clasificador por reglas. |
 | 2026-10-28 | RapidOCR 3.10 (modelos PP-OCRv6 det/rec small, ONNX Runtime) | Motor OCR local en CPU (modelos de deep learning preentrenados, sin entrenamiento propio). |
+| 2026-10-28 | Ollama (modelos abiertos locales, ej. Qwen2.5 7B) — soportado, no ejecutado | Alternativa gratuita y local al LLM de Claude (no instalado en esta máquina). |
+| 2026-10-28 | Subagente de Claude Code (Opus 5.5, visión) | Re-etiquetado del golden set con la nueva política (todos los ítems pedibles). |

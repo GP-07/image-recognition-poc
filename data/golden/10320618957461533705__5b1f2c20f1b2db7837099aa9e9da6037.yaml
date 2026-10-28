@@ -1,7 +1,7 @@
 image_id: "10320618957461533705/5b1f2c20f1b2db7837099aa9e9da6037"
 split: dev
 reviewed: false
-notes: "Indian restaurant (Taste of India / Taj Indian) tri-fold printed menu, photo rotated 90 degrees, Spanish. Numbered items 1-76 (no item 58 printed). Items 13-20 have their leading number partly cut at the page edge but names are legible. Descriptions under items are not aliases. Spellings kept as printed (e.g. 'Tomater Soup', section 'Diopaza' vs items 'Dopiaza')."
+notes: "Indian restaurant (Taste of India / Taj Indian) tri-fold printed menu, photo rotated 90 degrees, Spanish. Numbered items 1-76 (no item 58 printed). Items 13-20 have their leading number partly cut at the page edge but names are legible. Descriptions under items are not aliases. Spellings kept as printed (e.g. 'Tomater Soup', section 'Diopaza' vs items 'Dopiaza'). [v2 all-orderable-items policy] Re-checked: no beverages, extras or combos printed on this photo; nothing added."
 dishes:
   - name: "Daal Soup"
     aliases: []

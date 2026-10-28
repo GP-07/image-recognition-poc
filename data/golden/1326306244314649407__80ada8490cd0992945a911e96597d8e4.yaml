@@ -1,7 +1,7 @@
 image_id: "1326306244314649407/80ada8490cd0992945a911e96597d8e4"
 split: dev
 reviewed: false
-notes: "Pizzeria menu poster behind glass (Chicago's), clean and legible. Margarita + 17 numbered pizzas. Ingredient lines in Spanish/English/French/Italian are descriptions, not aliases (pizza names are printed only once). Base/ingredient price table and size headers excluded."
+notes: "Pizzeria menu poster behind glass (Chicago's), clean and legible. Margarita + 17 numbered pizzas. Ingredient lines in Spanish/English/French/Italian are descriptions, not aliases (pizza names are printed only once). Base/ingredient price table and size headers excluded. [v2 all-orderable-items policy] Re-checked: no beverages or named extras on this poster; nothing added. The generic 'Ingrediente (for each ingredient)' surcharge row has no concrete item name and is left out."
 dishes:
   - name: "Margarita"
     aliases: []

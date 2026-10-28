@@ -25,22 +25,38 @@ dishes:
     aliases: ["Xai al curry tradicional", "Cordero al curry tradicional"]
 ```
 
-## Labeling rules
+## Labeling rules (v2: all orderable items)
 
-- A dish = a food item a customer can order, as printed on the menu: starters, mains, pizzas,
-  desserts, set menus (one entry per set menu; its component lines are not listed separately).
-- Excluded: beverages (water, soft drinks, beer, wine, coffee, tea, juices, lassi/ayran),
-  section headers, topping/extra lists, sauces sold as add-ons, allergen legends, prices, phone
-  numbers, promotions without a concrete dish.
+The scope was widened after the first labeling pass: the golden set now contains **every orderable
+item**, not only food. The v2 additions were made by re-reading the photos; first-pass entries were
+kept unchanged. The YAML key is still `dishes` for compatibility, but it now holds all items. Each file's `notes` has a `[v2 all-orderable-items policy]` part saying what was added.
+
+- An item = anything a customer can order that is printed as its own entry: dishes, starters,
+  desserts, beverages (water, soft drinks, beer, wine, coffee, tea, juices, lassi/ayran), set menus,
+  combos/promos with a concrete name (e.g. "FESTÍN M", "OFERTA PIZZES CLASSIC"), and
+  add-ons/extras/sauces printed as their own orderable entries (topping lists, supplements such as
+  "Formatge 1€", "TARRINAS DE SALSA", beer pairings like "Gaudeix-la amb PACIFICO 2,5€").
+- One entry per set menu; its component lines are not listed separately (exception kept from the
+  first pass: the Japanese night-menu sheet's dish lines). Drinks that are only "included" choices
+  inside a set menu are not items.
+- Excluded: section headers, descriptions/ingredient lists of an item, size labels alone
+  ("MEDIANA", "FAMILIAR"), allergen/diet legends, prices alone, phone numbers, addresses, opening
+  hours, slogans, generic promos without a concrete item ("2a pizza al 50% dto", "De temporada"),
+  delivery fees. ("CLOTENCA SURPRISE", a named weekly pasta with a fixed price, is included and
+  flagged.)
+- Slash lines naming different products are split ("Fanta naranja / Nestea" -> 2 items); flavour
+  or size variants of one product are folded into it ("Coca Cola / Botella de vidrio 1L",
+  "FANTA (NAR/LIM)", Pa d'all variants, sashimi price variants, sauce flavours of a sauce tub).
 - `name`: as printed (menu language, spelling and casing kept, typos included); leading item
-  numbers (`46.`) and quantity suffixes (`/ 4 PZS`, `(2 uds.)`) dropped.
-- `aliases`: only the same dish name printed in another language (e.g. Catalan/Spanish/English
-  lines that are direct translations of the name). Descriptions/ingredient lists and marketing
-  taglines (e.g. La Clotenca's "O SOLE MIO") are NOT aliases.
-- Only legible dishes are labeled. Cut-off, blurry or glare-covered items are left out and
+  numbers (`46.`) and quantity suffixes (`/ 4 PZS`, `(2 uds.)`, `(50 CL.)`) dropped.
+- `aliases`: only the same item name printed in another language (e.g. Catalan/Spanish/English
+  lines that are direct translations of the name, "Pastanaga" -> "Zanahoria", "Carrot").
+  Descriptions/ingredient lists and marketing taglines (e.g. La Clotenca's "O SOLE MIO") are NOT
+  aliases.
+- Only legible items are labeled. Cut-off, blurry or glare-covered items are left out and
   mentioned in `notes`. No guessing; two glare-damaged-but-reconstructible names are included
   and flagged (CALABAZA, PESTO in La Clotenca).
-- When the same dish appears several times in one photo (e.g. on two boards), it is listed once.
+- When the same item appears several times in one photo (e.g. on two boards), it is listed once.
 - Exact or near-exact duplicate photos get identical labels (noted in `notes`).
 
 ## Split assignment (by restaurant)
@@ -60,29 +76,30 @@ dishes:
 
 ## Per-image summary
 
-| image_id | split | #dishes | confidence | main caveats |
-|---|---|---|---|---|
-| 10320618957461533705/5b1f2c20f1b2db7837099aa9e9da6037 | dev | 75 | medium | rotated photo, many near-identical curry variants; verify count and spellings |
-| 10320618957461533705/7167d9d1e8001dbdcb304e4db4da9233 | dev | 45 | medium | 3 overlapping menus; 2 Taj-Bowls items cut off and excluded |
-| 12353399953336620223/2348ac983ccbea08aea4af7896f68c00 | dev | 100 | low | night/reflections; whole "Menu del dia" sheet excluded as unreadable; night-menu wording uncertain |
-| 12353399953336620223/a8c3a678c184ef488d25f9774c20128d | dev | 43 | medium | low resolution (620x1385) |
-| 1326306244314649407/80ada8490cd0992945a911e96597d8e4 | dev | 18 | high | – |
-| 1326306244314649407/8601bf03078cf8be78423f3b5835391a | dev | 23 | high | "Festin" combos excluded as promotions |
-| 13704801545575264378/594bd6c734095e01b002c63e7e48614b | dev | 59 | medium | alias-vs-description judgment on trilingual sub-lines |
-| 13704801545575264378/ff5e0547d14515a853d60a8cc9063dd3 | dev | 59 | medium | pixel-identical duplicate of the above |
-| 16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b | dev | 12 | high | right page (items 61-77) cut off, excluded |
-| 16055038156589254689/73f185f9fc81066b39c0e71d111c4d97 | dev | 12 | high | same photo at half resolution |
-| 17453160375733808238/2ec92074a9e3b06948d12b09f5183925 | test | 10 | high | – |
-| 17453160375733808238/96e7cbb9c363bb62c949b804b1b6fd1a | test | 18 | high | item 21 has only a descriptive name |
-| 2564282930447335749/2f04957e9038d0282481700cbf990c80 | test | 31 | medium | taglines not used as aliases; CALABAZA reconstructed under glare |
-| 2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e | test | 22 | medium | pasta "combo": sauces labeled as dishes; PESTO reconstructed under glare |
-| 7571032721762097332/63bac2469809e9b1432e6f152996440d | test | 10 | high | – |
-| 7571032721762097332/8a339445e1a8029008955dc43d14f078 | test | 10 | high | pixel-identical duplicate of the above |
-| 8627417098818383545/1bbb57ae336f4728a1b312b7fb787461 | test | 36 | high | Falafel (plate + sandwich) listed once; Ayran excluded as a drink |
-| 8627417098818383545/a1ae40f3a8b8acf06d0ba25b2157d928 | test | 36 | high | same photo at half resolution |
-| 9944003937257840785/3cbb7ebc3d0c8378482b5a96a94e5278 | test | 1 | medium | handwritten promo; name boundary ambiguous |
+| image_id | split | #items v1 (food only) | #items v2 (all orderable) | confidence | main caveats / v2 additions |
+|---|---|---|---|---|---|
+| 10320618957461533705/5b1f2c20f1b2db7837099aa9e9da6037 | dev | 75 | 75 | medium | rotated photo, many near-identical curry variants; no drinks/extras printed |
+| 10320618957461533705/7167d9d1e8001dbdcb304e4db4da9233 | dev | 45 | 45 | medium | 3 overlapping menus; 2 Taj-Bowls items cut off; no drinks/extras printed |
+| 12353399953336620223/2348ac983ccbea08aea4af7896f68c00 | dev | 100 | 102 | low | night/reflections; v2 adds the 2 set menus (Menú de la noche, Menu del dia); their included drinks not items |
+| 12353399953336620223/a8c3a678c184ef488d25f9774c20128d | dev | 43 | 43 | medium | low resolution (620x1385); no drinks |
+| 1326306244314649407/80ada8490cd0992945a911e96597d8e4 | dev | 18 | 18 | high | generic "Ingrediente" surcharge row has no item name |
+| 1326306244314649407/8601bf03078cf8be78423f3b5835391a | dev | 23 | 53 | high | v2: 19 pizza extras, sauce tub, 8 canned drinks, Festín M/XL |
+| 13704801545575264378/594bd6c734095e01b002c63e7e48614b | dev | 59 | 78 | medium | v2: 10 hot drinks, 8 juices (with translation aliases), Salted Lassi; 2nd lassi cut off |
+| 13704801545575264378/ff5e0547d14515a853d60a8cc9063dd3 | dev | 59 | 78 | medium | pixel-identical duplicate of the above |
+| 16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b | dev | 12 | 12 | high | right page (items 61-77) cut off, excluded |
+| 16055038156589254689/73f185f9fc81066b39c0e71d111c4d97 | dev | 12 | 12 | high | same photo at half resolution |
+| 17453160375733808238/2ec92074a9e3b06948d12b09f5183925 | test | 10 | 10 | high | – |
+| 17453160375733808238/96e7cbb9c363bb62c949b804b1b6fd1a | test | 18 | 18 | high | item 21 has only a descriptive name |
+| 2564282930447335749/2f04957e9038d0282481700cbf990c80 | test | 31 | 35 | medium | v2: Pacifico beer, Mozza vegetal add-on, 2 named pizza offers |
+| 2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e | test | 22 | 45 | medium | v2: 5 beers, 15 burger toppings, Tallarins healthy / Nutella vegana add-ons, Clotenca Surprise |
+| 7571032721762097332/63bac2469809e9b1432e6f152996440d | test | 10 | 18 | high | v2: 8 drinks (slash lines split; 1L bottle folded) |
+| 7571032721762097332/8a339445e1a8029008955dc43d14f078 | test | 10 | 18 | high | pixel-identical duplicate of the above |
+| 8627417098818383545/1bbb57ae336f4728a1b312b7fb787461 | test | 36 | 41 | high | v2: Ayran, supplements Formatge/Humus/Mutabal, Pan (from a note) |
+| 8627417098818383545/a1ae40f3a8b8acf06d0ba25b2157d928 | test | 36 | 41 | high | same photo at half resolution |
+| 9944003937257840785/3cbb7ebc3d0c8378482b5a96a94e5278 | test | 1 | 2 | medium | handwritten promo; v2 adds Café con leche (component of the offer) |
 
-Totals: 19 images, 620 dish entries (dev: 10 images, 446 dishes; test: 9 images, 174 dishes).
+Totals v2: 19 images, 744 item entries (dev: 10 images, 516 items; test: 9 images, 228 items).
+v1 totals were 620 (dev 446, test 174).
 Note: four restaurants contribute duplicate photos (13704801545575264378, 7571032721762097332
 pixel-identical; 16055038156589254689 and 8627417098818383545 same photo at two resolutions),
 so per-split metrics double-weight those menus.

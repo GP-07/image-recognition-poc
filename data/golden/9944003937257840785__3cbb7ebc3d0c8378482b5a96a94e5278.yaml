@@ -1,7 +1,9 @@
 image_id: "9944003937257840785/3cbb7ebc3d0c8378482b5a96a94e5278"
 split: test
 reviewed: false
-notes: "Bar counter photo: plate of pancakes on top of a handwritten sign 'OFERTA!! 1- Tortita americana casera con miel, nata o sirope + 1- Cafe con leche 1,70 EUR' (price partly cut at the bottom). Only one dish: the homemade pancake ('con miel, nata o sirope' are topping options, not part of the name - reviewer may prefer the full printed line as name). Excluded: Cafe con leche (beverage), bottles/products in the background. Edge case: promo sign, handwritten."
+notes: "Bar counter photo: plate of pancakes on top of a handwritten sign 'OFERTA!! 1- Tortita americana casera con miel, nata o sirope + 1- Cafe con leche 1,70 EUR' (price partly cut at the bottom). 'con miel, nata o sirope' are topping options, not part of the name - reviewer may prefer the full printed line as name. Excluded: bottles/products in the background. Edge case: promo sign, handwritten. [v2 all-orderable-items policy] ADDED 'CAFÉ CON LECHE' (beverage, printed as its own line of the offer). Uncertain: the sign is one combo offer with no name of its own; an alternative labeling is a single combo item."
 dishes:
   - name: "TORTITA AMERICANA CASERA"
+    aliases: []
+  - name: "CAFÉ CON LECHE"
     aliases: []

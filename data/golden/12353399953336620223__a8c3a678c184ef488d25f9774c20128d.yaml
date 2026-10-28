@@ -1,7 +1,7 @@
 image_id: "12353399953336620223/a8c3a678c184ef488d25f9774c20128d"
 split: dev
 reviewed: false
-notes: "Japanese restaurant, single printed page (two columns: Sushi pescado crudo con arroz, Frituras/Fregits) photographed flat on a bamboo mat; low resolution (620x1385) but text is legible when zoomed. Names kept as printed incl. typos ('Abogato Nigiri', 'Gukan Salmon Spicy'). Spanish descriptions under each item are not aliases. Right-hand prices partly cut but all dish names readable. Temaki listed once (its description lists flavours, not separate items)."
+notes: "Japanese restaurant, single printed page (two columns: Sushi pescado crudo con arroz, Frituras/Fregits) photographed flat on a bamboo mat; low resolution (620x1385) but text is legible when zoomed. Names kept as printed incl. typos ('Abogato Nigiri', 'Gukan Salmon Spicy'). Spanish descriptions under each item are not aliases. Right-hand prices partly cut but all dish names readable. Temaki listed once (its description lists flavours, not separate items). [v2 all-orderable-items policy] Re-checked: no beverages, extras or combos printed on this photo; nothing added."
 dishes:
   - name: "KAPPA MAKI"
     aliases: []

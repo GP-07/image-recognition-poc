@@ -1,7 +1,7 @@
 image_id: "7571032721762097332/63bac2469809e9b1432e6f152996440d"
 split: test
 reviewed: false
-notes: "Vitali Pizza single printed sheet (back side: Ensaladas, drinks, Postres) photographed on a dark table, dim but legible. Spellings as printed ('Cheescake', 'Straciatella', 'Tiramisu' with umlaut). Excluded: all drinks (Agua, Coca Cola, Fanta/Nestea, San Miguel, Lambrusco/Vino), contact/delivery info."
+notes: "Vitali Pizza single printed sheet (back side: Ensaladas, drinks, Postres) photographed on a dark table, dim but legible. Spellings as printed ('Cheescake', 'Straciatella', 'Tiramisu' with umlaut). Excluded: contact/delivery info. [v2 all-orderable-items policy] ADDED the drinks block. Slash lines naming two different products were split (Coca Cola / Zero -> 'Coca Cola' + 'Coca Cola Zero'; 'Fanta naranja' + 'Nestea'; 'Lambrusco' + 'Vino tinto Rioja'); the line 'Coca Cola / Botella de vidrio 1L' is a size variant of Coca Cola and is folded into 'Coca Cola' (same rule as price/size variants elsewhere) - reviewer may prefer one entry per printed line."
 dishes:
   - name: "Brisa Mediterránea"
     aliases: []
@@ -22,4 +22,20 @@ dishes:
   - name: "Coppa Profiterol"
     aliases: []
   - name: "Coppa Mousse Cioccolato"
+    aliases: []
+  - name: "Agua"
+    aliases: []
+  - name: "Coca Cola"
+    aliases: []
+  - name: "Coca Cola Zero"
+    aliases: []
+  - name: "Fanta naranja"
+    aliases: []
+  - name: "Nestea"
+    aliases: []
+  - name: "San Miguel"
+    aliases: []
+  - name: "Lambrusco"
+    aliases: []
+  - name: "Vino tinto Rioja"
     aliases: []

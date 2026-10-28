@@ -1,7 +1,7 @@
 image_id: "2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e"
 split: test
 reviewed: false
-notes: "La Clotenca printed paper menu, reverse side (Burgers, Entrepans, Amanides, Pastes, Dolcos), photo rotated 90 degrees; Catalan; legible. Subtitles (e.g. 'VEGANA', 'THE ONE AND ONLY', 'MAMMA MIA') treated as taglines, not aliases. Pastes is a 'pasta combo': the priced 'Salses' (Pommodoro, Pisto, Pesto, Trufa, Brooklin) are labeled as the orderable dishes; pasta shapes (Tallarins healthy, Spaguettis, Tortiglione) are choices, not dishes. 'PESTO' first letters washed out by glare (reconstructed from '..STO' + 'Salsa de pesto fresc'), flag for review. Excluded: 'Clotenca Surprise' (weekly surprise, no concrete dish), Toppings Burgers list, beer pairings."
+notes: "La Clotenca printed paper menu, reverse side (Burgers, Entrepans, Amanides, Pastes, Dolcos), photo rotated 90 degrees; Catalan; legible. Subtitles (e.g. 'VEGANA', 'THE ONE AND ONLY', 'MAMMA MIA') treated as taglines, not aliases. Pastes is a 'pasta combo': the priced 'Salses' (Pommodoro, Pisto, Pesto, Trufa, Brooklin) are labeled as the orderable dishes; pasta shapes without price (Spaguettis, Tortiglione) are choices, not items. 'PESTO' first letters washed out by glare (reconstructed from '..STO' + 'Salsa de pesto fresc'), flag for review. [v2 all-orderable-items policy] ADDED: 5 beers from the pairing boxes (NEGRA MODELO, BUDWEISER, LEFFE, STELLA ARTOIS, CORONITA); the 15 'Toppings Burgers' (+0,50 EUR each, names as printed); priced add-ons 'TALLARINS HEALTHY' (+0,60 EUR pasta upgrade) and 'NUTELLA VEGANA' (+1 EUR); 'CLOTENCA SURPRISE' (named weekly pasta, 7,90 EUR - uncertain, its content changes every week)."
 dishes:
   - name: "SHEPPERD"
     aliases: []
@@ -46,4 +46,50 @@ dishes:
   - name: "TIRAMISÚ"
     aliases: []
   - name: "NUTELLA DELUX"
+    aliases: []
+  - name: "NEGRA MODELO"
+    aliases: []
+  - name: "BUDWEISER"
+    aliases: []
+  - name: "LEFFE"
+    aliases: []
+  - name: "STELLA ARTOIS"
+    aliases: []
+  - name: "CORONITA"
+    aliases: []
+  - name: "MOZZARELLA NORMAL"
+    aliases: []
+  - name: "MOZZARELLA VEGANA"
+    aliases: []
+  - name: "GORGONZOLA"
+    aliases: []
+  - name: "BRIE"
+    aliases: []
+  - name: "ESPINACS SALTEJATS"
+    aliases: []
+  - name: "XAMPINYONS SALTEJATS"
+    aliases: []
+  - name: "CEBA ROSTIDA"
+    aliases: []
+  - name: "CEBA CRUA"
+    aliases: []
+  - name: "CEBA CARAMEL.LITZADA"
+    aliases: []
+  - name: "CEBA CRUIXENT"
+    aliases: []
+  - name: "BACÓ"
+    aliases: []
+  - name: "PERNIL"
+    aliases: []
+  - name: "ALVOCAT"
+    aliases: []
+  - name: "COGOMBRETS"
+    aliases: []
+  - name: "BITXO (JALAPEÑOS)"
+    aliases: []
+  - name: "TALLARINS HEALTHY"
+    aliases: []
+  - name: "NUTELLA VEGANA"
+    aliases: []
+  - name: "CLOTENCA SURPRISE"
     aliases: []

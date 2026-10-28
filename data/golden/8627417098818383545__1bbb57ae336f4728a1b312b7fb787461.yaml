@@ -1,7 +1,7 @@
 image_id: "8627417098818383545/1bbb57ae336f4728a1b312b7fb787461"
 split: test
 reviewed: false
-notes: "Liban (Lebanese restaurant) large street poster with food photos around a numbered text menu (items 1-38), Catalan/Spanish; legible. Lines under each dish are descriptions in two languages, not aliases. 'Falafel' appears twice (23 as a plate, 33 as a sandwich 'Stilo Libanes') - listed once to avoid duplicate names; reviewer may split it. Items 18 and 19 are both 'Combinado Machawi' (19 marked '2 personas'), kept as two entries. Excluded: 30 Ayran (salted yogurt drink = beverage), sandwich supplements (formatge, humus/mutabal), bread price note, food photos (no labels)."
+notes: "Liban (Lebanese restaurant) large street poster with food photos around a numbered text menu (items 1-38), Catalan/Spanish; legible. Lines under each dish are descriptions in two languages, not aliases. 'Falafel' appears twice (23 as a plate, 33 as a sandwich 'Stilo Libanes') - listed once to avoid duplicate names; reviewer may split it. Items 18 and 19 are both 'Combinado Machawi' (19 marked '2 personas'), kept as two entries. Excluded: food photos (no labels). [v2 all-orderable-items policy] ADDED: 30 'Ayran' (yogurt drink); sandwich supplements 'Formatge' (1 EUR) and 'Humus'/'Mutabal' (printed 'Humus/Mutabal 0,50 EUR', split into two products); 'Pan' (alias 'Pa') from the note 'Pan no incluido, precio unidad 0,40 EUR' - uncertain, it is printed as a note rather than a menu line."
 dishes:
   - name: "Ensalada El Mausem"
     aliases: []
@@ -75,3 +75,13 @@ dishes:
     aliases: []
   - name: "Combinado Vegetal Extra"
     aliases: []
+  - name: "Ayran"
+    aliases: []
+  - name: "Formatge"
+    aliases: []
+  - name: "Humus"
+    aliases: []
+  - name: "Mutabal"
+    aliases: []
+  - name: "Pan"
+    aliases: ["Pa"]

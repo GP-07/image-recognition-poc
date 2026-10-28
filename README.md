@@ -1,7 +1,7 @@
 # Menu dish extraction — lightweight POC
 
-Extract the food dishes printed on restaurant menu photos (`google_images.zip`: 19 phone photos,
-10 restaurants). Local, CPU only, no model training. The focus is the architecture, the model
+Extract every orderable item (dishes, desserts, beverages, add-ons) printed on restaurant menu
+photos (`google_images.zip`: 19 phone photos, 10 restaurants). Local, CPU only, no model training. The focus is the architecture, the model
 choices and how quality and cost are measured.
 
 ## TL;DR
@@ -10,8 +10,13 @@ choices and how quality and cost are measured.
   rule-based parser anchored on prices turns lines into dishes and scores its own **confidence**.
   Only low-confidence pages are sent to a **text** LLM (Claude Haiku 5.5 by default) that
   structures the OCR text; every LLM dish is **verified against the OCR** to drop hallucinations.
+- **Duplicate photos are detected before any OCR/LLM call** (file hash + perceptual hash) and get
+  the original's result.
 - **Configurable, one model per run:** `--mode ocr | ocr+llm`, `--llm-policy fallback | always`,
-  `--llm-model <id>`.
+  `--llm-model <id>`: Claude (`claude-haiku-5-5`, `claude-sonnet-5-5`) or a free local model
+  through Ollama (`ollama/qwen2.5:7b`).
+- **Never fails for a missing key:** without `ANTHROPIC_API_KEY` (env or `.env`) or a running
+  Ollama, an `ocr+llm` run degrades to OCR + rules and records a warning in `manifest.json`.
 - **Every slow or paid stage is cached by content**, so re-running with another model reuses the
   OCR and only pays for the LLM call; `--only-low-confidence` re-runs just the hard pages.
 - **Measured, not guessed:** a golden set with language aliases, a dev/test split by restaurant,
@@ -20,7 +25,9 @@ choices and how quality and cost are measured.
 ## Architecture
 
 ```
-image ──► preprocess ──► OCR (RapidOCR, CPU) ──► rule parser + confidence
+image ──► duplicate? ──yes──► copy the original's result (no OCR, no LLM)
+   │no
+   └──► preprocess ──► OCR (RapidOCR, CPU) ──► rule parser + confidence
            EXIF, resize   lines + boxes,           price-anchored, layout-aware
                           rotation/deskew                   │
                           [cached]                          ├─ confidence ≥ threshold ─► dishes (rules)
@@ -36,12 +43,13 @@ image ──► preprocess ──► OCR (RapidOCR, CPU) ──► rule parser +
 
 | Component | When it runs | Cost | Why |
 |---|---|---|---|
+| Duplicate detection | always (`dedup: true`) | ~0.1 s/image | Same file, or same photo re-encoded/resized (dHash, 256 bits; duplicates differ by 0–4 bits, different menus by 100+) |
 | Content cache | always | ~0 | Key = hash(input) + stage fingerprint (engine/model/prompt versions) |
 | Preprocess | always | ms | Photos are rotated and up to 5712 px |
 | OCR (RapidOCR: PP-OCR models on ONNX Runtime) | always | ~3–5 s/image CPU (rotated pages ~13 s) | Deterministic text + positions; same models as PaddleOCR, far lighter install |
 | Layout + rule parser | always | ms | Prices are the strongest cheap signal of "this line is a dish" |
 | Confidence | always | ms | Decides whether the paid LLM is needed |
-| Text LLM | low confidence only (`fallback`) or every page (`always`) | ≈ $0.001–0.002/page with Haiku | Understands layouts the rules cannot (size grids, prices under photos) |
+| Text LLM | `ocr+llm` mode only: pages below the confidence threshold (`fallback`) or every page (`always`) | ≈ $0.001–0.002/page with Haiku; $0 with Ollama (slower, local) | Understands layouts the rules cannot (size grids, prices under photos) |
 | Grounding check | after the LLM | ms | Turns the LLM into a verifiable step |
 
 Why not a vision LLM (VLM) on the image? It would be simple and accurate, but its output cannot
@@ -52,12 +60,16 @@ OCR text gives the LLM exactly what it needs and gives us a ground truth to veri
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+cp .env.example .env    # put ANTHROPIC_API_KEY there (never committed); env variables win
 
-# Rules only (free, deterministic)
-.venv/bin/menu-poc run --mode ocr
+# Rules only (free, deterministic). Input: a .zip or a folder of <restaurant>/<image>.jpg
+.venv/bin/menu-poc run --mode ocr --input /path/to/images --output /path/to/output
 
-# Cascade: LLM only for low-confidence pages (needs ANTHROPIC_API_KEY)
+# Cascade: LLM only for low-confidence pages
 .venv/bin/menu-poc run --mode ocr+llm --llm-policy fallback --llm-model claude-haiku-5-5
+
+# Same with a free local model (brew install ollama && ollama pull qwen2.5:7b)
+.venv/bin/menu-poc run --mode ocr+llm --llm-model ollama/qwen2.5:7b
 
 # Not good enough? Re-run only the hard pages with a stronger model; the OCR comes from the cache
 .venv/bin/menu-poc run --mode ocr+llm --llm-model claude-sonnet-5-5 \
@@ -72,16 +84,33 @@ python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 .venv/bin/pytest -q -m slow    # real OCR on one image
 ```
 
-Defaults live in `config/default.yaml` (input path, threshold 0.6, model, policy); run commands
-from the project root. Each run writes `runs/<id>/config.yaml`, `results.jsonl`, `metrics.json`
-and `summary.md` (with a per-image error analysis). `--offline` uses only cached LLM answers.
+**Inputs and outputs.** Defaults live in `config/default.yaml`; every path can be overridden:
+`--input` (zip or folder, read-only, never extracted), `--output` (default `runs/`) and
+`--artifacts` (stage cache, default `artifacts/`). Each run creates `<output>/<timestamp>_<label>/`:
+
+| File | Content |
+|---|---|
+| `results.jsonl` | one line per image: items (name, description, prices, section), confidence, LLM usage and cost, timings, `duplicate_of`, per-image `error` |
+| `manifest.json` | requested vs effective mode, counts, duplicates, run-level `warnings` and per-image `errors` |
+| `config.yaml` | the effective configuration |
+| `summary.md`, `metrics.json` | evaluation against the golden set, when one exists |
+
+Exit code is 0 when images were processed, even with warnings or per-image errors (they are in
+the output); non-zero only for unusable input (no images, missing config file).
+
+**CI (sketch).** The same command runs in a GitHub Actions job: store `ANTHROPIC_API_KEY` as a
+repository secret and expose it as an env variable, run `menu-poc run --mode ocr+llm --input …
+--output out/`, and upload `out/` as a job artifact (and/or fail the job on a recall drop from
+`metrics.json`). If the secret is missing, the job still produces OCR + rules results and the
+warning shows up in `manifest.json`.
 
 ## Evaluation
 
-- **Golden set** (`data/golden/`, format in its README): one YAML per image with every legible
-  food dish and its **language aliases** (many menus print each dish in Catalan, Spanish and
-  English). Finding any alias counts as recognising the dish; extra translations are counted as
-  duplicates, not false positives. Beverages, toppings/extras and headers are excluded.
+- **Golden set** (`data/golden/`, format in its README): the answer key. One YAML per image
+  listing every legible orderable item and its **language aliases** (many menus print each item
+  in Catalan, Spanish and English). It is never shown to the pipeline: it is only used to score
+  a run. Finding any alias counts as recognising the item; extra translations count as
+  duplicates, not false positives.
 - **Split by restaurant:** dev (10 images) is the only data used to tune rules, threshold and
   prompt; test (9 images) is measured, never tuned on.
 - **Matching:** names normalised (case, accents, numbering, prices, leaders) and fuzzy-matched
@@ -90,22 +119,27 @@ and `summary.md` (with a per-image error analysis). `--offline` uses only cached
   descriptions must not count as dishes), share of pages escalated to the LLM, cost and latency per
   image. Cost and latency are those of producing the result even when served from the cache, so
   runs are comparable.
-- **Honesty notes:** the golden labels were drafted by an AI model looking at the photos and still
-  need human review (same model family as the evaluated LLM → possible bias). Four restaurants
-  have duplicate photos (identical or half-resolution), so those menus weigh double.
+- **Duplicate photos** (4 pairs in the sample: identical pixels or half resolution) are scored
+  once, so no menu weighs double.
+- **Honesty note:** the golden labels were drafted by an AI model looking at the photos and still
+  need human review (same model family as the evaluated LLM → possible bias).
 
 ## Results
 
+Current scope (every orderable item, duplicate photos scored once, 15 distinct photos, 595 items):
+
 | run | recall dev | recall test | recall all | precision | % pages to LLM | cost / image | time / image |
 |---|---|---|---|---|---|---|---|
-| Rules only, baseline | 72.6% | 70.1% | 71.9% | 72.4% | 0% | $0 | 4.8 s |
-| Rules only, after error analysis on dev | 79.4% | 70.1% | 76.8% | 79.5% | 0% | $0 | 4.8 s |
-| Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | 42% (8/19) | ≈ $0.001 | |
+| Rules only (`runs/20261028-125023_ocr`) | 74.6% | 55.6% | 69.2% | 84.3% | 0% | $0 | 4.1 s |
+| Cascade with Haiku 5.5 (`fallback`) | _pending API key_ | | | | ≈ 40% | ≈ $0.001 | |
 
-The rule tuning improved dev and left test unchanged — the expected sign of not overfitting, and a
-reminder that heuristics stop scaling: the remaining errors (shared size grids, prices under
-photos, multi-column boards, cut-off names) are exactly what the LLM step is for. With the tuned
-confidence, the pages the rules got badly wrong (recall < 60%) all fall below the threshold.
+History, earlier scope (food only, duplicate photos counted twice): rules baseline 71.9% recall /
+72.4% precision → after error analysis on dev 76.8% / 79.5% (dev 72.6% → 79.4%, test unchanged at
+70.1%). The tuning improved dev and left test unchanged — the expected sign of not overfitting,
+and a reminder that heuristics stop scaling. Widening the scope to beverages and add-on lists
+(toppings, extras, sauces) lowered test recall: those lists rarely follow the "name … price"
+pattern the rules rely on, which is exactly what the LLM step is for (along with shared size
+grids, prices under photos and multi-column boards).
 
 ## The three questions
 
