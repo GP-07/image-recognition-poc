@@ -34,6 +34,7 @@ from menu_poc.constants import (
     MIN_WORD_CHARS,
     SHORT_NAME_CHARS,
 )
+from menu_poc.interfaces import Verifier
 from menu_poc.llm.text import normalize, reading_order
 from menu_poc.models import Dish, OcrLine, OcrResult, VerificationResult
 from menu_poc.typings import Candidate
@@ -81,7 +82,7 @@ def page_candidates(ocr: OcrResult) -> list[Candidate]:
     return candidates
 
 
-class GroundingVerifier:
+class GroundingVerifier(Verifier):
     def __init__(self, threshold: float = GROUNDING_THRESHOLD) -> None:
         self.threshold = threshold
 

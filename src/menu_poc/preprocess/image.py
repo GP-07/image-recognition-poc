@@ -11,9 +11,10 @@ from typing import Any
 from PIL import Image, ImageOps
 
 from menu_poc.constants import DEFAULT_MAX_IMAGE_SIDE, PREPROCESS_VERSION
+from menu_poc.interfaces import Preprocessor
 
 
-class ImagePreprocessor:
+class ImagePreprocessor(Preprocessor):
     """EXIF transpose, convert to RGB and downscale so the longest side is <= ``max_side``."""
 
     def __init__(self, max_side: int = DEFAULT_MAX_IMAGE_SIDE) -> None:

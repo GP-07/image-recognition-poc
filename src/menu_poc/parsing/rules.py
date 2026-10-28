@@ -57,6 +57,7 @@ from menu_poc.constants import (
     TRAILING_JUNK_RE,
 )
 from menu_poc.data_classes import DishDraft, LineInfo, ParseStats
+from menu_poc.interfaces import Parser
 from menu_poc.models import Dish, OcrLine, OcrResult, ParseResult
 from menu_poc.parsing import confidence
 from menu_poc.parsing.layout import group_columns, left_neighbor, median_height
@@ -162,7 +163,7 @@ def _is_header(info: LineInfo, med_h: float) -> bool:
     return caps >= CAPS_SHARE or tall
 
 
-class RuleBasedParser:
+class RuleBasedParser(Parser):
     """``Parser`` that finds dishes with price / numbering / typography heuristics."""
 
     def fingerprint(self) -> dict[str, Any]:

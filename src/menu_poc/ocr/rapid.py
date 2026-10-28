@@ -42,6 +42,7 @@ from menu_poc.constants import (
     TALL_SHARE,
 )
 from menu_poc.data_classes import OcrItem
+from menu_poc.interfaces import OcrEngine
 from menu_poc.models import OcrLine, OcrResult
 
 
@@ -78,7 +79,7 @@ def _score(items: list[OcrItem]) -> float:
     return sum(len(item.text.strip()) * item.score for item in items)
 
 
-class RapidOcrEngine:
+class RapidOcrEngine(OcrEngine):
     """``OcrEngine`` backed by ``rapidocr.RapidOCR``; the model is created lazily, once."""
 
     name = "rapidocr"

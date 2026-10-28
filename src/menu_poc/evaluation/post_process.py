@@ -7,9 +7,10 @@ from pathlib import Path
 from menu_poc.constants import SUMMARY_FILE
 from menu_poc.data_classes import RunOutcome
 from menu_poc.evaluation.report import run_report
+from menu_poc.interfaces import PostProcessor
 
 
-class GoldenSetEvaluation:
+class GoldenSetEvaluation(PostProcessor):
     """Writes ``summary.md`` and ``metrics.json``, the same report as ``menu-poc eval``."""
 
     name = "golden_set_evaluation"

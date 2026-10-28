@@ -9,6 +9,7 @@ import pytest
 from PIL import Image
 
 from menu_poc.cache.store import ArtifactStore
+from menu_poc.interfaces import OcrEngine, Parser, Preprocessor, Structurer, Verifier
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import read_jsonl
 from menu_poc.models import (
@@ -26,7 +27,7 @@ from menu_poc.pipeline import PipelineBuilder, new_run_dir
 from menu_poc.steps import DedupStep, LlmStep, OcrStep, RulesStep, VerifyStep
 
 
-class FakePre:
+class FakePre(Preprocessor):
     def fingerprint(self):
         return {"name": "fake-pre"}
 
@@ -34,7 +35,7 @@ class FakePre:
         return image
 
 
-class FakeOcr:
+class FakeOcr(OcrEngine):
     def __init__(self):
         self.calls = 0
 
@@ -52,7 +53,7 @@ class FakeOcr:
         return OcrResult(image_id=image_id, width=8, height=8, lines=[line], engine="fake")
 
 
-class FakeParser:
+class FakeParser(Parser):
     """Confidence encoded in the image id: '.../low' -> 0.2, otherwise 0.9."""
 
     def fingerprint(self):
@@ -63,7 +64,7 @@ class FakeParser:
         return ParseResult(dishes=[Dish(name="rules dish", origin="rules")], confidence=conf)
 
 
-class FakeStructurer:
+class FakeStructurer(Structurer):
     def __init__(self, model="m1", fail=False):
         self.model, self.fail, self.calls = model, fail, 0
 
@@ -82,7 +83,10 @@ class FakeStructurer:
         return StructureResult(dishes=dishes, usage=usage, prompt_version="v1")
 
 
-class FakeVerifier:
+class FakeVerifier(Verifier):
+    def fingerprint(self):
+        return {"name": "fake-verifier"}
+
     def verify(self, dishes, ocr):
         kept = [dish for dish in dishes if dish.name != "Invented"]
         dropped = [dish for dish in dishes if dish.name == "Invented"]
@@ -246,7 +250,7 @@ def test_new_run_dir_writes_config(tmp_path):
     assert (run_dir / "config.yaml").exists()
 
 
-class RaisingVerifier:
+class RaisingVerifier(Verifier):
     def fingerprint(self):
         return {}
 

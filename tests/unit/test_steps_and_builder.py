@@ -7,6 +7,7 @@ from PIL import Image
 
 from menu_poc.cache.store import ArtifactStore
 from menu_poc.data_classes import ImageRef
+from menu_poc.interfaces import OcrEngine, Parser, PostProcessor, Preprocessor, Structurer
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.models import (
     Dish,
@@ -41,7 +42,7 @@ def _ocr(image_id="r/a"):
     return OcrResult(image_id=image_id, width=16, height=16, lines=[line], engine="fake")
 
 
-class _Parser:
+class _Parser(Parser):
     def __init__(self, confidence):
         self.confidence = confidence
 
@@ -54,12 +55,15 @@ class _Parser:
         )
 
 
-class _Structurer:
+class _Structurer(Structurer):
     def __init__(self):
         self.calls = 0
 
     def fingerprint(self):
         return {"model": "m"}
+
+    def unavailable_reason(self):
+        return None
 
     def structure(self, ocr):
         self.calls += 1
@@ -73,7 +77,7 @@ def _rules():
     return RulesStep(_Parser(0.1))
 
 
-class _Ocr:
+class _Ocr(OcrEngine):
     def fingerprint(self):
         return {"name": "fake"}
 
@@ -84,7 +88,7 @@ class _Ocr:
         return _ocr(image_id)
 
 
-class _Pre:
+class _Pre(Preprocessor):
     def fingerprint(self):
         return {}
 
@@ -221,7 +225,7 @@ def test_from_config_adds_the_evaluation_only_with_a_golden_set(tmp_path):
     assert post_processors(None) == [] and post_processors(tmp_path / "missing") == []
 
 
-class _Export:
+class _Export(PostProcessor):
     name = "export"
 
     def __init__(self, fail=False):

@@ -1,4 +1,4 @@
-"""Type aliases shared across modules. Stage interfaces (Protocols) live in ``interfaces``."""
+"""Type aliases shared across modules. Stage interfaces (base classes) live in ``interfaces``."""
 
 from __future__ import annotations
 

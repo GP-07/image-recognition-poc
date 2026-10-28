@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from menu_poc.constants import DEFAULT_PROMPT_PATH, DISHES_SCHEMA, RENDER_VERSION
+from menu_poc.interfaces import Structurer
 from menu_poc.llm.engine import LLMEngine
 from menu_poc.llm.text import render_lines
 from menu_poc.models import Dish, LLMUsage, OcrResult, StructureResult
@@ -29,7 +30,7 @@ def build_user_message(ocr: OcrResult) -> str:
     )
 
 
-class LLMStructurer:
+class LLMStructurer(Structurer):
     def __init__(self, client: LLMEngine, prompt_path: Path = DEFAULT_PROMPT_PATH) -> None:
         self.client = client
         self.prompt_path = Path(prompt_path)

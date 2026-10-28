@@ -362,6 +362,20 @@ dos funciones de normalización.
 - Un post-proceso que falla no pierde la corrida: queda como warning en el manifest.
 - El CLI ya no conoce el golden set al correr: imprime `outcome.reports`.
 
+## Discusión 17 — Interfaces como clases base abstractas, no Protocols (2026-10-28)
+
+- Pregunta del usuario: por qué Protocols en lugar de una clase base de la que hereden las
+  implementaciones. Los Protocols tipan por forma (cualquier clase con esos métodos cumple, sin
+  heredar); se habían usado donde no había código compartido, para que los fakes de los tests no
+  necesitaran heredar.
+- Decisión: las seis interfaces (`Preprocessor`, `OcrEngine`, `Parser`, `Structurer`, `Verifier`,
+  `PostProcessor`) pasan a ABC con `@abstractmethod`, y las implementaciones y los fakes heredan.
+  Motivos: la relación queda explícita al leer la clase, una implementación incompleta falla al
+  crearse y no en medio de una corrida, y hay un solo patrón en el código (el mismo de `Step` y
+  `LLMEngine`).
+- Se vio enseguida: dos fakes de los tests no cumplían el contrato completo (`fingerprint`,
+  `unavailable_reason`) y ahora fallaban al instanciarse; se completaron.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -377,3 +391,4 @@ dos funciones de normalización.
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Refactor de estilo: constantes, typings, modelos y dataclasses en archivos propios; sin asserts ni variables de una letra. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Simplificación del CLI (corrida siempre completa) y validación de inputs como fase del pipeline. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Post-procesos del pipeline (evaluación contra el golden set como el primero). |
+| 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Interfaces de etapa pasadas de Protocol a clases base abstractas. |

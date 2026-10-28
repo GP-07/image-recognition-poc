@@ -203,7 +203,7 @@ can help with semantic equivalences, calibrated against human labels — never a
 src/menu_poc/
   models.py                             pydantic models (stage contracts, RunConfig, metrics)
   data_classes.py                       in-memory records (ImageRef, ImageContext, ItemRow...)
-  typings.py, interfaces.py             type aliases; stage Protocols
+  typings.py, interfaces.py             type aliases; stage base classes (ABC)
   constants.py                          every constant: thresholds, versions, regexes, prices
   config.py                             YAML + CLI overrides -> RunConfig
   steps/                                one module per step: dedup, ocr, rules, llm, verify
