@@ -14,7 +14,7 @@ from menu_poc.config import load_config
 from menu_poc.constants import DEFAULT_CONFIG_PATH, DEFAULT_GOLDEN_DIR, PROJECT_ROOT
 from menu_poc.evaluation.report import compare_runs, run_report
 from menu_poc.io.writers import write_items_csv, write_json
-from menu_poc.pipeline import PipelineBuilder, new_run_dir
+from menu_poc.pipeline import PipelineBuilder
 from menu_poc.steps import InputValidationError
 
 
@@ -31,12 +31,10 @@ def _cmd_run(args: argparse.Namespace) -> int:
     for warning in warnings:
         print(f"WARNING: {warning}", file=sys.stderr)
 
-    # The run directory records what actually runs: no LLM model when its step was disabled.
-    effective = config if pipeline.uses_llm else config.model_copy(update={"llm_model": None})
-    run_dir = new_run_dir(effective)
-    print(f"Run {run_dir} — {len(refs)} images, steps: {' → '.join(pipeline.step_names)}")
+    print(f"Processing {len(refs)} images, steps: {' → '.join(pipeline.step_names)}")
     started = datetime.now().isoformat(timespec="seconds")
-    results = pipeline.run(refs, run_dir)
+    outcome = pipeline.run(refs, config)
+    run_dir, results = outcome.run_dir, outcome.results
     n_rows = write_items_csv(run_dir / "items.csv", results)
 
     errors = {result.image_id: result.error for result in results if result.error}
@@ -49,7 +47,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
             "started": started,
             "finished": datetime.now().isoformat(timespec="seconds"),
             "requested_llm_model": config.llm_model,
-            "llm_model": effective.llm_model,  # None: OCR + rules only (see warnings)
+            "llm_model": outcome.config.llm_model,  # None: OCR + rules only (see warnings)
             "n_images": len(results),
             "n_dishes": n_dishes,
             "duplicates": duplicates,
@@ -63,6 +61,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
     )
     for image_id, error in errors.items():
         print(f"  {image_id}: {error}")
+    print(f"Run: {run_dir}")
     print(f"Items: {run_dir / 'items.csv'} ({n_rows} rows)")
     if DEFAULT_GOLDEN_DIR.exists():
         report = run_report(run_dir, DEFAULT_GOLDEN_DIR)

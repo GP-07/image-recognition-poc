@@ -339,6 +339,9 @@ dos funciones de normalización.
 - Exit codes: 0 cuando corre (aunque haya warnings o errores por imagen), 2 si no puede arrancar.
 - Verificado: `items.csv` idéntico al anterior; con `--llm-model haiku` y sin key, la corrida usa
   OCR + reglas y el manifest guarda el modelo pedido y `llm_model: null`.
+- Seguimiento (pedido del usuario): `Pipeline.run(refs, config)` crea el directorio de la corrida
+  con la config efectiva (sin modelo LLM si su paso quedó desactivado) y devuelve un `RunOutcome`
+  (`run_dir`, `config` efectiva, `results`). El CLI ya no decide qué config registrar.
 
 ## Herramientas de IA usadas durante el POC
 

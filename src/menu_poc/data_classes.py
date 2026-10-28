@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import io
 from dataclasses import dataclass, field, fields
+from pathlib import Path
 
 from PIL import Image
 
@@ -15,6 +16,7 @@ from menu_poc.models import (
     OcrLine,
     OcrResult,
     ParseResult,
+    RunConfig,
     StructureResult,
 )
 from menu_poc.typings import BBox
@@ -71,7 +73,16 @@ class ItemRow:
         return [column.name for column in fields(cls)]
 
 
-# --- pipeline steps -------------------------------------------------------------------------------
+# --- pipeline -------------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class RunOutcome:
+    """What ``Pipeline.run`` produced: where, with which effective settings, and the results."""
+
+    run_dir: Path
+    config: RunConfig  # what actually ran: no LLM model when the LLM step was disabled
+    results: list[ImageResult]
 
 
 @dataclass

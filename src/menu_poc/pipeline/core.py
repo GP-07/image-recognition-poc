@@ -10,10 +10,11 @@ from pathlib import Path
 from PIL import Image
 
 from menu_poc.constants import LLM_HELP
-from menu_poc.data_classes import ImageContext, ImageRef
+from menu_poc.data_classes import ImageContext, ImageRef, RunOutcome
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_jsonl
-from menu_poc.models import ImageResult
+from menu_poc.models import ImageResult, RunConfig
+from menu_poc.pipeline.runs import new_run_dir
 from menu_poc.steps import InputValidationError, LlmStep, Step
 
 log = logging.getLogger(__name__)
@@ -60,9 +61,13 @@ class Pipeline:
         ctx.result.timings_s["total"] = sum(ctx.result.timings_s.values())
         return ctx.result
 
-    def run(self, refs: Iterable[ImageRef], run_dir: Path) -> list[ImageResult]:
-        """Process every image; results come back (and are saved) in input order."""
+    def run(self, refs: Iterable[ImageRef], config: RunConfig) -> RunOutcome:
+        """Process every image into a new run directory under ``config.runs_dir``; results come
+        back (and are saved) in input order."""
         refs = list(refs)
+        # The run directory records what actually runs: no LLM model when its step was disabled.
+        effective = config if self.uses_llm else config.model_copy(update={"llm_model": None})
+        run_dir = new_run_dir(effective)
         # Largest images first: the first photo of a duplicate group is kept as the original,
         # and the largest one gives the best OCR.
         order = sorted(refs, key=lambda ref: (-_pixels(ref), ref.image_id))
@@ -73,4 +78,5 @@ class Pipeline:
             # Rewrite after every image so an interrupted run keeps its progress.
             finished = [done[ref.image_id] for ref in refs if ref.image_id in done]
             write_jsonl(run_dir / "results.jsonl", finished)
-        return [done[ref.image_id] for ref in refs]
+        results = [done[ref.image_id] for ref in refs]
+        return RunOutcome(run_dir=run_dir, config=effective, results=results)
