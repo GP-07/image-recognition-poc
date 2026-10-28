@@ -1,6 +1,7 @@
 """Pipeline chain built with fake stages: policy, caching, offline mode, failure isolation."""
 
 import io
+import json
 import zipfile
 
 import numpy as np
@@ -225,6 +226,17 @@ def test_run_records_the_llm_model_only_when_its_step_runs(tmp_path):
     outcome = pipe.run(refs, config.model_copy(update={"runs_dir": tmp_path}))
     assert outcome.config.llm_model is None and outcome.run_dir.name.endswith("_ocr")
     assert not any(result.llm_used for result in outcome.results)
+
+
+def test_run_saves_items_and_manifest(tmp_path):
+    pipe, config = _pipeline(tmp_path, structurer=FakeStructurer(), llm_model="haiku")
+    refs, _ = pipe.validate_inputs(config.input_path)
+    outcome = pipe.run(refs, config.model_copy(update={"runs_dir": tmp_path}))
+    manifest = json.loads((outcome.run_dir / "manifest.json").read_text())
+    assert manifest == outcome.manifest() and manifest["llm_model"] == "claude-haiku-5-5"
+    assert manifest["n_dishes"] == outcome.n_items == 2
+    rows = outcome.items_path.read_text(encoding="utf-8-sig").splitlines()
+    assert len(rows) == 1 + outcome.n_items
 
 
 def test_new_run_dir_writes_config(tmp_path):

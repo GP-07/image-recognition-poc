@@ -22,6 +22,9 @@ DEFAULT_ARTIFACTS_DIR = PROJECT_ROOT / "artifacts"  # stage cache, reused across
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
 DEFAULT_PROMPT_PATH = PROMPTS_DIR / "structure_v2.md"
 CONFIG_PATH_FIELDS = ("input_path", "runs_dir", "artifacts_dir")
+RESULTS_FILE = "results.jsonl"  # files of a run directory
+ITEMS_FILE = "items.csv"
+MANIFEST_FILE = "manifest.json"
 
 DEFAULT_CONFIDENCE_THRESHOLD = 0.6  # rules confidence below this sends the page to the LLM
 DEFAULT_DEDUP_MAX_DISTANCE = 10  # perceptual hash bits out of 256

@@ -5,19 +5,24 @@ from __future__ import annotations
 import io
 import logging
 from collections.abc import Iterable
+from datetime import datetime
 from pathlib import Path
 
 from PIL import Image
 
-from menu_poc.constants import LLM_HELP
+from menu_poc.constants import LLM_HELP, MANIFEST_FILE, RESULTS_FILE
 from menu_poc.data_classes import ImageContext, ImageRef, RunOutcome
 from menu_poc.io.dataset import iter_images
-from menu_poc.io.writers import write_jsonl
+from menu_poc.io.writers import write_items_csv, write_json, write_jsonl
 from menu_poc.models import ImageResult, RunConfig
 from menu_poc.pipeline.runs import new_run_dir
 from menu_poc.steps import InputValidationError, LlmStep, Step
 
 log = logging.getLogger(__name__)
+
+
+def _now() -> str:
+    return datetime.now().isoformat(timespec="seconds")
 
 
 def _pixels(ref: ImageRef) -> int:
@@ -31,6 +36,7 @@ class Pipeline:
     def __init__(self, steps: list[Step]) -> None:
         self.steps = steps
         self.head = steps[0]
+        self.warnings: list[str] = []  # from ``validate_inputs``, saved in the run manifest
 
     @property
     def step_names(self) -> list[str]:
@@ -54,6 +60,7 @@ class Pipeline:
         warnings = [warning for step in self.steps for warning in step.validate()]
         if not any(isinstance(step, LlmStep) for step in self.steps):
             warnings.append(f"No LLM configured: results come from OCR + rules only. {LLM_HELP}")
+        self.warnings = warnings
         return refs, warnings
 
     def process(self, ref: ImageRef) -> ImageResult:
@@ -62,9 +69,11 @@ class Pipeline:
         return ctx.result
 
     def run(self, refs: Iterable[ImageRef], config: RunConfig) -> RunOutcome:
-        """Process every image into a new run directory under ``config.runs_dir``; results come
-        back (and are saved) in input order."""
+        """Process every image into a new run directory under ``config.runs_dir`` and save its
+        files: ``results.jsonl`` (kept up to date while running), then ``items.csv`` and
+        ``manifest.json``. Results come back in input order."""
         refs = list(refs)
+        started = _now()
         # The run directory records what actually runs: no LLM model when its step was disabled.
         effective = config if self.uses_llm else config.model_copy(update={"llm_model": None})
         run_dir = new_run_dir(effective)
@@ -77,6 +86,17 @@ class Pipeline:
             done[ref.image_id] = self.process(ref)
             # Rewrite after every image so an interrupted run keeps its progress.
             finished = [done[ref.image_id] for ref in refs if ref.image_id in done]
-            write_jsonl(run_dir / "results.jsonl", finished)
-        results = [done[ref.image_id] for ref in refs]
-        return RunOutcome(run_dir=run_dir, config=effective, results=results)
+            write_jsonl(run_dir / RESULTS_FILE, finished)
+
+        outcome = RunOutcome(
+            run_dir=run_dir,
+            requested_llm_model=config.llm_model,
+            config=effective,
+            results=[done[ref.image_id] for ref in refs],
+            warnings=self.warnings,
+            started=started,
+            finished=_now(),
+        )
+        write_items_csv(outcome.items_path, outcome.results)
+        write_json(run_dir / MANIFEST_FILE, outcome.manifest())
+        return outcome

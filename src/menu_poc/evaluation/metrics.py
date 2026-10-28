@@ -17,7 +17,7 @@ from typing import Any
 
 import yaml
 
-from menu_poc.constants import MATCH_THRESHOLD
+from menu_poc.constants import MATCH_THRESHOLD, RESULTS_FILE
 from menu_poc.evaluation.golden import load_golden
 from menu_poc.evaluation.matching import match_dishes
 from menu_poc.io.writers import read_jsonl, write_json
@@ -156,7 +156,7 @@ def evaluate_run(
 ) -> RunMetrics:
     """Evaluate ``run_dir/results.jsonl`` against the golden set; writes ``metrics.json``."""
     run_dir = Path(run_dir)
-    results = read_jsonl(run_dir / "results.jsonl", ImageResult)
+    results = read_jsonl(run_dir / RESULTS_FILE, ImageResult)
     golden = load_golden(golden_dir, only_reviewed=only_reviewed)
     metrics = aggregate(
         run_dir.name, results, golden, load_run_config(run_dir), threshold, only_reviewed

@@ -342,6 +342,11 @@ dos funciones de normalización.
 - Seguimiento (pedido del usuario): `Pipeline.run(refs, config)` crea el directorio de la corrida
   con la config efectiva (sin modelo LLM si su paso quedó desactivado) y devuelve un `RunOutcome`
   (`run_dir`, `config` efectiva, `results`). El CLI ya no decide qué config registrar.
+- Seguimiento: el pipeline también escribe los archivos de la corrida al terminar
+  (`results.jsonl` durante la corrida; `items.csv` y `manifest.json` al final). `RunOutcome`
+  suma los warnings, las fechas y las cifras que muestra el comando (ítems, duplicados, errores)
+  y arma el manifest. El CLI sólo imprime. `summary.md` queda en el CLI porque es evaluación contra
+  el golden set (lo mismo que `menu-poc eval`), no extracción.
 
 ## Herramientas de IA usadas durante el POC
 

@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,7 +12,6 @@ from dotenv import load_dotenv
 from menu_poc.config import load_config
 from menu_poc.constants import DEFAULT_CONFIG_PATH, DEFAULT_GOLDEN_DIR, PROJECT_ROOT
 from menu_poc.evaluation.report import compare_runs, run_report
-from menu_poc.io.writers import write_items_csv, write_json
 from menu_poc.pipeline import PipelineBuilder
 from menu_poc.steps import InputValidationError
 
@@ -32,41 +30,21 @@ def _cmd_run(args: argparse.Namespace) -> int:
         print(f"WARNING: {warning}", file=sys.stderr)
 
     print(f"Processing {len(refs)} images, steps: {' → '.join(pipeline.step_names)}")
-    started = datetime.now().isoformat(timespec="seconds")
     outcome = pipeline.run(refs, config)
-    run_dir, results = outcome.run_dir, outcome.results
-    n_rows = write_items_csv(run_dir / "items.csv", results)
 
-    errors = {result.image_id: result.error for result in results if result.error}
-    duplicates = {result.image_id: result.duplicate_of for result in results if result.duplicate_of}
-    n_dishes = sum(len(result.dishes) for result in results)
-    write_json(
-        run_dir / "manifest.json",
-        {
-            "run": run_dir.name,
-            "started": started,
-            "finished": datetime.now().isoformat(timespec="seconds"),
-            "requested_llm_model": config.llm_model,
-            "llm_model": outcome.config.llm_model,  # None: OCR + rules only (see warnings)
-            "n_images": len(results),
-            "n_dishes": n_dishes,
-            "duplicates": duplicates,
-            "warnings": warnings,
-            "errors": errors,
-        },
-    )
     print(
-        f"Done: {n_dishes} dishes, {len(duplicates)} duplicate photos "
-        f"skipped, {len(errors)} images with errors, {len(warnings)} warnings."
+        f"Done: {outcome.n_items} items, {len(outcome.duplicates)} duplicate photos skipped, "
+        f"{len(outcome.errors)} images with errors, {len(outcome.warnings)} warnings."
     )
-    for image_id, error in errors.items():
+    for image_id, error in outcome.errors.items():
         print(f"  {image_id}: {error}")
-    print(f"Run: {run_dir}")
-    print(f"Items: {run_dir / 'items.csv'} ({n_rows} rows)")
+    print(f"Run: {outcome.run_dir}")
+    print(f"Items: {outcome.items_path}")
     if DEFAULT_GOLDEN_DIR.exists():
-        report = run_report(run_dir, DEFAULT_GOLDEN_DIR)
-        (run_dir / "summary.md").write_text(report, encoding="utf-8")
-        print(f"Report: {run_dir / 'summary.md'}")
+        # Evaluation, not extraction: the same report ``menu-poc eval`` writes.
+        report = run_report(outcome.run_dir, DEFAULT_GOLDEN_DIR)
+        (outcome.run_dir / "summary.md").write_text(report, encoding="utf-8")
+        print(f"Report: {outcome.run_dir / 'summary.md'}")
     return 0
 
 

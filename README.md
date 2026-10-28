@@ -59,7 +59,7 @@ present and rejects invalid chains (e.g. an LLM without OCR). Optional pieces ar
 ```python
 pipeline = PipelineBuilder.from_config(config).build()               # production
 refs, warnings = pipeline.validate_inputs(config.input_path)       # once, before any image
-outcome = pipeline.run(refs, config)   # creates the run dir with the effective config
+outcome = pipeline.run(refs, config)   # run dir + results.jsonl, items.csv, manifest.json
 pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(...)).build()
 # -> dedup? no · ocr → rules → llm → verify, whatever the insertion order
 ```

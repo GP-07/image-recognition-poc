@@ -6,10 +6,12 @@ from __future__ import annotations
 import io
 from dataclasses import dataclass, field, fields
 from pathlib import Path
+from typing import Any
 
 from PIL import Image
 
 from menu_poc.cache.store import sha256_bytes
+from menu_poc.constants import ITEMS_FILE
 from menu_poc.models import (
     Dish,
     ImageResult,
@@ -78,11 +80,48 @@ class ItemRow:
 
 @dataclass(frozen=True)
 class RunOutcome:
-    """What ``Pipeline.run`` produced: where, with which effective settings, and the results."""
+    """What ``Pipeline.run`` produced and saved: where, with which settings, the results, and the
+    figures the command reports."""
 
     run_dir: Path
+    requested_llm_model: str | None
     config: RunConfig  # what actually ran: no LLM model when the LLM step was disabled
     results: list[ImageResult]
+    warnings: list[str]
+    started: str
+    finished: str
+
+    @property
+    def items_path(self) -> Path:
+        return self.run_dir / ITEMS_FILE
+
+    @property
+    def n_items(self) -> int:
+        return sum(len(result.dishes) for result in self.results)
+
+    @property
+    def errors(self) -> dict[str, str]:
+        return {result.image_id: result.error for result in self.results if result.error}
+
+    @property
+    def duplicates(self) -> dict[str, str]:
+        return {
+            result.image_id: result.duplicate_of for result in self.results if result.duplicate_of
+        }
+
+    def manifest(self) -> dict[str, Any]:
+        return {
+            "run": self.run_dir.name,
+            "started": self.started,
+            "finished": self.finished,
+            "requested_llm_model": self.requested_llm_model,
+            "llm_model": self.config.llm_model,  # None: OCR + rules only (see warnings)
+            "n_images": len(self.results),
+            "n_dishes": self.n_items,
+            "duplicates": self.duplicates,
+            "warnings": self.warnings,
+            "errors": self.errors,
+        }
 
 
 @dataclass
