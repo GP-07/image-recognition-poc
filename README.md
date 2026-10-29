@@ -90,6 +90,10 @@ Without `--input` and `--output` the command uses the sample photos and the proj
 folder. Other settings (which pages go to the language model, the confidence threshold) live in
 `config/default.yaml`.
 
+## Example output
+
+You could find an example output in `./example_output` with a local run using OCR + rules + Ollama. 
+
 ## Output files
 
 Each run creates its own folder, named after the date, time and model used, inside the

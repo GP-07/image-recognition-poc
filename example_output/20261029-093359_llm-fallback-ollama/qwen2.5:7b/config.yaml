@@ -1,0 +1,12 @@
+input_path: /Users/guidopallas/Documents/Proyecto España/Entrevista_delectatech/_20260514
+  AI code test TO SEND/source/google_images.zip
+runs_dir: /Users/guidopallas/Documents/Proyecto España/Entrevista_delectatech/image_recognition_poc/tmp
+artifacts_dir: /Users/guidopallas/Documents/Proyecto España/Entrevista_delectatech/image_recognition_poc/artifacts
+golden_dir: /Users/guidopallas/Documents/Proyecto España/Entrevista_delectatech/image_recognition_poc/data/golden
+llm_model: ollama/qwen2.5:7b
+llm_policy: fallback
+llm_offline: false
+confidence_threshold: 0.6
+dedup: true
+dedup_max_distance: 10
+max_image_side: 2000

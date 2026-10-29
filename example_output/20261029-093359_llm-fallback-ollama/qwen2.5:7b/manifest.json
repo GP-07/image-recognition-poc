@@ -1,0 +1,24 @@
+{
+  "run": "qwen2.5:7b",
+  "started": "2026-10-29T09:33:59",
+  "finished": "2026-10-29T10:34:02",
+  "requested_llm_model": "ollama/qwen2.5:7b",
+  "llm_model": "ollama/qwen2.5:7b",
+  "n_images": 19,
+  "n_dishes": 653,
+  "duplicates": {
+    "13704801545575264378/ff5e0547d14515a853d60a8cc9063dd3": "13704801545575264378/594bd6c734095e01b002c63e7e48614b",
+    "16055038156589254689/73f185f9fc81066b39c0e71d111c4d97": "16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b",
+    "7571032721762097332/8a339445e1a8029008955dc43d14f078": "7571032721762097332/63bac2469809e9b1432e6f152996440d",
+    "8627417098818383545/a1ae40f3a8b8acf06d0ba25b2157d928": "8627417098818383545/1bbb57ae336f4728a1b312b7fb787461"
+  },
+  "warnings": [],
+  "errors": {
+    "1326306244314649407/8601bf03078cf8be78423f3b5835391a": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+    "2564282930447335749/2f04957e9038d0282481700cbf990c80": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+    "2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e": "llm: no grounded dishes, kept rules output"
+  },
+  "reports": [
+    "summary.md"
+  ]
+}

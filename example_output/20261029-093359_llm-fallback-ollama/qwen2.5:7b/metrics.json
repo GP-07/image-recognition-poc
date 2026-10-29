@@ -1,0 +1,4337 @@
+{
+  "run": "qwen2.5:7b",
+  "mode": "ocr+llm",
+  "llm_model": "ollama/qwen2.5:7b",
+  "llm_policy": "fallback",
+  "threshold": 85.0,
+  "only_reviewed": false,
+  "n_images": 19,
+  "n_labeled": 15,
+  "n_duplicate_images": 4,
+  "unlabeled": [],
+  "accuracy": {
+    "all": {
+      "n_images": 15,
+      "n_gold": 595,
+      "tp": 397,
+      "fp": 77,
+      "fn": 198,
+      "duplicates": 51,
+      "micro_recall": 0.6672268907563025,
+      "micro_precision": 0.8375527426160337,
+      "macro_recall": 0.6243229052621667,
+      "macro_precision": 0.7545465002366117
+    },
+    "dev": {
+      "n_images": 8,
+      "n_gold": 426,
+      "tp": 307,
+      "fp": 29,
+      "fn": 119,
+      "duplicates": 24,
+      "micro_recall": 0.7206572769953051,
+      "micro_precision": 0.9136904761904762,
+      "macro_recall": 0.6335216300998184,
+      "macro_precision": 0.872667316148775
+    },
+    "test": {
+      "n_images": 7,
+      "n_gold": 169,
+      "tp": 90,
+      "fp": 48,
+      "fn": 79,
+      "duplicates": 27,
+      "micro_recall": 0.5325443786982249,
+      "micro_precision": 0.6521739130434783,
+      "macro_recall": 0.613810076876279,
+      "macro_precision": 0.619551282051282
+    }
+  },
+  "cost_total_usd": 0.0,
+  "cost_per_image_usd": 0.0,
+  "llm_share": 0.2631578947368421,
+  "llm_cached_share": 1.0,
+  "time_total_s": 365.3250960819172,
+  "time_mean_s": 19.227636635890377,
+  "llm_latency_total_s": 288.08637079194887,
+  "llm_latency_mean_s": 57.617274158389776,
+  "ungrounded_dropped": 36,
+  "n_errors": 3,
+  "errors": {
+    "1326306244314649407/8601bf03078cf8be78423f3b5835391a": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+    "2564282930447335749/2f04957e9038d0282481700cbf990c80": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+    "2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e": "llm: no grounded dishes, kept rules output"
+  },
+  "images": [
+    {
+      "image_id": "10320618957461533705/5b1f2c20f1b2db7837099aa9e9da6037",
+      "restaurant_id": "10320618957461533705",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 76,
+      "n_gold": 75,
+      "tp": 73,
+      "fp": 3,
+      "fn": 2,
+      "duplicates": 0,
+      "recall": 0.9733333333333334,
+      "precision": 0.9605263157894737,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 13.030376499953679,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Daal Soup",
+          "gold": "Daal Soup",
+          "variant": "Daal Soup",
+          "score": 100.0
+        },
+        {
+          "pred": "Murgh Soup",
+          "gold": "Murgh Soup",
+          "variant": "Murgh Soup",
+          "score": 100.0
+        },
+        {
+          "pred": "Tomater Soup",
+          "gold": "Tomater Soup",
+          "variant": "Tomater Soup",
+          "score": 100.0
+        },
+        {
+          "pred": "Papadum",
+          "gold": "Papadum",
+          "variant": "Papadum",
+          "score": 100.0
+        },
+        {
+          "pred": "Cebollas Bhaji",
+          "gold": "Cebollas Bhaji",
+          "variant": "Cebollas Bhaji",
+          "score": 100.0
+        },
+        {
+          "pred": "Samosas de Verdura",
+          "gold": "Samosas de Verdura",
+          "variant": "Samosas de Verdura",
+          "score": 100.0
+        },
+        {
+          "pred": "Samosas de Carne",
+          "gold": "Samosas de Carne",
+          "variant": "Samosas de Carne",
+          "score": 100.0
+        },
+        {
+          "pred": "Vegetable Pakoras",
+          "gold": "Vegetable Pakoras",
+          "variant": "Vegetable Pakoras",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Pakora",
+          "gold": "Paneer Pakora",
+          "variant": "Paneer Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Pakora",
+          "gold": "Pollo Pakora",
+          "variant": "Pollo Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Gamba Pakora",
+          "gold": "Gamba Pakora",
+          "variant": "Gamba Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Huevos Bhurji",
+          "gold": "Huevos Bhurji",
+          "variant": "Huevos Bhurji",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Pasanda",
+          "gold": "Paneer Pasanda",
+          "variant": "Paneer Pasanda",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Chili (Picante)",
+          "gold": "Paneer Chili (Picante)",
+          "variant": "Paneer Chili (Picante)",
+          "score": 100.0
+        },
+        {
+          "pred": "Malai kofta",
+          "gold": "Malai kofta",
+          "variant": "Malai kofta",
+          "score": 100.0
+        },
+        {
+          "pred": "Kofta Curry",
+          "gold": "Kofta Curry",
+          "variant": "Kofta Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Murgh Makhni",
+          "gold": "Murgh Makhni",
+          "variant": "Murgh Makhni",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Mango",
+          "gold": "Pollo Mango",
+          "variant": "Pollo Mango",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Tikka",
+          "gold": "Pollo Tikka",
+          "variant": "Pollo Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Malai Kebab",
+          "gold": "Pollo Malai Kebab",
+          "variant": "Pollo Malai Kebab",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Tandoori",
+          "gold": "Pollo Tandoori",
+          "variant": "Pollo Tandoori",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Shashlik",
+          "gold": "Pollo Shashlik",
+          "variant": "Pollo Shashlik",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Tikka",
+          "gold": "Cordero Tikka",
+          "variant": "Cordero Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Tikka",
+          "gold": "Pescado Tikka",
+          "variant": "Pescado Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Tikka",
+          "gold": "Paneer Tikka",
+          "variant": "Paneer Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Curry",
+          "gold": "Pollo Curry",
+          "variant": "Pollo Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Curry",
+          "gold": "Cordero Curry",
+          "variant": "Cordero Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Curry",
+          "gold": "Gambas Curry",
+          "variant": "Gambas Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Curry",
+          "gold": "Pescado Curry",
+          "variant": "Pescado Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Verduras Curry",
+          "gold": "Verduras Curry",
+          "variant": "Verduras Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Dopiaza",
+          "gold": "Pollo Dopiaza",
+          "variant": "Pollo Dopiaza",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Dopiaza",
+          "gold": "Cordero Dopiaza",
+          "variant": "Cordero Dopiaza",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Dopiaza",
+          "gold": "Gambas Dopiaza",
+          "variant": "Gambas Dopiaza",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostinos Dopiaza",
+          "gold": "Langostinos Dopiaza",
+          "variant": "Langostinos Dopiaza",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Dopiaza",
+          "gold": "Pescado Dopiaza",
+          "variant": "Pescado Dopiaza",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Korma",
+          "gold": "Pollo Korma",
+          "variant": "Pollo Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Korma",
+          "gold": "Cordero Korma",
+          "variant": "Cordero Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Korma",
+          "gold": "Gambas Korma",
+          "variant": "Gambas Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostinos Korma",
+          "gold": "Langostinos Korma",
+          "variant": "Langostinos Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Korma",
+          "gold": "Pescado Korma",
+          "variant": "Pescado Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Tikka Masala",
+          "gold": "Pollo Tikka Masala",
+          "variant": "Pollo Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Tikka Masala",
+          "gold": "Cordero Tikka Masala",
+          "variant": "Cordero Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Tikka Masala",
+          "gold": "Gambas Tikka Masala",
+          "variant": "Gambas Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostinos Tikka Masala",
+          "gold": "Langostinos Tikka Masala",
+          "variant": "Langostinos Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Madras",
+          "gold": "Pollo Madras",
+          "variant": "Pollo Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Madras",
+          "gold": "Cordero Madras",
+          "variant": "Cordero Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Madras",
+          "gold": "Gambas Madras",
+          "variant": "Gambas Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostinos Madras",
+          "gold": "Langostinos Madras",
+          "variant": "Langostinos Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Madras",
+          "gold": "Pescado Madras",
+          "variant": "Pescado Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Verduras Madras",
+          "gold": "Verduras Madras",
+          "variant": "Verduras Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Vindaloo",
+          "gold": "Pollo Vindaloo",
+          "variant": "Pollo Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Vindaloo",
+          "gold": "Cordero Vindaloo",
+          "variant": "Cordero Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Vindaloo",
+          "gold": "Gambas Vindaloo",
+          "variant": "Gambas Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostinos Vindaloo",
+          "gold": "Langostinos Vindaloo",
+          "variant": "Langostinos Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Vindaloo",
+          "gold": "Pescado Vindaloo",
+          "variant": "Pescado Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Phaal",
+          "gold": "Pollo Phaal",
+          "variant": "Pollo Phaal",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Phaal",
+          "gold": "Cordero Phaal",
+          "variant": "Cordero Phaal",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Jalfrezi",
+          "gold": "Pollo Jalfrezi",
+          "variant": "Pollo Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Jalfrezi",
+          "gold": "Cordero Jalfrezi",
+          "variant": "Cordero Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Jalfrezi",
+          "gold": "Gambas Jalfrezi",
+          "variant": "Gambas Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Palak",
+          "gold": "Pollo Palak",
+          "variant": "Pollo Palak",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Palak",
+          "gold": "Cordero Palak",
+          "variant": "Cordero Palak",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Kadhai",
+          "gold": "Pollo Kadhai",
+          "variant": "Pollo Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Kadhai",
+          "gold": "Cordero Kadhai",
+          "variant": "Cordero Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Kadhai",
+          "gold": "Gambas Kadhai",
+          "variant": "Gambas Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Kadhai",
+          "gold": "Pescado Kadhai",
+          "variant": "Pescado Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Bhuna",
+          "gold": "Pollo Bhuna",
+          "variant": "Pollo Bhuna",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Bhuna",
+          "gold": "Cordero Bhuna",
+          "variant": "Cordero Bhuna",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Bhuna",
+          "gold": "Gambas Bhuna",
+          "variant": "Gambas Bhuna",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Bhuna",
+          "gold": "Pescado Bhuna",
+          "variant": "Pescado Bhuna",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Balti",
+          "gold": "Pollo Balti",
+          "variant": "Pollo Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Balti",
+          "gold": "Cordero Balti",
+          "variant": "Cordero Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "Gambas Balti",
+          "gold": "Gambas Balti",
+          "variant": "Gambas Balti",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Pollo Chili (Picante)",
+        "Cordero Rogan Josh"
+      ],
+      "false_positives": [
+        "salado es lo que hará especial a este plato",
+        "Trozos de pollo rebozado con harina de garban",
+        "cebollas y una variedad de especias auténticas"
+      ]
+    },
+    {
+      "image_id": "10320618957461533705/7167d9d1e8001dbdcb304e4db4da9233",
+      "restaurant_id": "10320618957461533705",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 69,
+      "n_gold": 45,
+      "tp": 42,
+      "fp": 3,
+      "fn": 3,
+      "duplicates": 24,
+      "recall": 0.9333333333333333,
+      "precision": 0.9333333333333333,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 4.021803499992937,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Papad",
+          "gold": "Papad",
+          "variant": "Papad",
+          "score": 100.0
+        },
+        {
+          "pred": "Chilli Paneer",
+          "gold": "Chilli Paneer",
+          "variant": "Chilli Paneer",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo al Curry",
+          "gold": "Pollo al Curry",
+          "variant": "Pollo al Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "Vegetable Pakora",
+          "gold": "Vegetable Pakora",
+          "variant": "Vegetable Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Cebolla Bhaji",
+          "gold": "Cebolla Bhaji",
+          "variant": "Cebolla Bhaji",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Madras",
+          "gold": "Pollo Madras",
+          "variant": "Pollo Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Pakora",
+          "gold": "Paneer Pakora",
+          "variant": "Paneer Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Pakora",
+          "gold": "Pollo Pakora",
+          "variant": "Pollo Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Tikka Masala",
+          "gold": "Pollo Tikka Masala",
+          "variant": "Pollo Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Pescado Pakora",
+          "gold": "Pescado Pakora",
+          "variant": "Pescado Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Korma",
+          "gold": "Pollo Korma",
+          "variant": "Pollo Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Vindaloo",
+          "gold": "Pollo Vindaloo",
+          "variant": "Pollo Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Aloo Tikki Chat",
+          "gold": "Aloo Tikki Chat",
+          "variant": "Aloo Tikki Chat",
+          "score": 100.0
+        },
+        {
+          "pred": "Butter Chicken",
+          "gold": "Butter Chicken",
+          "variant": "Butter Chicken",
+          "score": 100.0
+        },
+        {
+          "pred": "chat pdi",
+          "gold": "Chat Papdi",
+          "variant": "Chat Papdi",
+          "score": 88.88888888888889
+        },
+        {
+          "pred": "Chilli Chicken",
+          "gold": "Chilli Chicken",
+          "variant": "Chilli Chicken",
+          "score": 100.0
+        },
+        {
+          "pred": "Murgh Masala",
+          "gold": "Murgh Masala",
+          "variant": "Murgh Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Lollipops De Pollo",
+          "gold": "Lollipops De Pollo",
+          "variant": "Lollipops De Pollo",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Palak",
+          "gold": "Pollo Palak",
+          "variant": "Pollo Palak",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Madras",
+          "gold": "Cordero Madras",
+          "variant": "Cordero Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Korma",
+          "gold": "Cordero Korma",
+          "variant": "Cordero Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Vindaloo",
+          "gold": "Cordero Vindaloo",
+          "variant": "Cordero Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "TRADICIONAL",
+          "gold": "Tradicional",
+          "variant": "Tradicional",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Balti",
+          "gold": "Cordero Balti",
+          "variant": "Cordero Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "COCO",
+          "gold": "Coco",
+          "variant": "Coco",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO KADHAI",
+          "gold": "Pollo Kadhai",
+          "variant": "Pollo Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "MAGIC MASALA",
+          "gold": "Magic Masala",
+          "variant": "Magic Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO BALTI",
+          "gold": "Pollo Balti",
+          "variant": "Pollo Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO DOPIAZZA",
+          "gold": "Pollo Dopiazza",
+          "variant": "Pollo Dopiazza",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO MANGO",
+          "gold": "Pollo Mango",
+          "variant": "Pollo Mango",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO NILGIRI",
+          "gold": "Pollo Nilgiri",
+          "variant": "Pollo Nilgiri",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO MUGHLAI",
+          "gold": "Pollo Mughlai",
+          "variant": "Pollo Mughlai",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO JALFREZI",
+          "gold": "Pollo Jalfrezi",
+          "variant": "Pollo Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Biryani",
+          "gold": "Pollo Biryani",
+          "variant": "Pollo Biryani",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Tikka Masala",
+          "gold": "Cordero Tikka Masala",
+          "variant": "Cordero Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Rogan Josh",
+          "gold": "Cordero Rogan Josh",
+          "variant": "Cordero Rogan Josh",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Jalfrezi",
+          "gold": "Cordero Jalfrezi",
+          "variant": "Cordero Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Kadhai",
+          "gold": "Cordero Kadhai",
+          "variant": "Cordero Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Cordero Dopizza",
+          "gold": "Cordero Dopizza",
+          "variant": "Cordero Dopizza",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO CURRY",
+          "gold": "Cordero Curry",
+          "variant": "Cordero Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO PALAK",
+          "gold": "Cordero Palak",
+          "variant": "Cordero Palak",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO BIRYANI",
+          "gold": "Cordero Biryani",
+          "variant": "Cordero Biryani",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [
+        {
+          "pred": "Cordero Cory",
+          "gold": "Cordero Curry",
+          "variant": "Cordero Curry",
+          "score": 88.0
+        },
+        {
+          "pred": "POLLO AL CURRY",
+          "gold": "Pollo al Curry",
+          "variant": "Pollo al Curry",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO MADRAS",
+          "gold": "Pollo Madras",
+          "variant": "Pollo Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO TIKKA MASALA",
+          "gold": "Pollo Tikka Masala",
+          "variant": "Pollo Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO KORMA",
+          "gold": "Pollo Korma",
+          "variant": "Pollo Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO VINDALOO",
+          "gold": "Pollo Vindaloo",
+          "variant": "Pollo Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "BUTTER CHICKEN",
+          "gold": "Butter Chicken",
+          "variant": "Butter Chicken",
+          "score": 100.0
+        },
+        {
+          "pred": "MURGH MASALA",
+          "gold": "Murgh Masala",
+          "variant": "Murgh Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "POLLO PALAK",
+          "gold": "Pollo Palak",
+          "variant": "Pollo Palak",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Kadhai",
+          "gold": "Pollo Kadhai",
+          "variant": "Pollo Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Balti",
+          "gold": "Pollo Balti",
+          "variant": "Pollo Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Dopiazza",
+          "gold": "Pollo Dopiazza",
+          "variant": "Pollo Dopiazza",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Mango",
+          "gold": "Pollo Mango",
+          "variant": "Pollo Mango",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Nilgiri",
+          "gold": "Pollo Nilgiri",
+          "variant": "Pollo Nilgiri",
+          "score": 100.0
+        },
+        {
+          "pred": "Pollo Mughlai",
+          "gold": "Pollo Mughlai",
+          "variant": "Pollo Mughlai",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO MADRAS",
+          "gold": "Cordero Madras",
+          "variant": "Cordero Madras",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO TIKKA MASALA",
+          "gold": "Cordero Tikka Masala",
+          "variant": "Cordero Tikka Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO KORMA",
+          "gold": "Cordero Korma",
+          "variant": "Cordero Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO ROGAN JOSH",
+          "gold": "Cordero Rogan Josh",
+          "variant": "Cordero Rogan Josh",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO VINDALOO",
+          "gold": "Cordero Vindaloo",
+          "variant": "Cordero Vindaloo",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO JALFREZI",
+          "gold": "Cordero Jalfrezi",
+          "variant": "Cordero Jalfrezi",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO KADHAI",
+          "gold": "Cordero Kadhai",
+          "variant": "Cordero Kadhai",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO BALTI",
+          "gold": "Cordero Balti",
+          "variant": "Cordero Balti",
+          "score": 100.0
+        },
+        {
+          "pred": "CORDERO DOPIAZZA",
+          "gold": "Cordero Dopizza",
+          "variant": "Cordero Dopiazza",
+          "score": 100.0
+        }
+      ],
+      "unmatched_gold": [
+        "Samosas vegetal",
+        "Dahi Puri",
+        "Samosas de carne"
+      ],
+      "false_positives": [
+        "carne(2 uds.)",
+        "TERFLY",
+        "Polto ezi"
+      ]
+    },
+    {
+      "image_id": "12353399953336620223/2348ac983ccbea08aea4af7896f68c00",
+      "restaurant_id": "12353399953336620223",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 77,
+      "n_gold": 102,
+      "tp": 70,
+      "fp": 7,
+      "fn": 32,
+      "duplicates": 0,
+      "recall": 0.6862745098039216,
+      "precision": 0.9090909090909091,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 4.56914466602588,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "YAKITORL",
+          "gold": "YAKITORI",
+          "variant": "YAKITORI",
+          "score": 87.5
+        },
+        {
+          "pred": "GYUNIKU NO ROLUMAKIL",
+          "gold": "GYUNIKU NO ROLUMAKI",
+          "variant": "GYUNIKU NO ROLUMAKI",
+          "score": 97.43589743589743
+        },
+        {
+          "pred": "GYUNIKU TATAKL",
+          "gold": "GYUNIKU TATAKI",
+          "variant": "GYUNIKU TATAKI",
+          "score": 92.85714285714286
+        },
+        {
+          "pred": "TEPPANYAKI EBIL",
+          "gold": "TEPPANYAKI EBI",
+          "variant": "TEPPANYAKI EBI",
+          "score": 96.55172413793103
+        },
+        {
+          "pred": "KOMO TOKYO",
+          "gold": "KOMO TOKYO",
+          "variant": "KOMO TOKYO",
+          "score": 100.0
+        },
+        {
+          "pred": "YASALITEME",
+          "gold": "YASAI ITEME",
+          "variant": "YASAI ITEME",
+          "score": 85.71428571428572
+        },
+        {
+          "pred": "YAKI OYUNIKU",
+          "gold": "YAKI GYUNIKU",
+          "variant": "YAKI GYUNIKU",
+          "score": 91.66666666666667
+        },
+        {
+          "pred": "YAKI KAMO",
+          "gold": "YAKI KAMO",
+          "variant": "YAKI KAMO",
+          "score": 100.0
+        },
+        {
+          "pred": "WAFU GYUNIKU SUTEKI",
+          "gold": "WAFU GYUNIKU SUTEKI",
+          "variant": "WAFU GYUNIKU SUTEKI",
+          "score": 100.0
+        },
+        {
+          "pred": "MAGURO TATAKI",
+          "gold": "MAGURO TATAKI",
+          "variant": "MAGURO TATAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "UNAZYU",
+          "gold": "UNAZYU",
+          "variant": "UNAZYU",
+          "score": 100.0
+        },
+        {
+          "pred": "STEAK TARTARE (200g)",
+          "gold": "STEAK TARTARE (200g)",
+          "variant": "STEAK TARTARE (200g)",
+          "score": 100.0
+        },
+        {
+          "pred": "MAGURO TEMPAYAKI (200g)",
+          "gold": "MAGURO TEMPAYAKI (200g)",
+          "variant": "MAGURO TEMPAYAKI (200g)",
+          "score": 100.0
+        },
+        {
+          "pred": "Tatar de salmón (200g)",
+          "gold": "Tatar de salmón (200g)",
+          "variant": "Tatar de salmón (200g)",
+          "score": 100.0
+        },
+        {
+          "pred": "MENÚ DE KAEDE(Para 2 Personas)",
+          "gold": "MENÚ DE KAEDE (Para 2 Personas)",
+          "variant": "MENÚ DE KAEDE (Para 2 Personas)",
+          "score": 100.0
+        },
+        {
+          "pred": "WAFU SALADA NO MORIAWASE",
+          "gold": "WAFU SALADA NO MORIAWASE",
+          "variant": "WAFU SALADA NO MORIAWASE",
+          "score": 100.0
+        },
+        {
+          "pred": "ERL I SAKE SALADA",
+          "gold": "EBI I SAKE SALADA",
+          "variant": "EBI I SAKE SALADA",
+          "score": 88.23529411764706
+        },
+        {
+          "pred": "HIYASHI WAKAME SALAD",
+          "gold": "HIYASHI WAKAME SALAD",
+          "variant": "HIYASHI WAKAME SALAD",
+          "score": 100.0
+        },
+        {
+          "pred": "MISOSHIRU",
+          "gold": "MISOSHIRU",
+          "variant": "MISOSHIRU",
+          "score": 100.0
+        },
+        {
+          "pred": "KAISEN SOUP",
+          "gold": "KAISEN SOUP",
+          "variant": "KAISEN SOUP",
+          "score": 100.0
+        },
+        {
+          "pred": "HARU MAKI",
+          "gold": "HARU MAKI",
+          "variant": "HARU MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "EBI FA MAKI",
+          "gold": "EBI FA MAKI",
+          "variant": "EBI FA MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "SHAO MAI",
+          "gold": "SHAO MAI",
+          "variant": "SHAO MAI",
+          "score": 100.0
+        },
+        {
+          "pred": "HIYA YAKKO",
+          "gold": "HIYA YAKKO",
+          "variant": "HIYA YAKKO",
+          "score": 100.0
+        },
+        {
+          "pred": "NASUDENGAKU",
+          "gold": "NASUDENGAKU",
+          "variant": "NASUDENGAKU",
+          "score": 100.0
+        },
+        {
+          "pred": "YASAI GYOZA",
+          "gold": "YASAI GYOZA",
+          "variant": "YASAI GYOZA",
+          "score": 100.0
+        },
+        {
+          "pred": "Empanadillas de bacalao y puerros",
+          "gold": "Empanadillas de bacalao y puerros",
+          "variant": "Empanadillas de bacalao y puerros",
+          "score": 100.0
+        },
+        {
+          "pred": "GOHAN",
+          "gold": "GOHAN",
+          "variant": "GOHAN",
+          "score": 100.0
+        },
+        {
+          "pred": "PAN JAPONÉS / PÁ JAPONÉS",
+          "gold": "PAN JAPONÉS",
+          "variant": "PAN JAPONÉS",
+          "score": 100.0
+        },
+        {
+          "pred": "YAKIMESHIL",
+          "gold": "YAKIMESHI",
+          "variant": "YAKIMESHI",
+          "score": 94.73684210526316
+        },
+        {
+          "pred": "EBI CHAHAN",
+          "gold": "EBI CHAHAN",
+          "variant": "EBI CHAHAN",
+          "score": 100.0
+        },
+        {
+          "pred": "YAKIUDON",
+          "gold": "YAKI UDON",
+          "variant": "YAKI UDON",
+          "score": 94.11764705882352
+        },
+        {
+          "pred": "EBI YAKI SOBA",
+          "gold": "EBI YAKI SOBA",
+          "variant": "EBI YAKI SOBA",
+          "score": 100.0
+        },
+        {
+          "pred": "TEMPURA UDON",
+          "gold": "TEMPURA UDON",
+          "variant": "TEMPURA UDON",
+          "score": 100.0
+        },
+        {
+          "pred": "KATSU DON",
+          "gold": "KATSU DON",
+          "variant": "KATSU DON",
+          "score": 100.0
+        },
+        {
+          "pred": "SHOYU RAMEN",
+          "gold": "SHOYU RAMEN",
+          "variant": "SHOYU RAMEN",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKE SASHIMI (SALMON)",
+          "gold": "SAKE SASHIMI (SALMÓN)",
+          "variant": "SAKE SASHIMI (SALMÓN)",
+          "score": 100.0
+        },
+        {
+          "pred": "SASHIMI NO MORIAWASE (VARIADO)",
+          "gold": "SASHIMI NO MORIAWASE (VARIADO)",
+          "variant": "SASHIMI NO MORIAWASE (VARIADO)",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKE NIGIRL",
+          "gold": "SAKE NIGIRI",
+          "variant": "SAKE NIGIRI",
+          "score": 90.9090909090909
+        },
+        {
+          "pred": "MAGURO NIGIRIL",
+          "gold": "MAGURO NIGIRI",
+          "variant": "MAGURO NIGIRI",
+          "score": 96.2962962962963
+        },
+        {
+          "pred": "TAI NIGIRI",
+          "gold": "TAI NIGIRI",
+          "variant": "TAI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "UNAGI NIGIRI",
+          "gold": "UNAGI NIGIRI",
+          "variant": "UNAGI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "IKA NIGIRI",
+          "gold": "IKA NIGIRI",
+          "variant": "IKA NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "IKURA NIGIRL",
+          "gold": "IKURA NIGIRI",
+          "variant": "IKURA NIGIRI",
+          "score": 91.66666666666667
+        },
+        {
+          "pred": "TOBIKKO NIGIRL",
+          "gold": "TOBIKKO NIGIRI",
+          "variant": "TOBIKKO NIGIRI",
+          "score": 92.85714285714286
+        },
+        {
+          "pred": "ABOGATO NIGIRI",
+          "gold": "ABOGATO NIGIRI",
+          "variant": "ABOGATO NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "UNI NIGIRI",
+          "gold": "UNI NIGIRI",
+          "variant": "UNI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "GUNKAN ATÚN SPICY",
+          "gold": "GUNKAN ATÚN SPICY",
+          "variant": "GUNKAN ATÚN SPICY",
+          "score": 100.0
+        },
+        {
+          "pred": "GUKAN SALMÓN SPICY",
+          "gold": "GUKAN SALMÓN SPICY",
+          "variant": "GUKAN SALMÓN SPICY",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEDO DE SALMÓN",
+          "gold": "SUSHI FLAMEDO DE SALMÓN",
+          "variant": "SUSHI FLAMEDO DE SALMÓN",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE DORADA",
+          "gold": "SUSHI FLAMEADO DE DORADA",
+          "variant": "SUSHI FLAMEADO DE DORADA",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE CALAMARES",
+          "gold": "SUSHI FLAMEADO DE CALAMARES",
+          "variant": "SUSHI FLAMEADO DE CALAMARES",
+          "score": 100.0
+        },
+        {
+          "pred": "TEMAKI",
+          "gold": "TEMAKI",
+          "variant": "TEMAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "ONIGIRI",
+          "gold": "ONIGIRI",
+          "variant": "ONIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "MAKI VARIADO",
+          "gold": "MAKI VARIADO",
+          "variant": "MAKI VARIADO",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHIY SASHIMLVARIADO",
+          "gold": "SUSHI Y SASHIMI VARIADO",
+          "variant": "SUSHI Y SASHIMI VARIADO",
+          "score": 90.9090909090909
+        },
+        {
+          "pred": "TEMPURA FUTOMAKI",
+          "gold": "TEMPURA FUTOMAKI",
+          "variant": "TEMPURA FUTOMAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "SPICY TUNA MAKI",
+          "gold": "SPICY TUNA MAKI",
+          "variant": "SPICY TUNA MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "CALIFORNIA MAKL",
+          "gold": "CALIFORNIA MAKI",
+          "variant": "CALIFORNIA MAKI",
+          "score": 93.33333333333333
+        },
+        {
+          "pred": "NIKU MAKI",
+          "gold": "NIKU MAKI",
+          "variant": "NIKU MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "PHILADELPHIA MAKI",
+          "gold": "PHILADELPHIA MAKI",
+          "variant": "PHILADELPHIA MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "PINKUDORAGON RORU",
+          "gold": "PINKUDORAGON RORU",
+          "variant": "PINKUDORAGON RORU",
+          "score": 100.0
+        },
+        {
+          "pred": "KAEDE RORU",
+          "gold": "KAEDE RORU",
+          "variant": "KAEDE RORU",
+          "score": 100.0
+        },
+        {
+          "pred": "CHIRASHI DONBURL",
+          "gold": "CHIRASHI DONBURI",
+          "variant": "CHIRASHI DONBURI",
+          "score": 93.75
+        },
+        {
+          "pred": "TEMPURA NO MORIAWASE",
+          "gold": "TEMPURA NO MORIAWASE",
+          "variant": "TEMPURA NO MORIAWASE",
+          "score": 100.0
+        },
+        {
+          "pred": "EBI TEMPURAL",
+          "gold": "EBI TEMPURA",
+          "variant": "EBI TEMPURA",
+          "score": 95.65217391304348
+        },
+        {
+          "pred": "TORI KAISU",
+          "gold": "TORI KAISU",
+          "variant": "TORI KAISU",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKANA FURAL",
+          "gold": "SAKANA FURAI",
+          "variant": "SAKANA FURAI",
+          "score": 91.66666666666667
+        },
+        {
+          "pred": "TONKASU",
+          "gold": "TONKASU",
+          "variant": "TONKASU",
+          "score": 100.0
+        },
+        {
+          "pred": "MENU DEL DIA",
+          "gold": "MENU DEL DIA",
+          "variant": "MENU DEL DIA",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "EDAMAME",
+        "AGEDASHI TOFU",
+        "YAKI GYOZA",
+        "GYOZA",
+        "HARGAO",
+        "MAGURO SASHIMI (ATÚN)",
+        "KAPPA MAKI",
+        "SAKE MAKI",
+        "TEKKA MAKI",
+        "FUTO MAKI",
+        "EBI NIGIRI",
+        "SUSHI FLAMEADO DE ATÚN",
+        "SUSHI VARIADO (TYU/ZYO/KOKUJO)",
+        "Ura maki",
+        "SAKE URAMAKI",
+        "GYUNIKU MAKI",
+        "Uramaki de salmón semicrudo y langostinos rebozados",
+        "Uramaki con crujiente de cangrejo y aguacate",
+        "PINCHO DE POLLO CON SALSA SOJA CARAMELIZADA",
+        "CRUJIENTE ROLLITOS DE TERNERA Y VERDURAS",
+        "SOPA DE MISO CON ALGAS Y TOFU",
+        "ENSALADA CON VIRUTAS JAMÓN",
+        "URAMAKI DE LANGOSTINOS FRITO (8 PIEZAS)",
+        "SASHIMI VARIADO (9 LONCHAS)",
+        "URAMAKI DE SALMÓN Y AGUACATE (8 PIEZAS)",
+        "WOK DE TERNERA CON VERDURA",
+        "CRUJIENTE DE PATO CON SOJA CARAMELIZADO",
+        "PECHUGA DE POLLO FRITO CON SÉSAMO",
+        "ARROZ FRITO CON SETAS Y BAMBÚ",
+        "TALLARINES FRITO AL ESTILO JAPONÉS",
+        "ARROZ BLANCO",
+        "MENÚ DE LA NOCHE Y FIN DE SEMANA"
+      ],
+      "false_positives": [
+        "ATUN",
+        "Mak",
+        "Mako de Saimón",
+        "Maku de Adan",
+        "Rollo grande",
+        "SUSO AI ATUN",
+        "Uramaki de salmón semicrudo"
+      ]
+    },
+    {
+      "image_id": "12353399953336620223/a8c3a678c184ef488d25f9774c20128d",
+      "restaurant_id": "12353399953336620223",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 41,
+      "n_gold": 43,
+      "tp": 39,
+      "fp": 2,
+      "fn": 4,
+      "duplicates": 0,
+      "recall": 0.9069767441860465,
+      "precision": 0.9512195121951219,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 1.9762385829775595,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "KAPPA MAKL",
+          "gold": "KAPPA MAKI",
+          "variant": "KAPPA MAKI",
+          "score": 90.0
+        },
+        {
+          "pred": "SAKE MAKL",
+          "gold": "SAKE MAKI",
+          "variant": "SAKE MAKI",
+          "score": 88.88888888888889
+        },
+        {
+          "pred": "TEKKA MAKL",
+          "gold": "TEKKA MAKI",
+          "variant": "TEKKA MAKI",
+          "score": 90.0
+        },
+        {
+          "pred": "AGUACATE MAKL",
+          "gold": "AGUACATE MAKI",
+          "variant": "AGUACATE MAKI",
+          "score": 92.3076923076923
+        },
+        {
+          "pred": "EBI NIGIRI",
+          "gold": "EBI NIGIRI",
+          "variant": "EBI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKE NIGIRL",
+          "gold": "SAKE NIGIRI",
+          "variant": "SAKE NIGIRI",
+          "score": 90.9090909090909
+        },
+        {
+          "pred": "MAGURO NIGIRI",
+          "gold": "MAGURO NIGIRI",
+          "variant": "MAGURO NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "TAI NIGIRI",
+          "gold": "TAI NIGIRI",
+          "variant": "TAI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "UNAGI NIGIRI",
+          "gold": "UNAGI NIGIRI",
+          "variant": "UNAGI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "IKA NIGIRI",
+          "gold": "IKA NIGIRI",
+          "variant": "IKA NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "IKURA NIGIRL",
+          "gold": "IKURA NIGIRI",
+          "variant": "IKURA NIGIRI",
+          "score": 91.66666666666667
+        },
+        {
+          "pred": "TOBIKKO NIGIRL",
+          "gold": "TOBIKKO NIGIRI",
+          "variant": "TOBIKKO NIGIRI",
+          "score": 92.85714285714286
+        },
+        {
+          "pred": "ABOGATO NIGIRI",
+          "gold": "ABOGATO NIGIRI",
+          "variant": "ABOGATO NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "UNI NIGIRI",
+          "gold": "UNI NIGIRI",
+          "variant": "UNI NIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "GUNKAN ATÚN SPICY",
+          "gold": "GUNKAN ATÚN SPICY",
+          "variant": "GUNKAN ATÚN SPICY",
+          "score": 100.0
+        },
+        {
+          "pred": "GUKAN SALMÓN SPICY",
+          "gold": "GUKAN SALMÓN SPICY",
+          "variant": "GUKAN SALMÓN SPICY",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE SALMÓN",
+          "gold": "SUSHI FLAMEADO DE SALMÓN",
+          "variant": "SUSHI FLAMEADO DE SALMÓN",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE DORADA",
+          "gold": "SUSHI FLAMEADO DE DORADA",
+          "variant": "SUSHI FLAMEADO DE DORADA",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE CALAMARES",
+          "gold": "SUSHI FLAMEADO DE CALAMARES",
+          "variant": "SUSHI FLAMEADO DE CALAMARES",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI FLAMEADO DE ATÚN",
+          "gold": "SUSHI FLAMEADO DE ATÚN",
+          "variant": "SUSHI FLAMEADO DE ATÚN",
+          "score": 100.0
+        },
+        {
+          "pred": "ONIGIRI",
+          "gold": "ONIGIRI",
+          "variant": "ONIGIRI",
+          "score": 100.0
+        },
+        {
+          "pred": "MAKI VARIADO",
+          "gold": "MAKI VARIADO",
+          "variant": "MAKI VARIADO",
+          "score": 100.0
+        },
+        {
+          "pred": "SUSHI Y SASHIMI VARIADO",
+          "gold": "SUSHI Y SASHIMI VARIADO",
+          "variant": "SUSHI Y SASHIMI VARIADO",
+          "score": 100.0
+        },
+        {
+          "pred": "Ura maki",
+          "gold": "Ura maki",
+          "variant": "Ura maki",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKE URAMAKL",
+          "gold": "SAKE URAMAKI",
+          "variant": "SAKE URAMAKI",
+          "score": 91.66666666666667
+        },
+        {
+          "pred": "TEMPURA FUTOMAKL",
+          "gold": "TEMPURA FUTOMAKI",
+          "variant": "TEMPURA FUTOMAKI",
+          "score": 93.75
+        },
+        {
+          "pred": "SPICY TUNA MAKIL",
+          "gold": "SPICY TUNA MAKI",
+          "variant": "SPICY TUNA MAKI",
+          "score": 96.7741935483871
+        },
+        {
+          "pred": "CALIFORNIA MAKI",
+          "gold": "CALIFORNIA MAKI",
+          "variant": "CALIFORNIA MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "NIKU MAKI",
+          "gold": "NIKU MAKI",
+          "variant": "NIKU MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "GYUNIKU MAKI",
+          "gold": "GYUNIKU MAKI",
+          "variant": "GYUNIKU MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "PHILADELPHIA MAKI",
+          "gold": "PHILADELPHIA MAKI",
+          "variant": "PHILADELPHIA MAKI",
+          "score": 100.0
+        },
+        {
+          "pred": "PINKUDORAGON RORU",
+          "gold": "PINKUDORAGON RORU",
+          "variant": "PINKUDORAGON RORU",
+          "score": 100.0
+        },
+        {
+          "pred": "KAEDE RORU",
+          "gold": "KAEDE RORU",
+          "variant": "KAEDE RORU",
+          "score": 100.0
+        },
+        {
+          "pred": "Uramaki con crujiente de cangrejo y aguacate",
+          "gold": "Uramaki con crujiente de cangrejo y aguacate",
+          "variant": "Uramaki con crujiente de cangrejo y aguacate",
+          "score": 100.0
+        },
+        {
+          "pred": "CHIRASHI DONBURI",
+          "gold": "CHIRASHI DONBURI",
+          "variant": "CHIRASHI DONBURI",
+          "score": 100.0
+        },
+        {
+          "pred": "TEMPURA NO MORIAWASE",
+          "gold": "TEMPURA NO MORIAWASE",
+          "variant": "TEMPURA NO MORIAWASE",
+          "score": 100.0
+        },
+        {
+          "pred": "EBI TEMPURA",
+          "gold": "EBI TEMPURA",
+          "variant": "EBI TEMPURA",
+          "score": 100.0
+        },
+        {
+          "pred": "TORI KAISU",
+          "gold": "TORI KAISU",
+          "variant": "TORI KAISU",
+          "score": 100.0
+        },
+        {
+          "pred": "SAKANA FURAL",
+          "gold": "SAKANA FURAI",
+          "variant": "SAKANA FURAI",
+          "score": 91.66666666666667
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "TEMAKI",
+        "SUSHI VARIADO (TYU/ZYO/KOKUJO)",
+        "Uramaki de salmón semicrudo y langostinos rebozados",
+        "TONKASU"
+      ],
+      "false_positives": [
+        "TEMAKL",
+        "y langostinos rebozados"
+      ]
+    },
+    {
+      "image_id": "1326306244314649407/80ada8490cd0992945a911e96597d8e4",
+      "restaurant_id": "1326306244314649407",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 1,
+      "n_gold": 18,
+      "tp": 1,
+      "fp": 0,
+      "fn": 17,
+      "duplicates": 0,
+      "recall": 0.05555555555555555,
+      "precision": 1.0,
+      "cost_usd": 0.0,
+      "llm_used": true,
+      "llm_cached": true,
+      "llm_latency_s": 37.0603488329798,
+      "time_s": 40.238298999002666,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Boston",
+          "gold": "Boston",
+          "variant": "Boston",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Margarita",
+        "4 quesos Plus",
+        "Todo carne",
+        "Classic Plus",
+        "Hawaiana",
+        "Tex-Mex",
+        "Vegi",
+        "4 Estaciones",
+        "Carbonara",
+        "Pesto con Tomates",
+        "Especial",
+        "Boston Caramelizada",
+        "Tom & Cheddar",
+        "Honolulu",
+        "Pescador",
+        "Chicken Tandoori",
+        "Cabra"
+      ],
+      "false_positives": []
+    },
+    {
+      "image_id": "1326306244314649407/8601bf03078cf8be78423f3b5835391a",
+      "restaurant_id": "1326306244314649407",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 25,
+      "n_gold": 53,
+      "tp": 18,
+      "fp": 7,
+      "fn": 35,
+      "duplicates": 0,
+      "recall": 0.33962264150943394,
+      "precision": 0.72,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 3.044838832949754,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+      "matched": [
+        {
+          "pred": "PECADOS",
+          "gold": "7 PECADOS",
+          "variant": "7 PECADOS",
+          "score": 100.0
+        },
+        {
+          "pred": "MARGARITA",
+          "gold": "MARGARITA",
+          "variant": "MARGARITA",
+          "score": 100.0
+        },
+        {
+          "pred": "IN EXTREMIS",
+          "gold": "IN EXTREMIS",
+          "variant": "IN EXTREMIS",
+          "score": 100.0
+        },
+        {
+          "pred": "ÓPERA",
+          "gold": "ÓPERA",
+          "variant": "ÓPERA",
+          "score": 100.0
+        },
+        {
+          "pred": "QUESOS PLUS",
+          "gold": "4 QUESOS PLUS",
+          "variant": "4 QUESOS PLUS",
+          "score": 100.0
+        },
+        {
+          "pred": "VEGGIE",
+          "gold": "VEGGIE",
+          "variant": "VEGGIE",
+          "score": 100.0
+        },
+        {
+          "pred": "HAWAIANA",
+          "gold": "HAWAIANA",
+          "variant": "HAWAIANA",
+          "score": 100.0
+        },
+        {
+          "pred": "JOHNNY PEPPERONI",
+          "gold": "JOHNNY PEPPERONI",
+          "variant": "JOHNNY PEPPERONI",
+          "score": 100.0
+        },
+        {
+          "pred": "CLASSIC PLUS",
+          "gold": "CLASSIC PLUS",
+          "variant": "CLASSIC PLUS",
+          "score": 100.0
+        },
+        {
+          "pred": "CHEESE & MUSHROOMS",
+          "gold": "CHEESE & MUSHROOMS",
+          "variant": "CHEESE & MUSHROOMS",
+          "score": 100.0
+        },
+        {
+          "pred": "CHEESE & SAUSAGE",
+          "gold": "CHEESE & SAUSAGE",
+          "variant": "CHEESE & SAUSAGE",
+          "score": 100.0
+        },
+        {
+          "pred": "TEX&ME",
+          "gold": "TEX & MEX",
+          "variant": "TEX & MEX",
+          "score": 92.3076923076923
+        },
+        {
+          "pred": "ALITAS DE POLLO",
+          "gold": "ALITAS DE POLLO",
+          "variant": "ALITAS DE POLLO",
+          "score": 100.0
+        },
+        {
+          "pred": "PAN DE AJO (QUESO)",
+          "gold": "PAN DE AJO + QUESO",
+          "variant": "PAN DE AJO + QUESO",
+          "score": 100.0
+        },
+        {
+          "pred": "LATA 33 CL/AGUA",
+          "gold": "AGUA",
+          "variant": "AGUA",
+          "score": 100.0
+        },
+        {
+          "pred": "BROWNIE (2U)",
+          "gold": "BROWNIE",
+          "variant": "BROWNIE",
+          "score": 100.0
+        },
+        {
+          "pred": "PIZZA NUTELLA (MASA CLÁSICA/CHICAGO) COOKIE",
+          "gold": "PIZZA NUTELLA",
+          "variant": "PIZZA NUTELLA",
+          "score": 100.0
+        },
+        {
+          "pred": "COCA COLA 1.2S LT",
+          "gold": "COCA COLA",
+          "variant": "COCA COLA",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "THE BOSTON",
+        "TARTUFATA",
+        "CABRA",
+        "PAN DE AJO",
+        "ALITAS BARBACOA / PICANTES",
+        "HELADOS BEN& JERRY'S",
+        "COOKIES",
+        "Masa Chicago",
+        "Cebolla",
+        "Pimiento verde",
+        "Olivas negras",
+        "Jamón York",
+        "Champiñones",
+        "Ternera",
+        "Bacon",
+        "Piña",
+        "Butifarra fresca",
+        "Azul",
+        "Feta",
+        "Cheddar",
+        "Cherry",
+        "Pollo",
+        "Doble queso",
+        "Pepperoni",
+        "Barbacoa",
+        "Atún",
+        "TARRINAS DE SALSA",
+        "COCA COLA ZERO",
+        "COCA COLA LIGHT",
+        "CERVEZA",
+        "FANTA (NAR/LIM)",
+        "AQUARIUS LIMÓN",
+        "NESTEA LIMÓN",
+        "FESTÍN M",
+        "FESTÍN XL"
+      ],
+      "false_positives": [
+        "Añade los ingredientes",
+        "HELADOS",
+        "SALSAS (TOMATE / PICANTE / BBQ / PESTO)",
+        "PAN AJO -2A PIZZA AL 50% IGUAL O MENOR QUE LA 1A",
+        "INGREDIENTES",
+        "INGREDIENTES",
+        "REFRESCOS"
+      ]
+    },
+    {
+      "image_id": "13704801545575264378/594bd6c734095e01b002c63e7e48614b",
+      "restaurant_id": "13704801545575264378",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 62,
+      "n_gold": 78,
+      "tp": 59,
+      "fp": 3,
+      "fn": 19,
+      "duplicates": 0,
+      "recall": 0.7564102564102564,
+      "precision": 0.9516129032258065,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 3.2182950830250046,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Veg Pakora sav",
+          "gold": "Veg Pakora",
+          "variant": "Veg Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "THALI Plat Combinat de I'India (for 1) ovo.sa",
+          "gold": "THALI Plat Combinat de l'India (for 1)",
+          "variant": "THALI Plat Combinat de l'India (for 1)",
+          "score": 97.14285714285714
+        },
+        {
+          "pred": "Samosa ves",
+          "gold": "Samosa",
+          "variant": "Samosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Pakora s.o",
+          "gold": "Paneer Pakora",
+          "variant": "Paneer Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Menú Degustación N°1 (for 2)",
+          "gold": "Menú Degustación Nº1 (for 2)",
+          "variant": "Menú Degustación Nº1 (for 2)",
+          "score": 96.15384615384616
+        },
+        {
+          "pred": "Baingan Pakora v/s.c",
+          "gold": "Baingan Pakora",
+          "variant": "Baingan Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Mixed Starter Platter (For 2) ov",
+          "gold": "Mixed Starter Platter (For 2)",
+          "variant": "Mixed Starter Platter (For 2)",
+          "score": 100.0
+        },
+        {
+          "pred": "Dahi Puri Chat av",
+          "gold": "Dahi Puri Chat",
+          "variant": "Dahi Puri Chat",
+          "score": 100.0
+        },
+        {
+          "pred": "Masala Papad sav",
+          "gold": "Masala Papad",
+          "variant": "Masala Papad",
+          "score": 100.0
+        },
+        {
+          "pred": "Chilli Mushroom",
+          "gold": "Chilli Mushroom",
+          "variant": "Chilli Mushroom",
+          "score": 100.0
+        },
+        {
+          "pred": "Chilli Panner",
+          "gold": "Chilli Panner",
+          "variant": "Chilli Panner",
+          "score": 100.0
+        },
+        {
+          "pred": "Menú Infantil",
+          "gold": "Menú Infantil",
+          "variant": "Menú Infantil",
+          "score": 100.0
+        },
+        {
+          "pred": "Hummus v",
+          "gold": "Hummus",
+          "variant": "Hummus",
+          "score": 100.0
+        },
+        {
+          "pred": "Soup of the Day v",
+          "gold": "Soup of the Day",
+          "variant": "Soup of the Day",
+          "score": 100.0
+        },
+        {
+          "pred": "Chef's Garden Salad",
+          "gold": "Chef's Garden Salad",
+          "variant": "Chef's Garden Salad",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Tikka so",
+          "gold": "Paneer Tikka",
+          "variant": "Paneer Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Tandoori Aloo",
+          "gold": "Tandoori Aloo",
+          "variant": "Tandoori Aloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Masala Dosa soN",
+          "gold": "Masala Dosa",
+          "variant": "Masala Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Kebab",
+          "gold": "Veg. Kebab",
+          "variant": "Veg. Kebab",
+          "score": 100.0
+        },
+        {
+          "pred": "Mushroom Dosa sav",
+          "gold": "Mushroom Dosa",
+          "variant": "Mushroom Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Panner Tikka Dosa",
+          "gold": "Panner Tikka Dosa",
+          "variant": "Panner Tikka Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Aloo Naan v",
+          "gold": "Aloo Naan",
+          "variant": "Aloo Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Butter Naan ov",
+          "gold": "Butter Naan",
+          "variant": "Butter Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Peshawari Naanves",
+          "gold": "Peshawari Naan",
+          "variant": "Peshawari Naan",
+          "score": 90.3225806451613
+        },
+        {
+          "pred": "Garlic Naanv",
+          "gold": "Garlic Naan",
+          "variant": "Garlic Naan",
+          "score": 95.65217391304348
+        },
+        {
+          "pred": "Tandoori Roti",
+          "gold": "Tandoori Roti",
+          "variant": "Tandoori Roti",
+          "score": 100.0
+        },
+        {
+          "pred": "Cheese Naan ov",
+          "gold": "Cheese Naan",
+          "variant": "Cheese Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Korma ov/s.o.rs",
+          "gold": "Veg. Korma",
+          "variant": "Veg. Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Biryani o.vs.a",
+          "gold": "Veg. Biryani",
+          "variant": "Veg. Biryani",
+          "score": 100.0
+        },
+        {
+          "pred": "Palak Kofta",
+          "gold": "Palak Kofta",
+          "variant": "Palak Kofta",
+          "score": 100.0
+        },
+        {
+          "pred": "Pilaw Rice vs.a",
+          "gold": "Pilaw Rice",
+          "variant": "Pilaw Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Bhindi Baji",
+          "gold": "Bhindi Baji",
+          "variant": "Bhindi Baji",
+          "score": 100.0
+        },
+        {
+          "pred": "Lemon Rice vsa",
+          "gold": "Lemon Rice",
+          "variant": "Lemon Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Jeera Rice v/s.o",
+          "gold": "Jeera Rice",
+          "variant": "Jeera Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Channa Masala",
+          "gold": "Channa Masala",
+          "variant": "Channa Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Mushroom Masala",
+          "gold": "Mushroom Masala",
+          "variant": "Mushroom Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Indian Salad",
+          "gold": "Indian Salad",
+          "variant": "Indian Salad",
+          "score": 100.0
+        },
+        {
+          "pred": "Mango Pickle sav",
+          "gold": "Mango Pickle",
+          "variant": "Mango Pickle",
+          "score": 100.0
+        },
+        {
+          "pred": "Malai Kofta",
+          "gold": "Malai Kofta",
+          "variant": "Malai Kofta",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastis de Xocolata o Fruits Secs v.s",
+          "gold": "Pastís de Xocolata o Fruits Secs",
+          "variant": "Pastís de Xocolata o Fruits Secs",
+          "score": 100.0
+        },
+        {
+          "pred": "Mango Kulfi",
+          "gold": "Mango Kulfi",
+          "variant": "Mango Kulfi",
+          "score": 100.0
+        },
+        {
+          "pred": "Kulfi sa.rs",
+          "gold": "Kulfi",
+          "variant": "Kulfi",
+          "score": 100.0
+        },
+        {
+          "pred": "Shahi Paneer",
+          "gold": "Shahi Paneer",
+          "variant": "Shahi Paneer",
+          "score": 100.0
+        },
+        {
+          "pred": "Poma",
+          "gold": "Poma",
+          "variant": "Poma",
+          "score": 100.0
+        },
+        {
+          "pred": "YOGI Tea",
+          "gold": "YOGI Tea",
+          "variant": "YOGI Tea",
+          "score": 100.0
+        },
+        {
+          "pred": "Taronja",
+          "gold": "Taronja",
+          "variant": "Taronja",
+          "score": 100.0
+        },
+        {
+          "pred": "Llima i Menta",
+          "gold": "Llima i Menta",
+          "variant": "Llima i Menta",
+          "score": 100.0
+        },
+        {
+          "pred": "CHAI",
+          "gold": "CHAI",
+          "variant": "CHAI",
+          "score": 100.0
+        },
+        {
+          "pred": "Maracuya",
+          "gold": "Maracuya",
+          "variant": "Maracuya",
+          "score": 100.0
+        },
+        {
+          "pred": "Tulsi tea",
+          "gold": "Tulsi tea",
+          "variant": "Tulsi tea",
+          "score": 100.0
+        },
+        {
+          "pred": "Guanabana",
+          "gold": "Guanabana",
+          "variant": "Guanabana",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastanaga + Poma + Llimona",
+          "gold": "Pastanaga + Poma + Llimona",
+          "variant": "Pastanaga + Poma + Llimona",
+          "score": 100.0
+        },
+        {
+          "pred": "Café",
+          "gold": "Café",
+          "variant": "Café",
+          "score": 100.0
+        },
+        {
+          "pred": "Cortado",
+          "gold": "Cortado",
+          "variant": "Cortado",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastanaga + Poma + Remolatxa +",
+          "gold": "Pastanaga",
+          "variant": "Pastanaga",
+          "score": 100.0
+        },
+        {
+          "pred": "Café con Leche",
+          "gold": "Café con Leche",
+          "variant": "Café con Leche",
+          "score": 100.0
+        },
+        {
+          "pred": "Poleo Menta, Tila, Manzanilla",
+          "gold": "Poleo Menta",
+          "variant": "Poleo Menta",
+          "score": 100.0
+        },
+        {
+          "pred": "Té Verde con Menta Fresca",
+          "gold": "Té Verde con Menta Fresca",
+          "variant": "Té Verde con Menta Fresca",
+          "score": 100.0
+        },
+        {
+          "pred": "Salted Lassi",
+          "gold": "Salted Lassi",
+          "variant": "Salted Lassi",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Pani Puri",
+        "Mysore Masala Dosa",
+        "Idly",
+        "Tandoori Baingan Bartha",
+        "Daal Makhani",
+        "Daal Tarka",
+        "Palak Paneer",
+        "Paneer Kolhapuri",
+        "Paneer Tikka Masala",
+        "Menú Degustación Nº2 (for 2)",
+        "Naan",
+        "Cheese+Garlic Naan",
+        "Tandoori Paratha",
+        "Raita",
+        "Gulab Jamun",
+        "Rose Kulfi",
+        "Tila",
+        "Manzanilla",
+        "Pastanaga + Poma + Remolatxa + Gengibre + Menta"
+      ],
+      "false_positives": [
+        "Streat Food Specialties",
+        "OVOSG",
+        "Tandoori"
+      ]
+    },
+    {
+      "image_id": "13704801545575264378/ff5e0547d14515a853d60a8cc9063dd3",
+      "restaurant_id": "13704801545575264378",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 62,
+      "n_gold": 78,
+      "tp": 59,
+      "fp": 3,
+      "fn": 19,
+      "duplicates": 0,
+      "recall": 0.7564102564102564,
+      "precision": 0.9516129032258065,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 0.0,
+      "ungrounded_dropped": 0,
+      "duplicate_of": "13704801545575264378/594bd6c734095e01b002c63e7e48614b",
+      "error": null,
+      "matched": [
+        {
+          "pred": "Veg Pakora sav",
+          "gold": "Veg Pakora",
+          "variant": "Veg Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "THALI Plat Combinat de I'India (for 1) ovo.sa",
+          "gold": "THALI Plat Combinat de l'India (for 1)",
+          "variant": "THALI Plat Combinat de l'India (for 1)",
+          "score": 97.14285714285714
+        },
+        {
+          "pred": "Samosa ves",
+          "gold": "Samosa",
+          "variant": "Samosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Pakora s.o",
+          "gold": "Paneer Pakora",
+          "variant": "Paneer Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Menú Degustación N°1 (for 2)",
+          "gold": "Menú Degustación Nº1 (for 2)",
+          "variant": "Menú Degustación Nº1 (for 2)",
+          "score": 96.15384615384616
+        },
+        {
+          "pred": "Baingan Pakora v/s.c",
+          "gold": "Baingan Pakora",
+          "variant": "Baingan Pakora",
+          "score": 100.0
+        },
+        {
+          "pred": "Mixed Starter Platter (For 2) ov",
+          "gold": "Mixed Starter Platter (For 2)",
+          "variant": "Mixed Starter Platter (For 2)",
+          "score": 100.0
+        },
+        {
+          "pred": "Dahi Puri Chat av",
+          "gold": "Dahi Puri Chat",
+          "variant": "Dahi Puri Chat",
+          "score": 100.0
+        },
+        {
+          "pred": "Masala Papad sav",
+          "gold": "Masala Papad",
+          "variant": "Masala Papad",
+          "score": 100.0
+        },
+        {
+          "pred": "Chilli Mushroom",
+          "gold": "Chilli Mushroom",
+          "variant": "Chilli Mushroom",
+          "score": 100.0
+        },
+        {
+          "pred": "Chilli Panner",
+          "gold": "Chilli Panner",
+          "variant": "Chilli Panner",
+          "score": 100.0
+        },
+        {
+          "pred": "Menú Infantil",
+          "gold": "Menú Infantil",
+          "variant": "Menú Infantil",
+          "score": 100.0
+        },
+        {
+          "pred": "Hummus v",
+          "gold": "Hummus",
+          "variant": "Hummus",
+          "score": 100.0
+        },
+        {
+          "pred": "Soup of the Day v",
+          "gold": "Soup of the Day",
+          "variant": "Soup of the Day",
+          "score": 100.0
+        },
+        {
+          "pred": "Chef's Garden Salad",
+          "gold": "Chef's Garden Salad",
+          "variant": "Chef's Garden Salad",
+          "score": 100.0
+        },
+        {
+          "pred": "Paneer Tikka so",
+          "gold": "Paneer Tikka",
+          "variant": "Paneer Tikka",
+          "score": 100.0
+        },
+        {
+          "pred": "Tandoori Aloo",
+          "gold": "Tandoori Aloo",
+          "variant": "Tandoori Aloo",
+          "score": 100.0
+        },
+        {
+          "pred": "Masala Dosa soN",
+          "gold": "Masala Dosa",
+          "variant": "Masala Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Kebab",
+          "gold": "Veg. Kebab",
+          "variant": "Veg. Kebab",
+          "score": 100.0
+        },
+        {
+          "pred": "Mushroom Dosa sav",
+          "gold": "Mushroom Dosa",
+          "variant": "Mushroom Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Panner Tikka Dosa",
+          "gold": "Panner Tikka Dosa",
+          "variant": "Panner Tikka Dosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Aloo Naan v",
+          "gold": "Aloo Naan",
+          "variant": "Aloo Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Butter Naan ov",
+          "gold": "Butter Naan",
+          "variant": "Butter Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Peshawari Naanves",
+          "gold": "Peshawari Naan",
+          "variant": "Peshawari Naan",
+          "score": 90.3225806451613
+        },
+        {
+          "pred": "Garlic Naanv",
+          "gold": "Garlic Naan",
+          "variant": "Garlic Naan",
+          "score": 95.65217391304348
+        },
+        {
+          "pred": "Tandoori Roti",
+          "gold": "Tandoori Roti",
+          "variant": "Tandoori Roti",
+          "score": 100.0
+        },
+        {
+          "pred": "Cheese Naan ov",
+          "gold": "Cheese Naan",
+          "variant": "Cheese Naan",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Korma ov/s.o.rs",
+          "gold": "Veg. Korma",
+          "variant": "Veg. Korma",
+          "score": 100.0
+        },
+        {
+          "pred": "Veg. Biryani o.vs.a",
+          "gold": "Veg. Biryani",
+          "variant": "Veg. Biryani",
+          "score": 100.0
+        },
+        {
+          "pred": "Palak Kofta",
+          "gold": "Palak Kofta",
+          "variant": "Palak Kofta",
+          "score": 100.0
+        },
+        {
+          "pred": "Pilaw Rice vs.a",
+          "gold": "Pilaw Rice",
+          "variant": "Pilaw Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Bhindi Baji",
+          "gold": "Bhindi Baji",
+          "variant": "Bhindi Baji",
+          "score": 100.0
+        },
+        {
+          "pred": "Lemon Rice vsa",
+          "gold": "Lemon Rice",
+          "variant": "Lemon Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Jeera Rice v/s.o",
+          "gold": "Jeera Rice",
+          "variant": "Jeera Rice",
+          "score": 100.0
+        },
+        {
+          "pred": "Channa Masala",
+          "gold": "Channa Masala",
+          "variant": "Channa Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Mushroom Masala",
+          "gold": "Mushroom Masala",
+          "variant": "Mushroom Masala",
+          "score": 100.0
+        },
+        {
+          "pred": "Indian Salad",
+          "gold": "Indian Salad",
+          "variant": "Indian Salad",
+          "score": 100.0
+        },
+        {
+          "pred": "Mango Pickle sav",
+          "gold": "Mango Pickle",
+          "variant": "Mango Pickle",
+          "score": 100.0
+        },
+        {
+          "pred": "Malai Kofta",
+          "gold": "Malai Kofta",
+          "variant": "Malai Kofta",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastis de Xocolata o Fruits Secs v.s",
+          "gold": "Pastís de Xocolata o Fruits Secs",
+          "variant": "Pastís de Xocolata o Fruits Secs",
+          "score": 100.0
+        },
+        {
+          "pred": "Mango Kulfi",
+          "gold": "Mango Kulfi",
+          "variant": "Mango Kulfi",
+          "score": 100.0
+        },
+        {
+          "pred": "Kulfi sa.rs",
+          "gold": "Kulfi",
+          "variant": "Kulfi",
+          "score": 100.0
+        },
+        {
+          "pred": "Shahi Paneer",
+          "gold": "Shahi Paneer",
+          "variant": "Shahi Paneer",
+          "score": 100.0
+        },
+        {
+          "pred": "Poma",
+          "gold": "Poma",
+          "variant": "Poma",
+          "score": 100.0
+        },
+        {
+          "pred": "YOGI Tea",
+          "gold": "YOGI Tea",
+          "variant": "YOGI Tea",
+          "score": 100.0
+        },
+        {
+          "pred": "Taronja",
+          "gold": "Taronja",
+          "variant": "Taronja",
+          "score": 100.0
+        },
+        {
+          "pred": "Llima i Menta",
+          "gold": "Llima i Menta",
+          "variant": "Llima i Menta",
+          "score": 100.0
+        },
+        {
+          "pred": "CHAI",
+          "gold": "CHAI",
+          "variant": "CHAI",
+          "score": 100.0
+        },
+        {
+          "pred": "Maracuya",
+          "gold": "Maracuya",
+          "variant": "Maracuya",
+          "score": 100.0
+        },
+        {
+          "pred": "Tulsi tea",
+          "gold": "Tulsi tea",
+          "variant": "Tulsi tea",
+          "score": 100.0
+        },
+        {
+          "pred": "Guanabana",
+          "gold": "Guanabana",
+          "variant": "Guanabana",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastanaga + Poma + Llimona",
+          "gold": "Pastanaga + Poma + Llimona",
+          "variant": "Pastanaga + Poma + Llimona",
+          "score": 100.0
+        },
+        {
+          "pred": "Café",
+          "gold": "Café",
+          "variant": "Café",
+          "score": 100.0
+        },
+        {
+          "pred": "Cortado",
+          "gold": "Cortado",
+          "variant": "Cortado",
+          "score": 100.0
+        },
+        {
+          "pred": "Pastanaga + Poma + Remolatxa +",
+          "gold": "Pastanaga",
+          "variant": "Pastanaga",
+          "score": 100.0
+        },
+        {
+          "pred": "Café con Leche",
+          "gold": "Café con Leche",
+          "variant": "Café con Leche",
+          "score": 100.0
+        },
+        {
+          "pred": "Poleo Menta, Tila, Manzanilla",
+          "gold": "Poleo Menta",
+          "variant": "Poleo Menta",
+          "score": 100.0
+        },
+        {
+          "pred": "Té Verde con Menta Fresca",
+          "gold": "Té Verde con Menta Fresca",
+          "variant": "Té Verde con Menta Fresca",
+          "score": 100.0
+        },
+        {
+          "pred": "Salted Lassi",
+          "gold": "Salted Lassi",
+          "variant": "Salted Lassi",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Pani Puri",
+        "Mysore Masala Dosa",
+        "Idly",
+        "Tandoori Baingan Bartha",
+        "Daal Makhani",
+        "Daal Tarka",
+        "Palak Paneer",
+        "Paneer Kolhapuri",
+        "Paneer Tikka Masala",
+        "Menú Degustación Nº2 (for 2)",
+        "Naan",
+        "Cheese+Garlic Naan",
+        "Tandoori Paratha",
+        "Raita",
+        "Gulab Jamun",
+        "Rose Kulfi",
+        "Tila",
+        "Manzanilla",
+        "Pastanaga + Poma + Remolatxa + Gengibre + Menta"
+      ],
+      "false_positives": [
+        "Streat Food Specialties",
+        "OVOSG",
+        "Tandoori"
+      ]
+    },
+    {
+      "image_id": "16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b",
+      "restaurant_id": "16055038156589254689",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 9,
+      "n_gold": 12,
+      "tp": 5,
+      "fp": 4,
+      "fn": 7,
+      "duplicates": 0,
+      "recall": 0.4166666666666667,
+      "precision": 0.5555555555555556,
+      "cost_usd": 0.0,
+      "llm_used": true,
+      "llm_cached": true,
+      "llm_latency_s": 49.93226799997501,
+      "time_s": 54.923247333968526,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "LAMB CURRY",
+          "gold": "LAMB CURRY",
+          "variant": "LAMB CURRY",
+          "score": 100.0
+        },
+        {
+          "pred": "ROGAN GOSHT",
+          "gold": "ROGAN GOSHT",
+          "variant": "ROGAN GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "BHUNA GOSHT",
+          "gold": "BHUNA GOSHT",
+          "variant": "BHUNA GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "SAAG GOSHT",
+          "gold": "SAAG GOSHT",
+          "variant": "SAAG GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "LAMB VINDALOO",
+          "gold": "LAMB VINDALOO",
+          "variant": "LAMB VINDALOO",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "LAMB KARAHI",
+        "LAMB NILGIRI",
+        "LAMB DAHI",
+        "LAMB BOTI MASALA",
+        "MANGO LAMB",
+        "LAMB BALTI",
+        "LAMB MADRAS"
+      ],
+      "false_positives": [
+        "XAI-CORDERO-LAMB",
+        "FISH",
+        "FISH",
+        "JHIN"
+      ]
+    },
+    {
+      "image_id": "16055038156589254689/73f185f9fc81066b39c0e71d111c4d97",
+      "restaurant_id": "16055038156589254689",
+      "labeled": true,
+      "split": "dev",
+      "n_pred": 9,
+      "n_gold": 12,
+      "tp": 5,
+      "fp": 4,
+      "fn": 7,
+      "duplicates": 0,
+      "recall": 0.4166666666666667,
+      "precision": 0.5555555555555556,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 0.0,
+      "ungrounded_dropped": 0,
+      "duplicate_of": "16055038156589254689/50b409d7bee89d6fab5946ba766b2a4b",
+      "error": null,
+      "matched": [
+        {
+          "pred": "LAMB CURRY",
+          "gold": "LAMB CURRY",
+          "variant": "LAMB CURRY",
+          "score": 100.0
+        },
+        {
+          "pred": "ROGAN GOSHT",
+          "gold": "ROGAN GOSHT",
+          "variant": "ROGAN GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "BHUNA GOSHT",
+          "gold": "BHUNA GOSHT",
+          "variant": "BHUNA GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "SAAG GOSHT",
+          "gold": "SAAG GOSHT",
+          "variant": "SAAG GOSHT",
+          "score": 100.0
+        },
+        {
+          "pred": "LAMB VINDALOO",
+          "gold": "LAMB VINDALOO",
+          "variant": "LAMB VINDALOO",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "LAMB KARAHI",
+        "LAMB NILGIRI",
+        "LAMB DAHI",
+        "LAMB BOTI MASALA",
+        "MANGO LAMB",
+        "LAMB BALTI",
+        "LAMB MADRAS"
+      ],
+      "false_positives": [
+        "XAI-CORDERO-LAMB",
+        "FISH",
+        "FISH",
+        "JHIN"
+      ]
+    },
+    {
+      "image_id": "17453160375733808238/2ec92074a9e3b06948d12b09f5183925",
+      "restaurant_id": "17453160375733808238",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 10,
+      "n_gold": 10,
+      "tp": 10,
+      "fp": 0,
+      "fn": 0,
+      "duplicates": 0,
+      "recall": 1.0,
+      "precision": 1.0,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 1.762236125027295,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Aburi salmón maki",
+          "gold": "Aburi salmón maki",
+          "variant": "Aburi salmón maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Philadephia maki",
+          "gold": "Philadephia maki",
+          "variant": "Philadephia maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmón Philadephia maki",
+          "gold": "Salmón Philadephia maki",
+          "variant": "Salmón Philadephia maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Atún Philadephia maki",
+          "gold": "Atún Philadephia maki",
+          "variant": "Atún Philadephia maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmón trufa roll",
+          "gold": "Salmón trufa roll",
+          "variant": "Salmón trufa roll",
+          "score": 100.0
+        },
+        {
+          "pred": "Aburi pez mantequilla maki",
+          "gold": "Aburi pez mantequilla maki",
+          "variant": "Aburi pez mantequilla maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Anguila aguacate maki",
+          "gold": "Anguila aguacate maki",
+          "variant": "Anguila aguacate maki",
+          "score": 100.0
+        },
+        {
+          "pred": "Tempura salmón",
+          "gold": "Tempura salmón",
+          "variant": "Tempura salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmón mango roll / 4 PZS",
+          "gold": "Salmón mango roll",
+          "variant": "Salmón mango roll",
+          "score": 100.0
+        },
+        {
+          "pred": "Mango langostino roll",
+          "gold": "Mango langostino roll",
+          "variant": "Mango langostino roll",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [],
+      "false_positives": []
+    },
+    {
+      "image_id": "17453160375733808238/96e7cbb9c363bb62c949b804b1b6fd1a",
+      "restaurant_id": "17453160375733808238",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 49,
+      "n_gold": 18,
+      "tp": 13,
+      "fp": 11,
+      "fn": 5,
+      "duplicates": 25,
+      "recall": 0.7222222222222222,
+      "precision": 0.5416666666666666,
+      "cost_usd": 0.0,
+      "llm_used": true,
+      "llm_cached": true,
+      "llm_latency_s": 102.4184492919594,
+      "time_s": 104.09640712592704,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Ruibe",
+          "gold": "Ruibe",
+          "variant": "Ruibe",
+          "score": 100.0
+        },
+        {
+          "pred": "Aburi salmón",
+          "gold": "Aburi salmón",
+          "variant": "Aburi salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Atún",
+          "gold": "Atún",
+          "variant": "Atún",
+          "score": 100.0
+        },
+        {
+          "pred": "Anguila",
+          "gold": "Anguila",
+          "variant": "Anguila",
+          "score": 100.0
+        },
+        {
+          "pred": "Pez mantequilla",
+          "gold": "Pez mantequilla",
+          "variant": "Pez mantequilla",
+          "score": 100.0
+        },
+        {
+          "pred": "Langostino",
+          "gold": "Langostino",
+          "variant": "Langostino",
+          "score": 100.0
+        },
+        {
+          "pred": "Pez mantequilla flameado",
+          "gold": "Aburi pez mantequilla",
+          "variant": "Pez mantequilla flameado",
+          "score": 100.0
+        },
+        {
+          "pred": "221 Salmón",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "222. Salmón y queso",
+          "gold": "Salmón y queso",
+          "variant": "Salmón y queso",
+          "score": 100.0
+        },
+        {
+          "pred": "223. Salmón y mango",
+          "gold": "Salmón y mango",
+          "variant": "Salmón y mango",
+          "score": 100.0
+        },
+        {
+          "pred": "234. Solomillo de ternera con trufa",
+          "gold": "Solomillo de ternera con trufa",
+          "variant": "Solomillo de ternera con trufa",
+          "score": 100.0
+        },
+        {
+          "pred": "235. Solomillo ternera con vieira",
+          "gold": "Solomillo ternera con vieira",
+          "variant": "Solomillo ternera con vieira",
+          "score": 100.0
+        },
+        {
+          "pred": "236. Aburi Atún",
+          "gold": "Aburi Atún",
+          "variant": "Aburi Atún",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [
+        {
+          "pred": "Salmón fresco en loncha con salsa agria",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmó fresc en llesques amb salsa agra",
+          "gold": "Salmón",
+          "variant": "Salmó",
+          "score": 100.0
+        },
+        {
+          "pred": "Slices of raw salmon in sour sauce",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmón flameado",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Tonyina",
+          "gold": "Atún",
+          "variant": "Tonyina",
+          "score": 100.0
+        },
+        {
+          "pred": "Anguila",
+          "gold": "Anguila",
+          "variant": "Anguila",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmó flamejat",
+          "gold": "Salmón",
+          "variant": "Salmó",
+          "score": 100.0
+        },
+        {
+          "pred": "Tuna",
+          "gold": "Atún",
+          "variant": "Tuna",
+          "score": 100.0
+        },
+        {
+          "pred": "Eel",
+          "gold": "Anguila",
+          "variant": "Eel",
+          "score": 100.0
+        },
+        {
+          "pred": "Flamed salmon",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Solo salmón",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Solo atún",
+          "gold": "Atún",
+          "variant": "Atún",
+          "score": 100.0
+        },
+        {
+          "pred": "Aburi pez mantequill",
+          "gold": "Aburi pez mantequilla",
+          "variant": "Aburi pez mantequilla",
+          "score": 97.5609756097561
+        },
+        {
+          "pred": "Peix mantega",
+          "gold": "Pez mantequilla",
+          "variant": "Peix mantega",
+          "score": 100.0
+        },
+        {
+          "pred": "Llagostí",
+          "gold": "Langostino",
+          "variant": "Llagostí",
+          "score": 100.0
+        },
+        {
+          "pred": "Butter fish",
+          "gold": "Pez mantequilla",
+          "variant": "Butter fish",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmó",
+          "gold": "Salmón",
+          "variant": "Salmó",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmó i formatge",
+          "gold": "Salmón",
+          "variant": "Salmó",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmó i mango",
+          "gold": "Salmón",
+          "variant": "Salmó",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmon",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmon and cheese",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Salmon and mango",
+          "gold": "Salmón",
+          "variant": "Salmón",
+          "score": 100.0
+        },
+        {
+          "pred": "Veal sirloin with truffle",
+          "gold": "Solomillo de ternera con trufa",
+          "variant": "Veal sirloin with truffle",
+          "score": 100.0
+        },
+        {
+          "pred": "Veal sirloin with scallop",
+          "gold": "Solomillo ternera con vieira",
+          "variant": "Veal sirloin with scallop",
+          "score": 100.0
+        },
+        {
+          "pred": "Tonyina flamejat",
+          "gold": "Atún",
+          "variant": "Tonyina",
+          "score": 100.0
+        }
+      ],
+      "unmatched_gold": [
+        "Sashimi de salmón",
+        "Bola de arroz cubierto con loncha de pescado crudo",
+        "Pulpo con trufa",
+        "Aguacate",
+        "Tortilla japonesa"
+      ],
+      "false_positives": [
+        "2,50€/1uds",
+        "10,95 €/5uds",
+        "19.50 €/25uds",
+        "Peix cru variat en rodanxes",
+        "Variado",
+        "2,25€/1uds",
+        "1,95 €/1uds",
+        "NIGIRI",
+        "SHI",
+        "10,95 €/5uds",
+        "10,95 €/5uds"
+      ]
+    },
+    {
+      "image_id": "2564282930447335749/2f04957e9038d0282481700cbf990c80",
+      "restaurant_id": "2564282930447335749",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 16,
+      "n_gold": 35,
+      "tp": 4,
+      "fp": 12,
+      "fn": 31,
+      "duplicates": 0,
+      "recall": 0.11428571428571428,
+      "precision": 0.25,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 15.502379624986556,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": "llm: Ollama connection error (ollama/qwen2.5:7b): timed out",
+      "matched": [
+        {
+          "pred": "ESTACIONS",
+          "gold": "4 ESTACIONS",
+          "variant": "4 ESTACIONS",
+          "score": 100.0
+        },
+        {
+          "pred": "FORMATGES",
+          "gold": "5 FORMATGES",
+          "variant": "5 FORMATGES",
+          "score": 100.0
+        },
+        {
+          "pred": "TRUFATTA",
+          "gold": "TRUFATTA",
+          "variant": "TRUFATTA",
+          "score": 100.0
+        },
+        {
+          "pred": "PACIFICO",
+          "gold": "PACIFICO",
+          "variant": "PACIFICO",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "AMERICANA",
+        "BBQ",
+        "CARB-O-NADA",
+        "CLOTENCA",
+        "DELIZZIA",
+        "GREGA",
+        "HAWAIANA",
+        "ITALIANA",
+        "LA PESTO",
+        "MALLORQUINA",
+        "MEDITERRANEA",
+        "PAGESA",
+        "PICANT",
+        "LA SUPREMA",
+        "VEGGIE",
+        "POP - EYE",
+        "LA MEX",
+        "CALABACÍN",
+        "MARRAKECH",
+        "SWEET & SOUR",
+        "LA ATÚN",
+        "CALABAZA",
+        "LA JAPO",
+        "PA D'ALL",
+        "LES CASSOLETES DE PROVOLONE",
+        "LES CASSOLETES DE SOBRASSADA",
+        "LES CASSOLETES DE TÒFONA NEGRA",
+        "LA MANDONGA",
+        "MOZZA VEGETAL",
+        "OFERTA PIZZES CLASSIC",
+        "OFERTA PIZZES HEALTHY"
+      ],
+      "false_positives": [
+        "Amb brie i tòfona negra",
+        "Amb formatge",
+        "4 unitats",
+        "DE TEMPORADA",
+        "PER NOMÉS",
+        "Comanda mínima de",
+        "LES CASSOLETES",
+        "DE 250 GR",
+        "PER NOMÉS",
+        "PIZZES MITJANES",
+        "PIZZES GRANS",
+        "PIZZES MITJANES"
+      ]
+    },
+    {
+      "image_id": "2564282930447335749/91b12c85a02f2d5014d2025de06e9c9e",
+      "restaurant_id": "2564282930447335749",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 30,
+      "n_gold": 45,
+      "tp": 9,
+      "fp": 21,
+      "fn": 36,
+      "duplicates": 0,
+      "recall": 0.2,
+      "precision": 0.3,
+      "cost_usd": 0.0,
+      "llm_used": true,
+      "llm_cached": true,
+      "llm_latency_s": 92.63357954204548,
+      "time_s": 105.8524048750503,
+      "ungrounded_dropped": 36,
+      "duplicate_of": null,
+      "error": "llm: no grounded dishes, kept rules output",
+      "matched": [
+        {
+          "pred": "GAUDEIX-LA AMB NEGRA MODELO",
+          "gold": "NEGRA MODELO",
+          "variant": "NEGRA MODELO",
+          "score": 100.0
+        },
+        {
+          "pred": "MILLOR AMB BUDWEISER",
+          "gold": "BUDWEISER",
+          "variant": "BUDWEISER",
+          "score": 100.0
+        },
+        {
+          "pred": "GRAN MARIDATGE AMB LEFFE",
+          "gold": "LEFFE",
+          "variant": "LEFFE",
+          "score": 100.0
+        },
+        {
+          "pred": "COMBINA-LA AMB STELLA ARTOIS",
+          "gold": "STELLA ARTOIS",
+          "variant": "STELLA ARTOIS",
+          "score": 100.0
+        },
+        {
+          "pred": "alvocat, mozzarella de búfala, olives",
+          "gold": "ALVOCAT",
+          "variant": "ALVOCAT",
+          "score": 100.0
+        },
+        {
+          "pred": "CONTRASTES",
+          "gold": "CONTRASTES",
+          "variant": "CONTRASTES",
+          "score": 100.0
+        },
+        {
+          "pred": "PERFECTA AMB CORONITA",
+          "gold": "CORONITA",
+          "variant": "CORONITA",
+          "score": 100.0
+        },
+        {
+          "pred": "POMMODORO",
+          "gold": "POMMODORO",
+          "variant": "POMMODORO",
+          "score": 100.0
+        },
+        {
+          "pred": "Salsa de pesto fresc",
+          "gold": "PESTO",
+          "variant": "PESTO",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "SHEPPERD",
+        "DELIGHT",
+        "GORGON-Z",
+        "DE LUX",
+        "AL GUST",
+        "MENÚ INFANTIL",
+        "MR PERRY",
+        "MONSIEUR",
+        "MISS BRIE",
+        "MADAME",
+        "VEGETAL",
+        "CESAR",
+        "DELIRIUM",
+        "PISTO",
+        "TRUFA",
+        "BROOKLIN",
+        "PIZZA NUTELLA",
+        "TIRAMISÚ",
+        "NUTELLA DELUX",
+        "MOZZARELLA NORMAL",
+        "MOZZARELLA VEGANA",
+        "GORGONZOLA",
+        "BRIE",
+        "ESPINACS SALTEJATS",
+        "XAMPINYONS SALTEJATS",
+        "CEBA ROSTIDA",
+        "CEBA CRUA",
+        "CEBA CARAMEL.LITZADA",
+        "CEBA CRUIXENT",
+        "BACÓ",
+        "PERNIL",
+        "COGOMBRETS",
+        "BITXO (JALAPEÑOS)",
+        "TALLARINS HEALTHY",
+        "NUTELLA VEGANA",
+        "CLOTENCA SURPRISE"
+      ],
+      "false_positives": [
+        "tomáquet a rodanxes, escalopa",
+        "tomàquet a rodanxes, burger de",
+        "Pa de xapata amb sèsam, enciam",
+        "Pa de xapata amb sèsam, enciam",
+        "Pa de xapata amb sèsam, enciam i",
+        "TOPPINGS BURGERS",
+        "New",
+        "pollastre marinat amb salsa Perry, enciam",
+        "tomaquet natural, pastanaga ratllada",
+        "camembert, tòfona negra i pancetta linea",
+        "vedella, formatge de cabra, enciam",
+        "pollastre al forn, cogombre, ceba",
+        "Mezclum d'enciam, tomàquet",
+        "Salsa de tomàquet natural amb carbassó i",
+        "Tòfona negra amb tofu d'algues",
+        "Salsa de tomàquet natural amb la",
+        "Cada setmana et sorprendrem amb una",
+        "NUTELLA",
+        "el sopar de la manera més dolça",
+        "CASOLÀ",
+        "EL FINAL PERFECTE"
+      ]
+    },
+    {
+      "image_id": "7571032721762097332/63bac2469809e9b1432e6f152996440d",
+      "restaurant_id": "7571032721762097332",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 16,
+      "n_gold": 18,
+      "tp": 15,
+      "fp": 1,
+      "fn": 3,
+      "duplicates": 0,
+      "recall": 0.8333333333333334,
+      "precision": 0.9375,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 3.5983776250095105,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Brisa Mediterránea",
+          "gold": "Brisa Mediterránea",
+          "variant": "Brisa Mediterránea",
+          "score": 100.0
+        },
+        {
+          "pred": "Agua",
+          "gold": "Agua",
+          "variant": "Agua",
+          "score": 100.0
+        },
+        {
+          "pred": "Coca Cola / Zero",
+          "gold": "Coca Cola Zero",
+          "variant": "Coca Cola Zero",
+          "score": 100.0
+        },
+        {
+          "pred": "Coca Cola / Botella de vidrio IL",
+          "gold": "Coca Cola",
+          "variant": "Coca Cola",
+          "score": 100.0
+        },
+        {
+          "pred": "Fanta naranja / Nestea",
+          "gold": "Fanta naranja",
+          "variant": "Fanta naranja",
+          "score": 100.0
+        },
+        {
+          "pred": "San Miguel",
+          "gold": "San Miguel",
+          "variant": "San Miguel",
+          "score": 100.0
+        },
+        {
+          "pred": "Lambrusco / Vino tinto Rioja",
+          "gold": "Vino tinto Rioja",
+          "variant": "Vino tinto Rioja",
+          "score": 100.0
+        },
+        {
+          "pred": "Souffle al Cioccolato",
+          "gold": "Soufflé al Cioccolato",
+          "variant": "Soufflé al Cioccolato",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Cheescake Monterosa",
+          "gold": "Coppa Cheescake Monterosa",
+          "variant": "Coppa Cheescake Monterosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Pistacchio y Crema",
+          "gold": "Coppa Pistacchio y Crema",
+          "variant": "Coppa Pistacchio y Crema",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Mascarpone",
+          "gold": "Coppa Mascarpone",
+          "variant": "Coppa Mascarpone",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Straciatella",
+          "gold": "Coppa Straciatella",
+          "variant": "Coppa Straciatella",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Tiramisü",
+          "gold": "Coppa Tiramisü",
+          "variant": "Coppa Tiramisü",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Profiterol",
+          "gold": "Coppa Profiterol",
+          "variant": "Coppa Profiterol",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Mousse Cioccolato",
+          "gold": "Coppa Mousse Cioccolato",
+          "variant": "Coppa Mousse Cioccolato",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Verde di Búfala",
+        "Nestea",
+        "Lambrusco"
+      ],
+      "false_positives": [
+        "cacerola"
+      ]
+    },
+    {
+      "image_id": "7571032721762097332/8a339445e1a8029008955dc43d14f078",
+      "restaurant_id": "7571032721762097332",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 16,
+      "n_gold": 18,
+      "tp": 15,
+      "fp": 1,
+      "fn": 3,
+      "duplicates": 0,
+      "recall": 0.8333333333333334,
+      "precision": 0.9375,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 0.0,
+      "ungrounded_dropped": 0,
+      "duplicate_of": "7571032721762097332/63bac2469809e9b1432e6f152996440d",
+      "error": null,
+      "matched": [
+        {
+          "pred": "Brisa Mediterránea",
+          "gold": "Brisa Mediterránea",
+          "variant": "Brisa Mediterránea",
+          "score": 100.0
+        },
+        {
+          "pred": "Agua",
+          "gold": "Agua",
+          "variant": "Agua",
+          "score": 100.0
+        },
+        {
+          "pred": "Coca Cola / Zero",
+          "gold": "Coca Cola Zero",
+          "variant": "Coca Cola Zero",
+          "score": 100.0
+        },
+        {
+          "pred": "Coca Cola / Botella de vidrio IL",
+          "gold": "Coca Cola",
+          "variant": "Coca Cola",
+          "score": 100.0
+        },
+        {
+          "pred": "Fanta naranja / Nestea",
+          "gold": "Fanta naranja",
+          "variant": "Fanta naranja",
+          "score": 100.0
+        },
+        {
+          "pred": "San Miguel",
+          "gold": "San Miguel",
+          "variant": "San Miguel",
+          "score": 100.0
+        },
+        {
+          "pred": "Lambrusco / Vino tinto Rioja",
+          "gold": "Vino tinto Rioja",
+          "variant": "Vino tinto Rioja",
+          "score": 100.0
+        },
+        {
+          "pred": "Souffle al Cioccolato",
+          "gold": "Soufflé al Cioccolato",
+          "variant": "Soufflé al Cioccolato",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Cheescake Monterosa",
+          "gold": "Coppa Cheescake Monterosa",
+          "variant": "Coppa Cheescake Monterosa",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Pistacchio y Crema",
+          "gold": "Coppa Pistacchio y Crema",
+          "variant": "Coppa Pistacchio y Crema",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Mascarpone",
+          "gold": "Coppa Mascarpone",
+          "variant": "Coppa Mascarpone",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Straciatella",
+          "gold": "Coppa Straciatella",
+          "variant": "Coppa Straciatella",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Tiramisü",
+          "gold": "Coppa Tiramisü",
+          "variant": "Coppa Tiramisü",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Profiterol",
+          "gold": "Coppa Profiterol",
+          "variant": "Coppa Profiterol",
+          "score": 100.0
+        },
+        {
+          "pred": "Coppa Mousse Cioccolato",
+          "gold": "Coppa Mousse Cioccolato",
+          "variant": "Coppa Mousse Cioccolato",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "Verde di Búfala",
+        "Nestea",
+        "Lambrusco"
+      ],
+      "false_positives": [
+        "cacerola"
+      ]
+    },
+    {
+      "image_id": "8627417098818383545/1bbb57ae336f4728a1b312b7fb787461",
+      "restaurant_id": "8627417098818383545",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 41,
+      "n_gold": 41,
+      "tp": 38,
+      "fp": 1,
+      "fn": 3,
+      "duplicates": 2,
+      "recall": 0.926829268292683,
+      "precision": 0.9743589743589743,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 2.8298104580063375,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "Ensalada El Mausem",
+          "gold": "Ensalada El Mausem",
+          "variant": "Ensalada El Mausem",
+          "score": 100.0
+        },
+        {
+          "pred": "Fattouch",
+          "gold": "Fattouch",
+          "variant": "Fattouch",
+          "score": 100.0
+        },
+        {
+          "pred": "Tabule",
+          "gold": "Tabule",
+          "variant": "Tabule",
+          "score": 100.0
+        },
+        {
+          "pred": "Hommos",
+          "gold": "Hommos",
+          "variant": "Hommos",
+          "score": 100.0
+        },
+        {
+          "pred": "Muttabal",
+          "gold": "Muttabal",
+          "variant": "Muttabal",
+          "score": 100.0
+        },
+        {
+          "pred": "Mohamara",
+          "gold": "Mohamara",
+          "variant": "Mohamara",
+          "score": 100.0
+        },
+        {
+          "pred": "Baba Ganouge",
+          "gold": "Baba Ganouge",
+          "variant": "Baba Ganouge",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinados de Cremas",
+          "gold": "Combinados de Cremas",
+          "variant": "Combinados de Cremas",
+          "score": 100.0
+        },
+        {
+          "pred": "Malube",
+          "gold": "Malube",
+          "variant": "Malube",
+          "score": 100.0
+        },
+        {
+          "pred": "Maghmour",
+          "gold": "Maghmour",
+          "variant": "Maghmour",
+          "score": 100.0
+        },
+        {
+          "pred": "Couscous",
+          "gold": "Couscous",
+          "variant": "Couscous",
+          "score": 100.0
+        },
+        {
+          "pred": "Kebbe Neye",
+          "gold": "Kebbe Neye",
+          "variant": "Kebbe Neye",
+          "score": 100.0
+        },
+        {
+          "pred": "Lahme Mishui",
+          "gold": "Lahme Mishui",
+          "variant": "Lahme Mishui",
+          "score": 100.0
+        },
+        {
+          "pred": "Xix Twouk",
+          "gold": "Xix Twouk",
+          "variant": "Xix Twouk",
+          "score": 100.0
+        },
+        {
+          "pred": "Kafta Mishui",
+          "gold": "Kafta Mishui",
+          "variant": "Kafta Mishui",
+          "score": 100.0
+        },
+        {
+          "pred": "Mjadara",
+          "gold": "Mjadara",
+          "variant": "Mjadara",
+          "score": 100.0
+        },
+        {
+          "pred": "Jawaneh",
+          "gold": "Jawaneh",
+          "variant": "Jawaneh",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Machawi",
+          "gold": "Combinado Machawi",
+          "variant": "Combinado Machawi",
+          "score": 100.0
+        },
+        {
+          "pred": "Hommos Bel-lahme",
+          "gold": "Hommos Bel-lahme",
+          "variant": "Hommos Bel-lahme",
+          "score": 100.0
+        },
+        {
+          "pred": "Arayes Gibne",
+          "gold": "Arayes Gibne",
+          "variant": "Arayes Gibne",
+          "score": 100.0
+        },
+        {
+          "pred": "Arayes lahme",
+          "gold": "Arayes lahme",
+          "variant": "Arayes lahme",
+          "score": 100.0
+        },
+        {
+          "pred": "Falafel",
+          "gold": "Falafel",
+          "variant": "Falafel",
+          "score": 100.0
+        },
+        {
+          "pred": "Plato Shawarma",
+          "gold": "Plato Shawarma",
+          "variant": "Plato Shawarma",
+          "score": 100.0
+        },
+        {
+          "pred": "Fatayer (s unids.)",
+          "gold": "Fatayer",
+          "variant": "Fatayer",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado de Fatayer",
+          "gold": "Combinado de Fatayer",
+          "variant": "Combinado de Fatayer",
+          "score": 100.0
+        },
+        {
+          "pred": "Empanadilles de carn, 2 de formatge i 2 d'espinacs",
+          "gold": "Formatge",
+          "variant": "Formatge",
+          "score": 100.0
+        },
+        {
+          "pred": "Kebbe Mikli",
+          "gold": "Kebbe Mikli",
+          "variant": "Kebbe Mikli",
+          "score": 100.0
+        },
+        {
+          "pred": "Warak Inab",
+          "gold": "Warak Inab",
+          "variant": "Warak Inab",
+          "score": 100.0
+        },
+        {
+          "pred": "Kousa Mechi",
+          "gold": "Kousa Mechi",
+          "variant": "Kousa Mechi",
+          "score": 100.0
+        },
+        {
+          "pred": "Ayran",
+          "gold": "Ayran",
+          "variant": "Ayran",
+          "score": 100.0
+        },
+        {
+          "pred": "Shawarma Ternera",
+          "gold": "Shawarma Ternera",
+          "variant": "Shawarma Ternera",
+          "score": 100.0
+        },
+        {
+          "pred": "Shawarma de pollo",
+          "gold": "Shawarma de pollo",
+          "variant": "Shawarma de pollo",
+          "score": 100.0
+        },
+        {
+          "pred": "Kafta",
+          "gold": "Kafta",
+          "variant": "Kafta",
+          "score": 100.0
+        },
+        {
+          "pred": "Humus/Mutabal",
+          "gold": "Mutabal",
+          "variant": "Mutabal",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado con Carne",
+          "gold": "Combinado con Carne",
+          "variant": "Combinado con Carne",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Vegetal",
+          "gold": "Combinado Vegetal",
+          "variant": "Combinado Vegetal",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Carne Extra",
+          "gold": "Combinado Carne Extra",
+          "variant": "Combinado Carne Extra",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Vegetal Extra",
+          "gold": "Combinado Vegetal Extra",
+          "variant": "Combinado Vegetal Extra",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [
+        {
+          "pred": "Combinado Machawi",
+          "gold": "Combinado Machawi",
+          "variant": "Combinado Machawi",
+          "score": 100.0
+        },
+        {
+          "pred": "Falafel",
+          "gold": "Falafel",
+          "variant": "Falafel",
+          "score": 100.0
+        }
+      ],
+      "unmatched_gold": [
+        "Combinado Machawi (2 personas)",
+        "Humus",
+        "Pan"
+      ],
+      "false_positives": [
+        "Empanadillas de carne, 2 de queso y 2 de espinacas"
+      ]
+    },
+    {
+      "image_id": "8627417098818383545/a1ae40f3a8b8acf06d0ba25b2157d928",
+      "restaurant_id": "8627417098818383545",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 41,
+      "n_gold": 41,
+      "tp": 38,
+      "fp": 1,
+      "fn": 3,
+      "duplicates": 2,
+      "recall": 0.926829268292683,
+      "precision": 0.9743589743589743,
+      "cost_usd": 0.0,
+      "llm_used": false,
+      "llm_cached": false,
+      "llm_latency_s": 0.0,
+      "time_s": 0.0,
+      "ungrounded_dropped": 0,
+      "duplicate_of": "8627417098818383545/1bbb57ae336f4728a1b312b7fb787461",
+      "error": null,
+      "matched": [
+        {
+          "pred": "Ensalada El Mausem",
+          "gold": "Ensalada El Mausem",
+          "variant": "Ensalada El Mausem",
+          "score": 100.0
+        },
+        {
+          "pred": "Fattouch",
+          "gold": "Fattouch",
+          "variant": "Fattouch",
+          "score": 100.0
+        },
+        {
+          "pred": "Tabule",
+          "gold": "Tabule",
+          "variant": "Tabule",
+          "score": 100.0
+        },
+        {
+          "pred": "Hommos",
+          "gold": "Hommos",
+          "variant": "Hommos",
+          "score": 100.0
+        },
+        {
+          "pred": "Muttabal",
+          "gold": "Muttabal",
+          "variant": "Muttabal",
+          "score": 100.0
+        },
+        {
+          "pred": "Mohamara",
+          "gold": "Mohamara",
+          "variant": "Mohamara",
+          "score": 100.0
+        },
+        {
+          "pred": "Baba Ganouge",
+          "gold": "Baba Ganouge",
+          "variant": "Baba Ganouge",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinados de Cremas",
+          "gold": "Combinados de Cremas",
+          "variant": "Combinados de Cremas",
+          "score": 100.0
+        },
+        {
+          "pred": "Malube",
+          "gold": "Malube",
+          "variant": "Malube",
+          "score": 100.0
+        },
+        {
+          "pred": "Maghmour",
+          "gold": "Maghmour",
+          "variant": "Maghmour",
+          "score": 100.0
+        },
+        {
+          "pred": "Couscous",
+          "gold": "Couscous",
+          "variant": "Couscous",
+          "score": 100.0
+        },
+        {
+          "pred": "Kebbe Neye",
+          "gold": "Kebbe Neye",
+          "variant": "Kebbe Neye",
+          "score": 100.0
+        },
+        {
+          "pred": "Lahme Mishui",
+          "gold": "Lahme Mishui",
+          "variant": "Lahme Mishui",
+          "score": 100.0
+        },
+        {
+          "pred": "Xix Twouk",
+          "gold": "Xix Twouk",
+          "variant": "Xix Twouk",
+          "score": 100.0
+        },
+        {
+          "pred": "Kafta Mishui",
+          "gold": "Kafta Mishui",
+          "variant": "Kafta Mishui",
+          "score": 100.0
+        },
+        {
+          "pred": "Mjadara",
+          "gold": "Mjadara",
+          "variant": "Mjadara",
+          "score": 100.0
+        },
+        {
+          "pred": "Jawaneh",
+          "gold": "Jawaneh",
+          "variant": "Jawaneh",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Machawi",
+          "gold": "Combinado Machawi",
+          "variant": "Combinado Machawi",
+          "score": 100.0
+        },
+        {
+          "pred": "Hommos Bel-lahme",
+          "gold": "Hommos Bel-lahme",
+          "variant": "Hommos Bel-lahme",
+          "score": 100.0
+        },
+        {
+          "pred": "Arayes Gibne",
+          "gold": "Arayes Gibne",
+          "variant": "Arayes Gibne",
+          "score": 100.0
+        },
+        {
+          "pred": "Arayes lahme",
+          "gold": "Arayes lahme",
+          "variant": "Arayes lahme",
+          "score": 100.0
+        },
+        {
+          "pred": "Falafel",
+          "gold": "Falafel",
+          "variant": "Falafel",
+          "score": 100.0
+        },
+        {
+          "pred": "Plato Shawarma",
+          "gold": "Plato Shawarma",
+          "variant": "Plato Shawarma",
+          "score": 100.0
+        },
+        {
+          "pred": "Fatayer (s unids.)",
+          "gold": "Fatayer",
+          "variant": "Fatayer",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado de Fatayer",
+          "gold": "Combinado de Fatayer",
+          "variant": "Combinado de Fatayer",
+          "score": 100.0
+        },
+        {
+          "pred": "Empanadilles de carn, 2 de formatge i 2 d'espinacs",
+          "gold": "Formatge",
+          "variant": "Formatge",
+          "score": 100.0
+        },
+        {
+          "pred": "Kebbe Mikli",
+          "gold": "Kebbe Mikli",
+          "variant": "Kebbe Mikli",
+          "score": 100.0
+        },
+        {
+          "pred": "Warak Inab",
+          "gold": "Warak Inab",
+          "variant": "Warak Inab",
+          "score": 100.0
+        },
+        {
+          "pred": "Kousa Mechi",
+          "gold": "Kousa Mechi",
+          "variant": "Kousa Mechi",
+          "score": 100.0
+        },
+        {
+          "pred": "Ayran",
+          "gold": "Ayran",
+          "variant": "Ayran",
+          "score": 100.0
+        },
+        {
+          "pred": "Shawarma Ternera",
+          "gold": "Shawarma Ternera",
+          "variant": "Shawarma Ternera",
+          "score": 100.0
+        },
+        {
+          "pred": "Shawarma de pollo",
+          "gold": "Shawarma de pollo",
+          "variant": "Shawarma de pollo",
+          "score": 100.0
+        },
+        {
+          "pred": "Kafta",
+          "gold": "Kafta",
+          "variant": "Kafta",
+          "score": 100.0
+        },
+        {
+          "pred": "Humus/Mutabal",
+          "gold": "Mutabal",
+          "variant": "Mutabal",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado con Carne",
+          "gold": "Combinado con Carne",
+          "variant": "Combinado con Carne",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Vegetal",
+          "gold": "Combinado Vegetal",
+          "variant": "Combinado Vegetal",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Carne Extra",
+          "gold": "Combinado Carne Extra",
+          "variant": "Combinado Carne Extra",
+          "score": 100.0
+        },
+        {
+          "pred": "Combinado Vegetal Extra",
+          "gold": "Combinado Vegetal Extra",
+          "variant": "Combinado Vegetal Extra",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [
+        {
+          "pred": "Combinado Machawi",
+          "gold": "Combinado Machawi",
+          "variant": "Combinado Machawi",
+          "score": 100.0
+        },
+        {
+          "pred": "Falafel",
+          "gold": "Falafel",
+          "variant": "Falafel",
+          "score": 100.0
+        }
+      ],
+      "unmatched_gold": [
+        "Combinado Machawi (2 personas)",
+        "Humus",
+        "Pan"
+      ],
+      "false_positives": [
+        "Empanadillas de carne, 2 de queso y 2 de espinacas"
+      ]
+    },
+    {
+      "image_id": "9944003937257840785/3cbb7ebc3d0c8378482b5a96a94e5278",
+      "restaurant_id": "9944003937257840785",
+      "labeled": true,
+      "split": "test",
+      "n_pred": 3,
+      "n_gold": 2,
+      "tp": 1,
+      "fp": 2,
+      "fn": 1,
+      "duplicates": 0,
+      "recall": 0.5,
+      "precision": 0.3333333333333333,
+      "cost_usd": 0.0,
+      "llm_used": true,
+      "llm_cached": true,
+      "llm_latency_s": 6.041725124989171,
+      "time_s": 6.661236750014126,
+      "ungrounded_dropped": 0,
+      "duplicate_of": null,
+      "error": null,
+      "matched": [
+        {
+          "pred": "S- CAFE CON LECHE",
+          "gold": "CAFÉ CON LECHE",
+          "variant": "CAFÉ CON LECHE",
+          "score": 100.0
+        }
+      ],
+      "duplicate_pairs": [],
+      "unmatched_gold": [
+        "TORTITA AMERICANA CASERA"
+      ],
+      "false_positives": [
+        "J-TORTITA ANERICANA",
+        "SIROPE"
+      ]
+    }
+  ]
+}
