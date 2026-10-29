@@ -59,8 +59,10 @@ The command always processes the whole input. It has three flags (`--input`, `--
 `--llm-model`); everything else is in `config/default.yaml`, whose relative paths are relative to
 the project root. The stage cache lives in `artifacts/`. Inputs are validated once before any image
 (`Pipeline.validate_inputs`): the input must hold images, the OCR models must load, and an unusable
-LLM turns its step off with a warning. Tests: `.venv/bin/pytest -q` (fast suite) and
-`.venv/bin/pytest -q -m slow` (real OCR on one image).
+LLM turns its step off with a warning. Transient LLM failures (timeout, rate limit, 5xx) left after
+the client's own immediate retries are retried from the LLM step only, at the end of the run, up to
+2 rounds (`LLM_DEFERRED_RETRIES`); `llm_retries` in `results.jsonl` records them. Tests:
+`.venv/bin/pytest -q` (fast suite) and `.venv/bin/pytest -q -m slow` (real OCR on one image).
 
 Exit code is 0 when images were processed, even with warnings or per-image errors (they are in
 the output); 2 when the run cannot start: no images in the input, or an OCR engine that cannot

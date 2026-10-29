@@ -385,6 +385,21 @@ dos funciones de normalización.
   resultados, respuestas a las tres preguntas, estructura del código, uso de IA) pasa sin cambios
   a `docs/technical_notes.md`, enlazado desde el README.
 
+## Discusión 19 — Reporte legible y reintentos diferidos del LLM (2026-10-29)
+
+- `summary.md`: columnas con nombres explícitos (`found correctly`, `wrong`, `missed`, `repeats`
+  en lugar de TP/FP/FN/dup), una leyenda que explica recall y precisión, y "split" reemplazado por
+  "tuning (dev)" y "unseen (test)" con una línea que explica por qué se separan: las reglas se
+  ajustaron mirando sólo las fotos de tuning, así que las unseen dan la estimación honesta para
+  cartas nuevas. Las copias de fotos se marcan "copy, not scored". "Ungrounded dishes dropped"
+  pasa a "LLM items discarded because they are not in the photo's text (likely invented)".
+- Reintentos (pedido del usuario): los errores transitorios del LLM (`LLMRetryableError`:
+  timeout, conexión, 429, 5xx) que quedan tras los reintentos inmediatos del cliente se reintentan
+  al final de la corrida, hasta 2 rondas, sólo desde el paso LLM (el contexto de la imagen
+  conserva OCR y reglas). Mientras tanto la foto tiene la salida de las reglas; las copias de una
+  foto reintentada toman sus nuevos ítems. `llm_retries` queda en `results.jsonl`. Los errores
+  no transitorios (respuesta inválida, refusal) no se reintentan: repetir no los arregla.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -402,3 +417,4 @@ dos funciones de normalización.
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Post-procesos del pipeline (evaluación contra el golden set como el primero). |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Interfaces de etapa pasadas de Protocol a clases base abstractas. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | README reescrito para lectores no técnicos; detalle técnico movido a docs/technical_notes.md. |
+| 2026-10-29 | Claude Code (Opus 5.5), sesión principal | Reporte de evaluación legible y reintentos diferidos de llamadas al LLM. |
