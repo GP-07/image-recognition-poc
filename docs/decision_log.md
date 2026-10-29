@@ -414,6 +414,16 @@ dos funciones de normalización.
   builder ubica cada step por su `name` declarado; el step LLM captura `LLMOutputError` por tipo
   (antes `getattr(exc, "usage")`). Quedan 8 que validan datos externos (JSON del LLM, YAML del
   golden set): ahí el tipo no se conoce de antemano y `isinstance` es lo correcto.
+- Seguimiento: se recupera `ImageContext.failure` (no todo error es reintentable, y conviene
+  saber cuál fue) y `should_be_retried` pasa a ser una property derivada de él. Para no atar
+  `data_classes` al módulo LLM (ciclo de imports), los errores transitorios heredan de
+  `TransientError` (`errors.py`, módulo hoja); `LLMRetryableError` es uno. Cualquier paso futuro
+  puede marcar así sus errores reintentables.
+- Duda del usuario: ¿un reintento al final se saltea la verificación y deja pasar alucinaciones?
+  No: el reintento llama a `llm_step.handle(ctx)`, que vuelve a entrar a la cadena en el paso LLM
+  y sigue a `verify` como cualquier imagen. Un test lo afirma explícitamente (el ítem inventado se
+  descarta después del reintento). Por eso el reintento no se mueve al step LLM: desde ahí no
+  podría esperar al final de la corrida.
 
 ## Herramientas de IA usadas durante el POC
 

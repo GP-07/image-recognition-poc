@@ -14,6 +14,7 @@ import hashlib
 from abc import ABC, abstractmethod
 from typing import Any, ClassVar
 
+from menu_poc.errors import TransientError
 from menu_poc.models import LLMUsage
 
 
@@ -21,7 +22,7 @@ class LLMError(RuntimeError):
     """The LLM call failed and retrying the same request will not help."""
 
 
-class LLMRetryableError(LLMError):
+class LLMRetryableError(LLMError, TransientError):
     """Transient failure (rate limit, overload, 5xx, network) left after the engine's retries."""
 
 

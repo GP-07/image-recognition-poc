@@ -12,6 +12,7 @@ from PIL import Image
 
 from menu_poc.cache.store import sha256_bytes
 from menu_poc.constants import ITEMS_FILE
+from menu_poc.errors import TransientError
 from menu_poc.models import (
     Dish,
     ImageResult,
@@ -136,12 +137,16 @@ class ImageContext:
     ocr_key: str | None = None  # cache key of the OCR output, reused by the LLM cache key
     parsed: ParseResult | None = None
     structured: StructureResult | None = None
-    # Set by a step whose failure may pass if tried again later (e.g. an LLM timeout).
-    should_be_retried: bool = False
+    failure: Exception | None = None  # what stopped the chain for this image, if anything
 
     @classmethod
     def for_image(cls, ref: ImageRef) -> ImageContext:
         return cls(ref, ImageResult(image_id=ref.image_id, restaurant_id=ref.restaurant_id))
+
+    @property
+    def should_be_retried(self) -> bool:
+        """The chain stopped on a failure that may pass if tried again later."""
+        return isinstance(self.failure, TransientError)
 
 
 # --- OCR ------------------------------------------------------------------------------------------

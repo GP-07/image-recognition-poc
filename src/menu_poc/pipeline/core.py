@@ -129,15 +129,16 @@ class Pipeline:
         return outcome
 
     def _retry_llm(self, to_retry: list[ImageContext], done: dict[str, ImageContext]) -> None:
-        """Retry, from the LLM step only (the OCR is already done), the images whose LLM call
-        failed transiently (timeout, rate limit, 5xx) after the client's own immediate retries.
-        Up to ``LLM_DEFERRED_RETRIES`` rounds; meanwhile those images keep the rules output."""
+        """Retry the images whose LLM call failed transiently (timeout, rate limit, 5xx) after
+        the client's own immediate retries. Each retry re-enters the chain at the LLM step, so the
+        answer goes through verification like any other; the OCR and rules are not redone. Up to
+        ``LLM_DEFERRED_RETRIES`` rounds; meanwhile those images keep the rules output."""
         llm_step = require(self.llm_step, "LLM step")
         pending = to_retry
         for round_number in range(1, LLM_DEFERRED_RETRIES + 1):
             log.info("retrying the LLM for %d images (round %d)", len(pending), round_number)
             for ctx in pending:
-                ctx.should_be_retried, ctx.result.error = False, None
+                ctx.failure, ctx.result.error = None, None
                 ctx.result.llm_retries = round_number
                 _with_total_time(llm_step.handle(ctx))
             pending = [ctx for ctx in pending if ctx.should_be_retried]

@@ -334,7 +334,9 @@ def test_transient_llm_failure_is_retried_at_the_end(tmp_path):
     pipe, config = _pipeline(tmp_path, structurer=structurer, llm_model="haiku")
     low = _by_id(_run(pipe, config, tmp_path))["r1/low"]
     assert low.llm_used and low.error is None and low.llm_retries == 1
+    # The retried answer went through verification: the invented item was dropped.
     assert [dish.name for dish in low.dishes] == ["Lamb curry"]
+    assert low.ungrounded_dropped == ["Invented"]
     assert structurer.attempts == {"r1/low": 2}  # the confident page never needed the LLM
     assert _by_id(_saved_results(tmp_path))["r1/low"].llm_used  # results.jsonl rewritten
 

@@ -8,6 +8,7 @@ from PIL import Image
 from menu_poc.cache.store import ArtifactStore
 from menu_poc.data_classes import ImageRef
 from menu_poc.interfaces import OcrEngine, Parser, PostProcessor, Preprocessor, Structurer
+from menu_poc.llm.engine import LLMOutputError, LLMRetryableError
 from menu_poc.llm.grounding import GroundingVerifier
 from menu_poc.models import (
     Dish,
@@ -152,6 +153,16 @@ def test_dedup_step_stops_the_chain_for_a_duplicate():
     assert second.result.duplicate_of == "r/a" and second.result.dishes == first.result.dishes
 
 
+@pytest.mark.parametrize(
+    ("failure", "retried"),
+    [(LLMRetryableError("timeout"), True), (LLMOutputError("refused"), False), (None, False)],
+)
+def test_only_transient_failures_are_retried(failure, retried):
+    ctx = ImageContext.for_image(_ref())
+    ctx.failure = failure
+    assert ctx.should_be_retried is retried
+
+
 def test_a_failing_step_stops_only_its_image():
     class Boom(Step):
         name = "boom"
@@ -161,6 +172,7 @@ def test_a_failing_step_stops_only_its_image():
 
     ctx = Boom().handle(ImageContext.for_image(_ref()))
     assert ctx.result.error == "boom: bad photo"
+    assert str(ctx.failure) == "bad photo" and not ctx.should_be_retried
 
 
 # --- builder ----------------------------------------------------------------------------------
