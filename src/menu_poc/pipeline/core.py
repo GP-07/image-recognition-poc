@@ -11,16 +11,23 @@ from pathlib import Path
 
 from PIL import Image
 
-from menu_poc.constants import LLM_HELP, MANIFEST_FILE, RESULTS_FILE
+from menu_poc.constants import LLM_DEFERRED_RETRIES, LLM_HELP, MANIFEST_FILE, RESULTS_FILE
 from menu_poc.data_classes import ImageContext, ImageRef, RunOutcome
 from menu_poc.interfaces import PostProcessor
 from menu_poc.io.dataset import iter_images
 from menu_poc.io.writers import write_items_csv, write_json, write_jsonl
+from menu_poc.llm.engine import LLMRetryableError
 from menu_poc.models import ImageResult, RunConfig
 from menu_poc.pipeline.runs import new_run_dir
 from menu_poc.steps import InputValidationError, LlmStep, Step
 
 log = logging.getLogger(__name__)
+
+
+def _with_total_time(ctx: ImageContext) -> ImageContext:
+    timings = ctx.result.timings_s
+    timings["total"] = sum(seconds for step, seconds in timings.items() if step != "total")
+    return ctx
 
 
 def _now() -> str:
@@ -70,14 +77,16 @@ class Pipeline:
         return refs, warnings
 
     def process(self, ref: ImageRef) -> ImageResult:
-        ctx = self.head.handle(ImageContext.for_image(ref))
-        ctx.result.timings_s["total"] = sum(ctx.result.timings_s.values())
-        return ctx.result
+        return self._process(ref).result
+
+    def _process(self, ref: ImageRef) -> ImageContext:
+        return _with_total_time(self.head.handle(ImageContext.for_image(ref)))
 
     def run(self, refs: Iterable[ImageRef], config: RunConfig) -> RunOutcome:
         """Process every image into a new run directory under ``config.runs_dir`` and save its
         files: ``results.jsonl`` (kept up to date while running), then ``items.csv``, the
-        post-processors' reports and ``manifest.json``. Results come back in input order."""
+        post-processors' reports and ``manifest.json``. Transient LLM failures are retried at the
+        end (``_retry_llm``). Results come back in input order."""
         refs = list(refs)
         started = _now()
         # The run directory records what actually runs: no LLM model when its step was disabled.
@@ -86,19 +95,21 @@ class Pipeline:
         # Largest images first: the first photo of a duplicate group is kept as the original,
         # and the largest one gives the best OCR.
         order = sorted(refs, key=lambda ref: (-_pixels(ref), ref.image_id))
-        done: dict[str, ImageResult] = {}
+        done: dict[str, ImageContext] = {}
         for ref in order:
             log.info("processing %s", ref.image_id)
-            done[ref.image_id] = self.process(ref)
+            done[ref.image_id] = self._process(ref)
             # Rewrite after every image so an interrupted run keeps its progress.
-            finished = [done[ref.image_id] for ref in refs if ref.image_id in done]
+            finished = [done[ref.image_id].result for ref in refs if ref.image_id in done]
             write_jsonl(run_dir / RESULTS_FILE, finished)
+        if self._retry_llm(done):
+            write_jsonl(run_dir / RESULTS_FILE, [done[ref.image_id].result for ref in refs])
 
         outcome = RunOutcome(
             run_dir=run_dir,
             requested_llm_model=config.llm_model,
             config=effective,
-            results=[done[ref.image_id] for ref in refs],
+            results=[done[ref.image_id].result for ref in refs],
             warnings=self.warnings,
             started=started,
             finished=_now(),
@@ -107,6 +118,32 @@ class Pipeline:
         outcome = self._post_process(outcome)
         write_json(run_dir / MANIFEST_FILE, outcome.manifest())
         return outcome
+
+    def _retry_llm(self, contexts: dict[str, ImageContext]) -> bool:
+        """Retry, from the LLM step only (the OCR is already done), the images whose LLM call
+        failed transiently (timeout, rate limit, 5xx) after the client's own immediate retries.
+        Up to ``LLM_DEFERRED_RETRIES`` rounds; meanwhile those images keep the rules output.
+        Returns whether anything was retried."""
+        llm_step = next((step for step in self.steps if isinstance(step, LlmStep)), None)
+        if llm_step is None:
+            return False
+        retried: set[str] = set()
+        for round_number in range(1, LLM_DEFERRED_RETRIES + 1):
+            pending = [
+                ctx for ctx in contexts.values() if isinstance(ctx.failure, LLMRetryableError)
+            ]
+            if not pending:
+                break
+            log.info("retrying the LLM for %d images (round %d)", len(pending), round_number)
+            for ctx in pending:
+                ctx.failure, ctx.result.error = None, None
+                ctx.result.llm_retries = round_number
+                _with_total_time(llm_step.handle(ctx))
+                retried.add(ctx.ref.image_id)
+        for ctx in contexts.values():  # copies of a retried photo take its new items
+            if ctx.result.duplicate_of in retried:
+                ctx.result.dishes = contexts[ctx.result.duplicate_of].result.dishes
+        return bool(retried)
 
     def _post_process(self, outcome: RunOutcome) -> RunOutcome:
         """A failing post-processor never loses the run: its error becomes a warning."""

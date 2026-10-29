@@ -50,7 +50,9 @@ The language model is optional, and you choose which one when you run the comman
   default; `ollama/<name>` picks another one). Nothing leaves the machine, but it is slower.
 
 If the chosen model cannot be used (no key, invalid key, Ollama not running), the run does not
-fail: it carries on with OCR and rules and says why in its output.
+fail: it carries on with OCR and rules and says why in its output. If a call to the model times
+out or the service is busy, that photo is retried up to two more times at the end of the run;
+until then, and if it keeps failing, it keeps the rules' answer.
 
 ## How to run it
 

@@ -1,6 +1,7 @@
 # Technical notes
 
-Details behind the [README](../README.md): architecture and implementation, evaluation, results, the answers to the test questions and the code layout.
+Details behind the [README](../README.md): architecture and implementation, evaluation, results, the
+answers to the test questions and the code layout.
 
 ## Architecture
 
@@ -31,7 +32,8 @@ present and rejects invalid chains (e.g. an LLM without OCR). Optional pieces ar
 ```python
 pipeline = PipelineBuilder.from_config(config).build()               # production
 refs, warnings = pipeline.validate_inputs(config.input_path)       # once, before any image
-outcome = pipeline.run(refs, config)   # run dir + results.jsonl, items.csv, post-processors, manifest.json
+outcome = pipeline.run(refs, config)   # run dir + results.jsonl, items.csv, post-processors,
+manifest.json
 pipeline = PipelineBuilder().add(LlmStep(...)).add(OcrStep(...)).add(RulesStep(...)).build()
 # -> dedup? no · ocr → rules → llm → verify, whatever the insertion order
 ```

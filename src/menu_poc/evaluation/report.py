@@ -5,9 +5,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from menu_poc.constants import MATCH_THRESHOLD, SPLITS, TOP_ERRORS
+from menu_poc.constants import (
+    IMAGE_SET_LABELS,
+    MATCH_THRESHOLD,
+    SPLIT_LABELS,
+    SPLITS,
+    SUMMARY_LEGEND,
+    TOP_ERRORS,
+)
 from menu_poc.evaluation.metrics import evaluate_run
-from menu_poc.models import RunMetrics
+from menu_poc.models import ImageMetrics, RunMetrics
 
 
 def _pct(value: float | None) -> str:
@@ -39,13 +46,13 @@ def _llm_model(metrics: RunMetrics) -> str:
 def render_run(metrics: RunMetrics) -> str:
     """Markdown for one evaluated run."""
     out = [f"# Run `{metrics.run}`", ""]
-    reviewed_only = " · reviewed golden only" if metrics.only_reviewed else ""
+    reviewed_only = " · reviewed references only" if metrics.only_reviewed else ""
     out.append(
         f"Mode: `{metrics.mode or '?'}` · LLM: `{_llm_model(metrics)}` · "
         f"policy: `{metrics.llm_policy or '-'}` · "
-        f"match threshold: {metrics.threshold:g}{reviewed_only}"
+        f"name match threshold: {metrics.threshold:g}{reviewed_only}"
     )
-    out += ["", "## Summary", ""]
+    out += ["", "## Summary", "", *SUMMARY_LEGEND, ""]
     rows = []
     for split in SPLITS:
         stats = metrics.accuracy.get(split)
@@ -53,7 +60,7 @@ def render_run(metrics: RunMetrics) -> str:
             continue
         rows.append(
             [
-                split,
+                SPLIT_LABELS[split],
                 str(stats.n_images),
                 str(stats.n_gold),
                 str(stats.tp),
@@ -61,36 +68,35 @@ def render_run(metrics: RunMetrics) -> str:
                 str(stats.fn),
                 str(stats.duplicates),
                 _pct(stats.micro_recall),
-                _pct(stats.macro_recall),
                 _pct(stats.micro_precision),
-                _pct(stats.macro_precision),
             ]
         )
-    header = ["split", "images", "gold", "TP", "FP", "FN", "dup", "recall (micro)"]
-    header += ["recall (macro)", "precision (micro)", "precision (macro)"]
-    out += _table(header, rows) if rows else ["No labeled images."]
+    header = ["photos", "count", "reference items", "found correctly", "wrong", "missed"]
+    header += ["repeats", "recall", "precision"]
+    out += _table(header, rows) if rows else ["No photo has reference answers."]
     out += [
         "",
-        f"- Images: {metrics.n_images} ({metrics.n_labeled} labeled, "
-        f"{len(metrics.unlabeled)} unlabeled, "
-        f"{metrics.n_duplicate_images} duplicate photos skipped and not scored)",
-        f"- LLM used: {_pct(metrics.llm_share)} of images "
-        f"({_pct(metrics.llm_cached_share)} of them cached)",
+        f"- Photos: {metrics.n_images} ({metrics.n_labeled} with reference answers, "
+        f"{len(metrics.unlabeled)} without, "
+        f"{metrics.n_duplicate_images} copies of another photo, not scored)",
+        f"- LLM used on {_pct(metrics.llm_share)} of the photos "
+        f"({_pct(metrics.llm_cached_share)} of them answered from the cache)",
         f"- Cost: {_usd(metrics.cost_total_usd)} total, "
-        f"{_usd(metrics.cost_per_image_usd)} per image",
-        f"- Time: {_sec(metrics.time_total_s)} total, {_sec(metrics.time_mean_s)} per image; "
-        f"LLM latency {_sec(metrics.llm_latency_total_s)} total, "
+        f"{_usd(metrics.cost_per_image_usd)} per photo",
+        f"- Time: {_sec(metrics.time_total_s)} total, {_sec(metrics.time_mean_s)} per photo; "
+        f"LLM {_sec(metrics.llm_latency_total_s)} total, "
         f"{_sec(metrics.llm_latency_mean_s)} per LLM call",
-        f"- Ungrounded dishes dropped: {metrics.ungrounded_dropped}",
-        f"- Errors: {metrics.n_errors}",
+        "- LLM items discarded because they are not in the photo's text (likely invented): "
+        f"{metrics.ungrounded_dropped}",
+        f"- Photos with errors: {metrics.n_errors}",
     ]
     out += [f"  - `{image_id}`: {err}" for image_id, err in metrics.errors.items()]
 
-    out += ["", "## Per image", ""]
+    out += ["", "## Per photo", ""]
     rows = [
         [
             f"`{image.image_id}`",
-            image.split or "unlabeled",
+            _image_set(image),
             str(image.n_pred),
             str(image.n_gold) if image.labeled else "-",
             str(image.tp) if image.labeled else "-",
@@ -102,12 +108,12 @@ def render_run(metrics: RunMetrics) -> str:
             "yes" if image.llm_used else "no",
             _usd(image.cost_usd),
             _sec(image.time_s),
-            "error" if image.error else "",
+            "yes" if image.error else "",
         ]
         for image in metrics.images
     ]
-    header = ["image", "split", "pred", "gold", "TP", "FP", "FN", "dup", "recall", "precision"]
-    header += ["LLM", "cost", "time", ""]
+    header = ["photo", "set", "items found", "reference items", "correct", "wrong", "missed"]
+    header += ["repeats", "recall", "precision", "LLM used", "cost", "time", "error"]
     out += _table(header, rows)
 
     errors = [
@@ -116,15 +122,21 @@ def render_run(metrics: RunMetrics) -> str:
         if image.labeled and (image.unmatched_gold or image.false_positives)
     ]
     if errors:
-        out += ["", "## Error analysis", ""]
+        out += ["", "## What went wrong, per photo", ""]
         for image in errors:
             out.append(f"### `{image.image_id}` (recall {_pct(image.recall)})")
             if image.unmatched_gold:
-                out.append(f"- Missed gold dishes: {_listing(image.unmatched_gold)}")
+                out.append(f"- Missed: {_listing(image.unmatched_gold)}")
             if image.false_positives:
-                out.append(f"- False positives: {_listing(image.false_positives)}")
+                out.append(f"- Wrong: {_listing(image.false_positives)}")
             out.append("")
     return "\n".join(out).rstrip() + "\n"
+
+
+def _image_set(image: ImageMetrics) -> str:
+    if image.duplicate_of is not None:
+        return "copy, not scored"
+    return IMAGE_SET_LABELS[image.split] if image.split else "no reference"
 
 
 def _listing(items: list[str]) -> str:

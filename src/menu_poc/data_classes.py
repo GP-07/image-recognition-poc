@@ -136,6 +136,7 @@ class ImageContext:
     ocr_key: str | None = None  # cache key of the OCR output, reused by the LLM cache key
     parsed: ParseResult | None = None
     structured: StructureResult | None = None
+    failure: Exception | None = None  # what stopped the chain for this image, if anything
 
     @classmethod
     def for_image(cls, ref: ImageRef) -> ImageContext:

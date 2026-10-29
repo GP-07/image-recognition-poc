@@ -154,6 +154,7 @@ class ImageResult(BaseModel):
     llm_used: bool = False
     llm_usage: LLMUsage | None = None  # also set for a failed but billed call
     llm_prompt_version: str | None = None
+    llm_retries: int = 0  # deferred retries after a transient LLM failure (timeout, rate limit)
     ungrounded_dropped: list[str] = Field(default_factory=list)
     timings_s: dict[str, float] = Field(default_factory=dict)
     duplicate_of: str | None = None  # same photo as this image id: dishes copied, nothing run

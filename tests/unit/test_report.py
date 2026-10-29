@@ -41,11 +41,11 @@ def test_run_report_sections(tmp_path):
     _make_run(run_dir, {"mode": "ocr"}, ["Lamb Curry", "Postres"])
     md = run_report(run_dir, golden)
     assert "# Run `run_ocr`" in md
-    assert "| all | 1 | 2 | 1 | 1 | 1 | 0 | 50.0%" in md
-    assert "`r9/x` | unlabeled" in md
-    assert 'Missed gold dishes: "Patatas | Bravas"' in md
-    assert 'False positives: "Postres"' in md
-    assert "| `r1/a` | dev | 2 | 2 | 1 | 1 | 1 | 0 | 50.0% | 50.0% | no |" in md
+    assert "| all | 1 | 2 | 1 | 1 | 1 | 0 | 50.0% | 50.0% |" in md
+    assert "`r9/x` | no reference" in md
+    assert 'Missed: "Patatas | Bravas"' in md
+    assert 'Wrong: "Postres"' in md
+    assert "| `r1/a` | tuning | 2 | 2 | 1 | 1 | 1 | 0 | 50.0% | 50.0% | no |" in md
     assert (run_dir / "metrics.json").exists()
 
 

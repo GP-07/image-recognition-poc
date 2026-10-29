@@ -310,3 +310,57 @@ def test_duplicate_photos_are_skipped_before_ocr(tmp_path):
         "r1/b_big",
         "r1/c_other",
     ]
+
+
+class FlakyStructurer(FakeStructurer):
+    """Times out on the first ``failures`` calls for each image, then answers."""
+
+    def __init__(self, failures):
+        super().__init__()
+        self.failures = failures
+        self.attempts: dict[str, int] = {}
+
+    def structure(self, ocr):
+        from menu_poc.llm.engine import LLMRetryableError
+
+        self.attempts[ocr.image_id] = self.attempts.get(ocr.image_id, 0) + 1
+        if self.attempts[ocr.image_id] <= self.failures:
+            raise LLMRetryableError("timeout")
+        return super().structure(ocr)
+
+
+def test_transient_llm_failure_is_retried_at_the_end(tmp_path):
+    structurer = FlakyStructurer(failures=1)
+    pipe, config = _pipeline(tmp_path, structurer=structurer, llm_model="haiku")
+    low = _by_id(_run(pipe, config, tmp_path))["r1/low"]
+    assert low.llm_used and low.error is None and low.llm_retries == 1
+    assert [dish.name for dish in low.dishes] == ["Lamb curry"]
+    assert structurer.attempts == {"r1/low": 2}  # the confident page never needed the LLM
+    assert _by_id(_saved_results(tmp_path))["r1/low"].llm_used  # results.jsonl rewritten
+
+
+def test_llm_retries_stop_after_two_rounds_and_keep_the_rules_output(tmp_path):
+    structurer = FlakyStructurer(failures=10)
+    pipe, config = _pipeline(tmp_path, structurer=structurer, llm_model="haiku")
+    low = _by_id(_run(pipe, config, tmp_path))["r1/low"]
+    assert structurer.attempts["r1/low"] == 3 and low.llm_retries == 2
+    assert not low.llm_used and "timeout" in low.error and low.dishes[0].origin == "rules"
+
+
+def test_non_transient_llm_failures_are_not_retried(tmp_path):
+    structurer = FakeStructurer(fail=True)
+    pipe, config = _pipeline(tmp_path, structurer=structurer, llm_model="haiku")
+    low = _by_id(_run(pipe, config, tmp_path))["r1/low"]
+    assert structurer.calls == 1 and low.llm_retries == 0
+
+
+def test_copies_of_a_retried_photo_take_its_new_items(tmp_path):
+    config = RunConfig(
+        input_path=_zip(tmp_path, ["a_low", "b_low"], identical=True),
+        llm_model="haiku",
+    )
+    pipe = _build(config, ArtifactStore(tmp_path / "a"), structurer=FlakyStructurer(failures=1))
+    results = _by_id(_run(pipe, config, tmp_path))
+    original, copy = results["r1/a_low"], results["r1/b_low"]
+    assert copy.duplicate_of == "r1/a_low" and original.llm_used
+    assert copy.dishes == original.dishes and copy.dishes[0].origin == "llm"

@@ -168,6 +168,9 @@ MODEL_PRICES_PER_MTOK: dict[str, tuple[float, float]] = {
     "claude-opus-5-5": (4.00, 20.00),
 }
 ANTHROPIC_RETRYABLE_STATUS = (408, 409, 429)  # plus every 5xx
+# Rounds of retries, at the end of the run, for images whose LLM call failed transiently
+# (timeout, rate limit, 5xx) after the client's own immediate retries.
+LLM_DEFERRED_RETRIES = 2
 OLLAMA_PREFIX = "ollama/"
 OLLAMA_DEFAULT_HOST = "http://localhost:11434"
 OLLAMA_DEFAULT_MODEL = "qwen2.5:7b"
@@ -216,6 +219,19 @@ BELOW_MIN_DROP = 0.25  # the line below starts at least this share of a line hei
 MATCH_THRESHOLD = 85.0  # min similarity for a predicted name to match a golden dish
 TIE_BREAK_SCALE = 1000  # plain edit similarity / this breaks ties between equal scores
 SPLITS: tuple[str, ...] = ("all", "dev", "test")
+# The rules were tuned by hand looking only at the "dev" photos; "test" photos never were, so
+# their figures are the fair estimate for menus the system has not seen.
+SPLIT_LABELS = {"all": "all", "dev": "tuning (dev)", "test": "unseen (test)"}
+IMAGE_SET_LABELS = {"dev": "tuning", "test": "unseen"}
+SUMMARY_LEGEND = (
+    "Each photo is compared with its reference answers (`data/golden/`). **Recall**: share of the "
+    "reference items that were found. **Precision**: share of the found items that are real menu "
+    "items. **Repeats**: an item found again, e.g. its translation on the same menu (not counted "
+    "as wrong).",
+    "",
+    "The rules were adjusted by hand looking only at the **tuning** photos; the **unseen** photos "
+    "were never used for that, so their figures are the fair estimate for new menus.",
+)
 TOP_ERRORS = 5  # unmatched gold dishes / false positives listed per image
 
 MATCH_NUMBERING_RE = re.compile(r"^\s*(?:n[ºo°]\s*)?\d{1,3}\s*[.)\-:]\s*|^\s*\d{1,3}\s+(?=\D)")
