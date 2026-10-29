@@ -40,9 +40,9 @@ class PipelineBuilder:
 
     def add(self, step: Step) -> PipelineBuilder:
         """Add (or replace) the step of its kind."""
-        kind = next((kind for kind in self.ORDER if isinstance(step, kind)), None)
+        kind = next((kind for kind in self.ORDER if kind.name == step.name), None)
         if kind is None:
-            raise PipelineBuildError(f"Unknown step type {type(step).__name__}")
+            raise PipelineBuildError(f"Unknown step {step.name!r}")
         self._steps[kind] = step
         return self
 
@@ -66,7 +66,8 @@ class PipelineBuilder:
         for step, following in zip(steps, steps[1:], strict=False):
             step.next = following
         steps[-1].next = None
-        return Pipeline(steps, list(self._post_processors))
+        llm_step = self._steps.get(LlmStep)
+        return Pipeline(steps, list(self._post_processors), llm_step)
 
     @classmethod
     def from_config(cls, config: RunConfig) -> PipelineBuilder:

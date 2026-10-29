@@ -52,7 +52,6 @@ class Step(ABC):
         except Exception as exc:  # one bad image must not stop the run
             log.exception("%s failed for %s", self.name, ctx.ref.image_id)
             ctx.result.error = f"{self.name}: {exc}"
-            ctx.failure = exc
             return ctx
         if proceed and self.next is not None:
             return self.next.handle(ctx)

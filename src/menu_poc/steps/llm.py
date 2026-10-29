@@ -6,6 +6,7 @@ from menu_poc.cache.store import ArtifactStore, make_key
 from menu_poc.constants import DEFAULT_CONFIDENCE_THRESHOLD
 from menu_poc.data_classes import ImageContext
 from menu_poc.interfaces import Structurer
+from menu_poc.llm.engine import LLMOutputError, LLMRetryableError
 from menu_poc.models import StructureResult
 from menu_poc.steps.base import Step, require
 from menu_poc.typings import LLMPolicy
@@ -60,9 +61,12 @@ class LlmStep(Step):
         else:
             try:
                 structured = self.structurer.structure(ocr)
-            except Exception as exc:
+            except LLMRetryableError:
+                ctx.should_be_retried = True  # transient: the pipeline tries again at the end
+                raise
+            except LLMOutputError as exc:
                 # A billed but unusable answer (refusal, truncation) still counts as cost.
-                ctx.result.llm_usage = getattr(exc, "usage", None)
+                ctx.result.llm_usage = exc.usage
                 raise
             self.store.put("llm", key, structured.model_dump(mode="json"))
 

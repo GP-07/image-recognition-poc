@@ -400,6 +400,21 @@ dos funciones de normalización.
   foto reintentada toman sus nuevos ítems. `llm_retries` queda en `results.jsonl`. Los errores
   no transitorios (respuesta inválida, refusal) no se reintentan: repetir no los arregla.
 
+## Discusión 20 — Menos `isinstance`, más objetos que responden por sí mismos (2026-10-29)
+
+- Los reintentos no van como step (los steps corren por imagen y la cadena se corta cuando el LLM
+  falla) ni como post-proceso (esos consumen una corrida terminada; el reintento cambia sus
+  resultados). Son una política global, siempre presente, dentro de `Pipeline.run`.
+- Idea del usuario: armar el set a reprocesar durante la pasada principal. El step LLM, que es el
+  que conoce sus errores, marca `ctx.should_be_retried` cuando falla con `LLMRetryableError`; el
+  pipeline junta esos contextos en el mismo `for` y al final los reintenta (hasta 2 rondas). Se
+  elimina `ImageContext.failure`.
+- Relevamiento de `isinstance` (13): se reemplazan los 5 que preguntaban tipos de objetos propios.
+  El builder le pasa al pipeline su `llm_step` (antes lo buscaba por tipo entre los steps); el
+  builder ubica cada step por su `name` declarado; el step LLM captura `LLMOutputError` por tipo
+  (antes `getattr(exc, "usage")`). Quedan 8 que validan datos externos (JSON del LLM, YAML del
+  golden set): ahí el tipo no se conoce de antemano y `isinstance` es lo correcto.
+
 ## Herramientas de IA usadas durante el POC
 
 | Fecha | Herramienta | Uso |
@@ -418,3 +433,4 @@ dos funciones de normalización.
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | Interfaces de etapa pasadas de Protocol a clases base abstractas. |
 | 2026-10-28 | Claude Code (Opus 5.5), sesión principal | README reescrito para lectores no técnicos; detalle técnico movido a docs/technical_notes.md. |
 | 2026-10-29 | Claude Code (Opus 5.5), sesión principal | Reporte de evaluación legible y reintentos diferidos de llamadas al LLM. |
+| 2026-10-29 | Claude Code (Opus 5.5), sesión principal | Relevamiento de isinstance y refactor de reintentos (set calculado en la pasada principal). |
