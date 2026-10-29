@@ -8,3 +8,4 @@ artifacts/
 runs/
 .env
 tmp/
+.idea/
